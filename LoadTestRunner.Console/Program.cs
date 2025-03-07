@@ -31,9 +31,9 @@ var scenario = new LoadTestPlan()
     Steps = steps,
     Settings = new LoadExecutionSettings()
     {
-        Concurrency = 1,
-        Duration = TimeSpan.FromSeconds(120),
-        Interval = TimeSpan.FromSeconds(1)
+        Concurrency = 2,
+        Duration = TimeSpan.FromSeconds(1),
+        Interval = TimeSpan.FromMilliseconds(100)
     }
 };
 
