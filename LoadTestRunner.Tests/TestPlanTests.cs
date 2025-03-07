@@ -1,10 +1,9 @@
 using System;
 using System.Threading.Tasks;
+using LoadTestRunner.Models;
 using Xunit;
-using xUnitLoadRunnerLib;
-using xUnitLoadRunnerLib.Models;
 
-namespace xUnitLoadRunner.Tests
+namespace LoadTestRunner.Tests
 {
     public class LoadTestRunnerLoadTests
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace xUnitLoadRunnerLib.Models
+namespace LoadTestRunner.Models
 {
     public class LoadTestStep
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace xUnitLoadRunnerLib
+namespace LoadTestRunner.Models
 {
     public class LoadExecutionSettings
     {

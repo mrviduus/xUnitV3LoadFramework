@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>xUnitLoadRunnerLib</RootNamespace>
+    <RootNamespace>LoadTestRunner</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Akka" Version="1.5.38" />

@@ -5,11 +5,11 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>xUnitLoadRunner.Console</RootNamespace>
+        <RootNamespace>LoadTestRunner.Console</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LoadTestRunnerLib\LoadTestRunnerLib.csproj" />
+      <ProjectReference Include="..\LoadTestRunner\LoadTestRunner.csproj" />
     </ItemGroup>
 
 </Project>

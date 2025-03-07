@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
-using xUnitLoadRunnerLib;
-using xUnitLoadRunnerLib.Models;
+using LoadTestRunner.Models;
 
 var steps = new LoadTestStep[]
 {

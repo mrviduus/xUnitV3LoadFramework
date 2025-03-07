@@ -1,11 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Akka.Actor;
-using xUnitLoadRunnerLib.Actors;
-using xUnitLoadRunnerLib.Messages;
-using xUnitLoadRunnerLib.Models;
+using LoadTestRunner.Actors;
+using LoadTestRunner.Messages;
+using LoadTestRunner.Models;
 
-namespace xUnitLoadRunnerLib
+namespace LoadTestRunner
 {
     public class StartLoadTestMessage { }
     public static class LoadTestRunner

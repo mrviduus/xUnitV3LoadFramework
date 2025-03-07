@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Akka.Actor;
-using xUnitLoadRunnerLib.Messages;
-using xUnitLoadRunnerLib.Models;
+using LoadTestRunner.Messages;
+using LoadTestRunner.Models;
 
-namespace xUnitLoadRunnerLib.Actors
+namespace LoadTestRunner.Actors
 {
     public class LoadTestWorkerActor : ReceiveActor
     {

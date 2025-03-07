@@ -1,4 +1,4 @@
-namespace xUnitLoadRunnerLib.Messages
+namespace LoadTestRunner.Messages
 {
     public class GetLoadTestResultMessage { }
 }

@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadTestRunnerLib", "LoadTestRunnerLib\LoadTestRunnerLib.csproj", "{0B70A1AB-B4C9-368F-0C97-AF42A61E9C48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadTestRunner", "LoadTestRunner\LoadTestRunner.csproj", "{0B70A1AB-B4C9-368F-0C97-AF42A61E9C48}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadTestRunner.Tests", "LoadTestRunner.Tests\LoadTestRunner.Tests.csproj", "{A2AB35E2-D28E-C4B8-343A-B5BD0E004B5E}"
 EndProject

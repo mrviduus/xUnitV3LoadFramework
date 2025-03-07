@@ -1,4 +1,4 @@
-namespace xUnitLoadRunnerLib.Models
+namespace LoadTestRunner.Models
 {
     public class LoadTestResult
     {

@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>xUnitLoadRunner.Tests</RootNamespace>
+    <RootNamespace>LoadTestRunner.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LoadTestRunnerLib\LoadTestRunnerLib.csproj" />
+    <ProjectReference Include="..\LoadTestRunner\LoadTestRunner.csproj" />
   </ItemGroup>
 </Project>
