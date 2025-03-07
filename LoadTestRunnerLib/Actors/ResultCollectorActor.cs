@@ -1,6 +1,8 @@
 using Akka.Actor;
+using xUnitLoadRunnerLib.Messages;
+using xUnitLoadRunnerLib.Models;
 
-namespace xUnitLoadRunnerLib
+namespace xUnitLoadRunnerLib.Actors
 {
     public class ResultCollectorActor : ReceiveActor
     {

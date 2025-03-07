@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 using xUnitLoadRunnerLib;
+using xUnitLoadRunnerLib.Models;
 
 namespace xUnitLoadRunner.Tests
 {
@@ -17,8 +18,8 @@ namespace xUnitLoadRunner.Tests
             };
             var settings = new LoadExecutionSettings
             {
-                Concurrency = 1,
-                Duration = TimeSpan.FromSeconds(10),
+                Concurrency = 2,
+                Duration = TimeSpan.FromSeconds(1),
                 Interval = TimeSpan.FromSeconds(1)
             };
             var testPlan = new LoadTestPlan { Name = "TestPlan1", Steps = steps, Settings = settings };

@@ -1,6 +1,5 @@
-namespace xUnitLoadRunnerLib
+namespace xUnitLoadRunnerLib.Models
 {
-    public class GetLoadTestResultMessage { }
     public class LoadTestResult
     {
         public string ScenarioName { get; set; }

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace xUnitLoadRunnerLib
+namespace xUnitLoadRunnerLib.Models
 {
     public class LoadTestPlan
     {

@@ -1,6 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using Akka.Actor;
+using xUnitLoadRunnerLib.Actors;
+using xUnitLoadRunnerLib.Messages;
+using xUnitLoadRunnerLib.Models;
 
 namespace xUnitLoadRunnerLib
 {

@@ -3,10 +3,11 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Akka.Actor;
+using xUnitLoadRunnerLib.Messages;
+using xUnitLoadRunnerLib.Models;
 
-namespace xUnitLoadRunnerLib
+namespace xUnitLoadRunnerLib.Actors
 {
-
     public class LoadTestWorkerActor : ReceiveActor
     {
         private readonly LoadTestPlan _plan;
