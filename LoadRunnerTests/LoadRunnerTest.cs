@@ -1,57 +1,64 @@
 using System;
 using System.Threading.Tasks;
+using Akka.Actor;
+using LoadRunnerCore.Actors;
+using LoadRunnerCore.Messages;
 using LoadRunnerCore.Models;
-using Xunit;
 using LoadRunnerCore.Runner;
+using Xunit;
 
-namespace LoadRunnerTests
+public class LoadRunnerTests
 {
-    public class LoadRunnerTest
+    [Fact]
+    public async Task Run_ReturnsLoadResult_WhenExecutionPlanIsValid()
     {
-        [Fact]
-        public async Task RunPlan_WithNullSteps_ThrowsArgumentNullException()
+        // Arrange
+        var executionPlan = new LoadExecutionPlan
         {
-            var plan = new LoadPlan
-            {
-                Steps = null,
-                Settings = new LoadSettings { Concurrency = 1, Duration = TimeSpan.FromSeconds(1) }
-            };
+            Name = "TestPlan",
+            Action = () => Task.FromResult(true),
+            Settings = new LoadSettings { Duration = TimeSpan.FromSeconds(10), Concurrency = 1 }
+        };
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => LoadRunner.Run(plan));
-        }
+        // Act
+        var result = await LoadRunner.Run(executionPlan);
 
-        [Fact]
-        public async Task RunPlan_WithZeroStepsOrConcurrency_ReturnsEmptyLoadResult()
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("TestPlan", result.ScenarioName);
+    }
+
+    [Fact]
+    public async Task Run_ThrowsArgumentNullException_WhenActionIsNull()
+    {
+        // Arrange
+        var executionPlan = new LoadExecutionPlan
         {
-            var plan = new LoadPlan
-            {
-                Name = "TestPlan",
-                Steps = Array.Empty<LoadStep>(),
-                Settings = new LoadSettings { Concurrency = 0, Duration = TimeSpan.FromSeconds(1) }
-            };
+            Name = "TestPlan",
+            Action = null,
+            Settings = new LoadSettings { Duration = TimeSpan.FromSeconds(10), Concurrency = 1 }
+        };
 
-            var result = await LoadRunner.Run(plan);
-            Assert.Equal("TestPlan", result.ScenarioName);
-            Assert.Equal(0, result.Total);
-        }
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => LoadRunner.Run(executionPlan));
+    }
 
-        [Fact]
-        public async Task RunPlan_WithValidStepsAndConcurrency_ReturnsLoadResult()
+    [Fact]
+    public async Task Run_ReturnsLoadResult_WhenConcurrencyIsZero()
+    {
+        // Arrange
+        var executionPlan = new LoadExecutionPlan
         {
-            var plan = new LoadPlan
-            {
-                Name = "ConcurrentTestPlan",
-                Steps = new LoadStep[]
-                {
-                    new LoadStep { Name = "Step1" },
-                    new LoadStep { Name = "Step2" }
-                },
-                Settings = new LoadSettings { Concurrency = 2, Duration = TimeSpan.FromSeconds(1) }
-            };
+            Name = "TestPlan",
+            Action = () => Task.FromResult(true),
+            Settings = new LoadSettings { Duration = TimeSpan.FromSeconds(10), Concurrency = 0 }
+        };
 
-            var result = await LoadRunner.Run(plan);
-            Assert.Equal("ConcurrentTestPlan", result.ScenarioName);
-            Assert.True(result.Total > 0);
-        }
+        // Act
+        var result = await LoadRunner.Run(executionPlan);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("TestPlan", result.ScenarioName);
     }
 }

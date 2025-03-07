@@ -9,33 +9,37 @@ namespace LoadRunnerCore.Runner
 {
     public static class LoadRunner
     {
-        public static async Task<LoadResult> Run(LoadPlan plan)
+        public static async Task<LoadResult> Run(LoadExecutionPlan executionPlan)
         {
-            if (plan.Steps == null)
-                throw new ArgumentNullException(nameof(plan.Steps));
-            if (plan.Steps.Length == 0 || plan.Settings.Concurrency == 0)
-                return new LoadResult { ScenarioName = plan.Name };
+            if (executionPlan.Action == null)
+                throw new ArgumentNullException(nameof(executionPlan.Action));
 
+            // Concurrency is handled by the worker, so we only spawn one worker actor here.
             using var actorSystem = ActorSystem.Create("LoadTestSystem");
-            var resultCollector = actorSystem.ActorOf(Props.Create(() => new ResultCollectorActor(plan.Name)), "resultCollector");
-
-            var tasks = new Task[plan.Settings.Concurrency];
-            for (int i = 0; i < plan.Settings.Concurrency; i++)
-            {
-                var worker = actorSystem.ActorOf(Props.Create(() => new LoadWorkerActor(plan, resultCollector)), $"worker-{i}");
-                tasks[i] = worker.Ask<LoadResult>(
-                    new StartLoadMessage(),
-                    TimeSpan.FromSeconds(plan.Settings.Duration.TotalSeconds + 5)
-                );
-            }
-
-            await Task.WhenAll(tasks);
-
-            var result = await resultCollector.Ask<LoadResult>(
-                new GetLoadResultMessage(),
-                TimeSpan.FromSeconds(plan.Settings.Duration.TotalSeconds + 5)
+            var resultCollector = actorSystem.ActorOf(
+                Props.Create(() => new ResultCollectorActor(executionPlan.Name)),
+                "resultCollector"
             );
-            return result;
+
+            // Create a single worker actor (no for-loop for concurrency).
+            var worker = actorSystem.ActorOf(
+                Props.Create(() => new LoadWorkerActor(executionPlan, resultCollector)),
+                "worker"
+            );
+
+            // Ask the worker to start and wait for its final LoadResult.
+            var workerResult = await worker.Ask<LoadResult>(
+                new StartLoadMessage(),
+                TimeSpan.FromSeconds(executionPlan.Settings.Duration.TotalSeconds + 5)
+            );
+
+            // Ask the result collector for the aggregated results.
+            var finalResult = await resultCollector.Ask<LoadResult>(
+                new GetLoadResultMessage(),
+                TimeSpan.FromSeconds(executionPlan.Settings.Duration.TotalSeconds + 5)
+            );
+
+            return finalResult;
         }
     }
 }

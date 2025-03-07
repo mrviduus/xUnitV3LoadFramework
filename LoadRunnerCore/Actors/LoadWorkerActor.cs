@@ -11,54 +11,51 @@ namespace LoadRunnerCore.Actors
 {
     public class LoadWorkerActor : ReceiveActor
     {
-        private readonly LoadPlan _plan;
+        private readonly LoadExecutionPlan _executionPlan;
         private readonly IActorRef _resultCollector;
         private readonly ILoggingAdapter _logger = Context.GetLogger();
 
-        public LoadWorkerActor(LoadPlan plan, IActorRef resultCollector)
+        public LoadWorkerActor(LoadExecutionPlan executionPlan, IActorRef resultCollector)
         {
-            _plan = plan;
+            _executionPlan = executionPlan;
             _resultCollector = resultCollector;
-            ReceiveAsync<StartLoadMessage>(async _ => await RunStepsAsync());
+            ReceiveAsync<StartLoadMessage>(async _ => await RunWorkAsync());
         }
 
-        private async Task RunStepsAsync()
+        private async Task RunWorkAsync()
         {
-            // Capture what you need from the actor context here
             var workerName = Self.Path.Name;
+            using var cts = new CancellationTokenSource(_executionPlan.Settings.Duration);
 
-            using var cts = new CancellationTokenSource(_plan.Settings.Duration);
             try
             {
-                _logger.Info("Worker {0} started load test steps (parallel execution).", workerName);
+                _logger.Info("Worker {0} started load test in parallel mode.", workerName);
 
-                // Repeat until duration expires or token is canceled
+                // Keep running until canceled or duration expires
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    // Run all steps in parallel for this iteration
-                    var stepTasks = _plan.Steps.Select(step =>
-                    {
-                        return Task.Run(async () =>
+                    // Use Settings.Concurrency to run multiple tasks in parallel
+                    var tasks = Enumerable.Range(0, _executionPlan.Settings.Concurrency)
+                        .Select(_ => Task.Run(async () =>
                         {
-                            var stepResult = await step.Action();
-                            _resultCollector.Tell(new StepResultMessage(stepResult));
-                            _logger.Debug("Worker {0} step result: {1}", workerName, stepResult);
-                        }, cts.Token);
-                    }).ToArray();
+                            var result = await _executionPlan.Action();
+                            _resultCollector.Tell(new StepResultMessage(result));
+                            _logger.Debug("Worker {0} step result: {1}", workerName, result);
+                        }, cts.Token))
+                        .ToArray();
 
-                    // Wait for all parallel tasks to complete for this "batch" of steps
-                    await Task.WhenAll(stepTasks);
+                    await Task.WhenAll(tasks);
 
-                    // If cancellation has not occurred, wait for the configured interval before the next batch
+                    // Wait for the configured interval before the next round, unless canceled
                     if (!cts.Token.IsCancellationRequested)
                     {
-                        await Task.Delay(_plan.Settings.Interval, cts.Token);
+                        await Task.Delay(_executionPlan.Settings.Interval, cts.Token);
                     }
                 }
             }
             catch (TaskCanceledException)
             {
-                _logger.Info("Worker {0} canceled during parallel step execution.", workerName);
+                _logger.Info("Worker {0} canceled during load test execution.", workerName);
             }
             catch (Exception ex)
             {
