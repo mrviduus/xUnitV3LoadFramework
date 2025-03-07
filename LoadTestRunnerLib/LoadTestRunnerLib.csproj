@@ -3,4 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>xUnitLoadRunnerLib</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Akka" Version="1.5.38" />
+  </ItemGroup>
 </Project>

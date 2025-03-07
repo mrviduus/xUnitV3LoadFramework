@@ -17,8 +17,8 @@ namespace xUnitLoadRunner.Tests
             };
             var settings = new LoadExecutionSettings
             {
-                Concurrency = 2,
-                Duration = TimeSpan.FromSeconds(1),
+                Concurrency = 1,
+                Duration = TimeSpan.FromSeconds(10),
                 Interval = TimeSpan.FromSeconds(1)
             };
             var testPlan = new LoadTestPlan { Name = "TestPlan1", Steps = steps, Settings = settings };

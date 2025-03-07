@@ -1,4 +1,5 @@
-﻿using xUnitLoadRunnerLib;
+﻿using System.Diagnostics;
+using xUnitLoadRunnerLib;
 
 var steps = new LoadTestStep[]
 {
@@ -19,7 +20,7 @@ var steps = new LoadTestStep[]
         {
             Console.WriteLine("Step2");
             Console.WriteLine("-----------------");
-            return Task.FromResult(false);
+            return Task.FromResult(true);
         }
     }
 };
@@ -30,14 +31,17 @@ var scenario = new LoadTestPlan()
     Steps = steps,
     Settings = new LoadExecutionSettings()
     {
-        Concurrency = 2,
-        Duration = TimeSpan.FromSeconds(2),
+        Concurrency = 1,
+        Duration = TimeSpan.FromSeconds(10),
         Interval = TimeSpan.FromSeconds(1)
     }
-
 };
 
+var stopwatch = Stopwatch.StartNew();
 var result = await scenario.Run();
-Console.WriteLine($"total: {result.Total}");
-Console.WriteLine($"success: {result.Success}");
-Console.WriteLine($"failure: {result.Failure}");
+stopwatch.Stop();
+
+Console.WriteLine($"Total time: {stopwatch.Elapsed}");
+Console.WriteLine($"Total: {result.Total}");
+Console.WriteLine($"Success: {result.Success}");
+Console.WriteLine($"Failure: {result.Failure}");
