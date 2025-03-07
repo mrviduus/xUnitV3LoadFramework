@@ -32,7 +32,7 @@ var scenario = new LoadTestPlan()
     Settings = new LoadExecutionSettings()
     {
         Concurrency = 1,
-        Duration = TimeSpan.FromSeconds(10),
+        Duration = TimeSpan.FromSeconds(120),
         Interval = TimeSpan.FromSeconds(1)
     }
 };
