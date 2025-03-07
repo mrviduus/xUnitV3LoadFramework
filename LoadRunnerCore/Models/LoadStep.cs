@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace LoadTestRunner.Models
+namespace LoadRunnerCore.Models
 {
-    public class LoadTestStep
+    public class LoadStep
     {
         public string Name { get; set; }
         public Func<Task<bool>> Action { get; set; }

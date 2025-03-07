@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>LoadTestRunner.Tests</RootNamespace>
+    <RootNamespace>LoadRunnerTests</RootNamespace>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -10,6 +10,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LoadTestRunner\LoadTestRunner.csproj" />
+    <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" />
   </ItemGroup>
 </Project>

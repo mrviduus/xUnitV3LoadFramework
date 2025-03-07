@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
-using LoadTestRunner.Models;
+using LoadRunnerCore;
+using LoadRunnerCore.Models;
+using LoadRunnerCore.Runner;
 
-var steps = new LoadTestStep[]
+var steps = new LoadStep[]
 {
-    new LoadTestStep()
+    new LoadStep()
     {
         Name = "Step1",
         Action = () =>
@@ -13,7 +15,7 @@ var steps = new LoadTestStep[]
             return Task.FromResult(true);
         }
     },
-    new LoadTestStep()
+    new LoadStep()
     {
         Name = "Step2",
         Action =  () =>
@@ -25,11 +27,11 @@ var steps = new LoadTestStep[]
     }
 };
 
-var scenario = new LoadTestPlan()
+var scenario = new LoadPlan()
 {
     Name = "SimpleScenario",
     Steps = steps,
-    Settings = new LoadExecutionSettings()
+    Settings = new LoadSettings()
     {
         Concurrency = 2,
         Duration = TimeSpan.FromSeconds(1),
@@ -38,7 +40,8 @@ var scenario = new LoadTestPlan()
 };
 
 var stopwatch = Stopwatch.StartNew();
-var result = await scenario.Run();
+
+var result = await LoadRunner.Run(scenario);
 stopwatch.Stop();
 
 Console.WriteLine($"Total time: {stopwatch.Elapsed}");

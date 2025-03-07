@@ -1,8 +1,8 @@
 using Akka.Actor;
-using LoadTestRunner.Messages;
-using LoadTestRunner.Models;
+using LoadRunnerCore.Messages;
+using LoadRunnerCore.Models;
 
-namespace LoadTestRunner.Actors
+namespace LoadRunnerCore.Actors
 {
     public class ResultCollectorActor : ReceiveActor
     {
@@ -24,9 +24,9 @@ namespace LoadTestRunner.Actors
                     _failure++;
             });
 
-            Receive<GetLoadTestResultMessage>(_ =>
+            Receive<GetLoadResultMessage>(_ =>
             {
-                Sender.Tell(new LoadTestResult
+                Sender.Tell(new LoadResult
                 {
                     ScenarioName = _scenarioName,
                     Total = _total,

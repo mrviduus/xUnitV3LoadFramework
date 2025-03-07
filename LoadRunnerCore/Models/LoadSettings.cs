@@ -1,8 +1,8 @@
 using System;
 
-namespace LoadTestRunner.Models
+namespace LoadRunnerCore.Models
 {
-    public class LoadExecutionSettings
+    public class LoadSettings
     {
         public int Concurrency { get; set; }
         public TimeSpan Duration { get; set; }

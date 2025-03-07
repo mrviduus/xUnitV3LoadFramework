@@ -1,4 +1,4 @@
-namespace LoadTestRunner.Messages
+namespace LoadRunnerCore.Messages
 {
     public class StepResultMessage
     {

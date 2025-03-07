@@ -1,6 +1,6 @@
-namespace LoadTestRunner.Models
+namespace LoadRunnerCore.Models
 {
-    public class LoadTestResult
+    public class LoadResult
     {
         public string ScenarioName { get; set; }
         public int Total { get; set; }

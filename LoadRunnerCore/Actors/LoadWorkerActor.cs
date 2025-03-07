@@ -4,22 +4,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Event;
-using LoadTestRunner.Messages;
-using LoadTestRunner.Models;
+using LoadRunnerCore.Messages;
+using LoadRunnerCore.Models;
 
-namespace LoadTestRunner.Actors
+namespace LoadRunnerCore.Actors
 {
-    public class LoadTestWorkerActor : ReceiveActor
+    public class LoadWorkerActor : ReceiveActor
     {
-        private readonly LoadTestPlan _plan;
+        private readonly LoadPlan _plan;
         private readonly IActorRef _resultCollector;
         private readonly ILoggingAdapter _logger = Context.GetLogger();
 
-        public LoadTestWorkerActor(LoadTestPlan plan, IActorRef resultCollector)
+        public LoadWorkerActor(LoadPlan plan, IActorRef resultCollector)
         {
             _plan = plan;
             _resultCollector = resultCollector;
-            ReceiveAsync<StartLoadTestMessage>(async _ => await RunStepsAsync());
+            ReceiveAsync<StartLoadMessage>(async _ => await RunStepsAsync());
         }
 
         private async Task RunStepsAsync()
@@ -67,7 +67,7 @@ namespace LoadTestRunner.Actors
             finally
             {
                 _logger.Info("Worker {0} returning final result.", workerName);
-                Sender.Tell(new LoadTestResult());
+                Sender.Tell(new LoadResult());
             }
         }
     }
