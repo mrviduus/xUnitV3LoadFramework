@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" />
+      <ProjectReference Include="..\..\src\LoadRunnerCore\LoadRunnerCore.csproj" />
     </ItemGroup>
 
 </Project>

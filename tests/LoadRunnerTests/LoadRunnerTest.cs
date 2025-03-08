@@ -1,11 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using Akka.Actor;
-using LoadRunnerCore.Actors;
-using LoadRunnerCore.Messages;
 using LoadRunnerCore.Models;
 using LoadRunnerCore.Runner;
 using Xunit;
+
+namespace LoadRunnerTests;
 
 public class LoadRunnerTests
 {
