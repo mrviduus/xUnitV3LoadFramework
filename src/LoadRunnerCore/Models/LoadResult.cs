@@ -6,5 +6,6 @@ namespace LoadRunnerCore.Models
         public int Total { get; set; }
         public int Success { get; set; }
         public int Failure { get; set; }
+        public decimal Time { get; set; }
     }
 }

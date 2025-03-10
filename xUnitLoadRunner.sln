@@ -10,11 +10,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{6E1DB491-F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadRunnerCore", "src\LoadRunnerCore\LoadRunnerCore.csproj", "{69E465F0-C9EB-41FC-9C7F-3EF53668033C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitLoadRunner", "src\xUnitLoadRunner\xUnitLoadRunner.csproj", "{F6E412AE-34C7-4E02-B66D-A04939085439}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitLoadFramework", "src\xUnitLoadFramework\xUnitLoadFramework.csproj", "{F6E412AE-34C7-4E02-B66D-A04939085439}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadRunnerTests", "tests\LoadRunnerTests\LoadRunnerTests.csproj", "{EDE54C31-6EEF-4C6E-AC15-F64C89023CC2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadRunnerConsole", "demo\LoadRunnerConsole\LoadRunnerConsole.csproj", "{8F17FFDA-0D96-40BD-8455-98D6A032E7C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitLoadRunnerTests", "tests\xUnitLoadRunnerTests\xUnitLoadRunnerTests.csproj", "{92CF667F-359C-436B-81CC-D3B5585D1A79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{8F17FFDA-0D96-40BD-8455-98D6A032E7C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F17FFDA-0D96-40BD-8455-98D6A032E7C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F17FFDA-0D96-40BD-8455-98D6A032E7C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92CF667F-359C-436B-81CC-D3B5585D1A79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92CF667F-359C-436B-81CC-D3B5585D1A79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92CF667F-359C-436B-81CC-D3B5585D1A79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92CF667F-359C-436B-81CC-D3B5585D1A79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,5 +56,6 @@ Global
 		{F6E412AE-34C7-4E02-B66D-A04939085439} = {E7AEF382-0643-47CF-9945-44B1B83C40BD}
 		{EDE54C31-6EEF-4C6E-AC15-F64C89023CC2} = {5BFA8B32-5FB9-40B2-903B-58E9D6EB26A8}
 		{8F17FFDA-0D96-40BD-8455-98D6A032E7C7} = {6E1DB491-F51E-46D3-8AF0-385C2C9C2070}
+		{92CF667F-359C-436B-81CC-D3B5585D1A79} = {5BFA8B32-5FB9-40B2-903B-58E9D6EB26A8}
 	EndGlobalSection
 EndGlobal

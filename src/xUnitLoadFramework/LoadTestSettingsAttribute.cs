@@ -6,14 +6,14 @@ namespace xUnitLoadRunner
     public sealed class LoadTestSettingsAttribute : Attribute
     {
         public int Concurrency { get; set; }
-        public TimeSpan Duration { get; set; }
-        public TimeSpan Interval { get; set; }
+        public int DurationInSeconds { get; set; }
+        public int IntervalInSeconds { get; set; }
 
-        public LoadTestSettingsAttribute(int concurrency = 1, TimeSpan duration = default, TimeSpan interval = default)
+        public LoadTestSettingsAttribute(int concurrency = 1, int durationInSeconds = 1, int intervalInSeconds = 1)
         {
             Concurrency = concurrency;
-            Duration = duration;
-            Interval = interval;
+            DurationInSeconds = durationInSeconds;
+            IntervalInSeconds = intervalInSeconds;
         }
     }
 }

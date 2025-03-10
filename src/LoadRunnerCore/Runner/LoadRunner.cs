@@ -28,7 +28,7 @@ namespace LoadRunnerCore.Runner
             );
 
             // Ask the worker to start and wait for its final LoadResult.
-            var workerResult = await worker.Ask<LoadResult>(
+            await worker.Ask<LoadResult>(
                 new StartLoadMessage(),
                 TimeSpan.FromSeconds(executionPlan.Settings.Duration.TotalSeconds + 5)
             );
