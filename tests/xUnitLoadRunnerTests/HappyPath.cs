@@ -1,10 +1,9 @@
 ﻿using Xunit.Abstractions;
-using XunitCustomFramework;
-using xUnitLoadRunner;
+using xUnitLoadFramework;
 
 namespace xUnitLoadRunnerTests
 {
-    public class UnitTest1(ITestOutputHelper testOutputHelper)
+    public class HappyPath(ITestOutputHelper testOutputHelper)
     {
         // [Fact]
         // public void VerySlowTest()

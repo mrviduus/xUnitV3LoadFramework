@@ -1,5 +1,5 @@
 using Xunit.Abstractions;
-using XunitCustomFramework;
+using xUnitLoadFramework;
 
 [assembly:Xunit.TestFramework("xUnitLoadRunnerTests.ExampleTestFramework", "xUnitLoadRunnerTests")]
 
