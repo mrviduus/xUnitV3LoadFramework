@@ -3,7 +3,7 @@ using xUnitLoadFramework;
 
 namespace xUnitLoadRunnerTests
 {
-    public class HappyPath(ITestOutputHelper testOutputHelper)
+    public class HappyPath
     {
         // [Fact]
         // public void VerySlowTest()
