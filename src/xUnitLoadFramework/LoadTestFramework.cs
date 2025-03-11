@@ -21,14 +21,4 @@ public class LoadTestFramework : XunitTestFramework
 
     protected override ITestFrameworkExecutor CreateExecutor(AssemblyName assemblyName)
         => new LoadTestExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink);
-
-    
-
-
-
-
-
-
-
-
 }
