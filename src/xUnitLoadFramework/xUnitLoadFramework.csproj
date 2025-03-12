@@ -1,9 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Description>Run xUnit Load tests</Description>
+    <IsPackable>True</IsPackable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>0.0.1</Version>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>xUnitLoadFramework</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="xunit.runner.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <None Include="$(MSBuildProjectDirectory)/../README.md" Pack="true" PackagePath="" />
+    <None Include="build/**/*.props" Pack="true" PackagePath="build" />
+    <None Include="buildMultiTargeting/**/*.props" Pack="true" PackagePath="buildMultiTargeting" />
   </ItemGroup>
 
 </Project>

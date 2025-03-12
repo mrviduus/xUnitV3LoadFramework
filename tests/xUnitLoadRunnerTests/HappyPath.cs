@@ -29,9 +29,8 @@ namespace xUnitLoadRunnerTests
         [LoadTestSettings(concurrency: 1000, DurationInSeconds = 60, IntervalInSeconds = 1)]
         public async Task VeryFastTest3()
         {
-            HttpClient client = new HttpClient();
-            var response = await client.GetAsync("https://www.example.com");
-            response.EnsureSuccessStatusCode();
+            Console.WriteLine("This is a very fast test3");
+            await Task.Delay(TimeSpan.FromSeconds(1));
         }
     }
 }

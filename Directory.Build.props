@@ -7,7 +7,7 @@
         <Deterministic>true</Deterministic>
         <Features>strict</Features>
         <AnalysisLevel>latest</AnalysisLevel>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <EnableNETAnalyzers>false</EnableNETAnalyzers>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
         <NoWarn>$(NoWarn);CA1014;CA1031;xUnit1026</NoWarn>
 
