@@ -51,13 +51,13 @@ public class LoadTestMethodRunner(
         }
     }
 
-    private object GetLoadTestSettings()
+    private object? GetLoadTestSettings()
     {
         return TestMethod.TestClass.Class.GetCustomAttributes(typeof(LoadTestSettingsAttribute)).FirstOrDefault()
                ?? TestMethod.Method.GetCustomAttributes(typeof(LoadTestSettingsAttribute)).FirstOrDefault();
     }
 
-    private LoadSettings CreateLoadSettings(object loadTestSettings)
+    private LoadSettings CreateLoadSettings(object? loadTestSettings)
     {
         if (loadTestSettings != null)
         {
