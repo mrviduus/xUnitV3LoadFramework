@@ -1,10 +1,20 @@
 name: publish
-
 on:
   push:
-    branches: [ main ]
+    branches:
+      - 'main'
   pull_request:
-    branches: [ main ]
+    branches:
+      - '*'
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{ github.workspace}}/nuget
+
+defaults:
+  run:
+    shell: pwsh
 
 jobs:
   build:
@@ -15,7 +25,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '8.0.x' # Use .NET 8.0 as .NET 9.0 is not supported
     - name: Install dependencies
       run: dotnet restore
     - name: Build
@@ -24,3 +34,10 @@ jobs:
       run: dotnet test --no-restore --verbosity normal
     - name: Pack xUnitLoadFramework
       run: dotnet pack src/xUnitLoadFramework/xUnitLoadFramework.csproj --configuration Release --output ./nuget --no-build /bl
+    - name: Publish to NuGet
+      uses: actions/setup-dotnet@v4
+      with:
+        name: nuget
+        if-no-files-found: error
+        retention-days: 3
+        path: ${{ env.NuGetDirectory }}/**/*

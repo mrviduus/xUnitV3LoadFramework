@@ -6,7 +6,17 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <LangVersion>latest</LangVersion>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+
+<ImportGroup>
+  <Import Project="..\..\src\xUnitLoadFramework\build\xUnitLoadFramework.props" />
+</ImportGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\xUnitLoadFramework\xUnitLoadFramework.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
@@ -15,13 +25,12 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
 
+
+
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\xUnitLoadFramework\xUnitLoadFramework.csproj" />
-  </ItemGroup>
   <ItemGroup>
     <None Update="xunit.runner.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
