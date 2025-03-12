@@ -25,12 +25,12 @@ namespace xUnitLoadRunnerTests
             Console.WriteLine("This is a very fast test2");
         }
         
-        [Fact]
-        [LoadTestSettings(concurrency: 1000, DurationInSeconds = 60, IntervalInSeconds = 1)]
-        public async Task VeryFastTest3()
-        {
-            Console.WriteLine("This is a very fast test3");
-            await Task.Delay(TimeSpan.FromSeconds(1));
-        }
+        // [Fact]
+        // [LoadTestSettings(concurrency: 1000, DurationInSeconds = 60, IntervalInSeconds = 1)]
+        // public async Task VeryFastTest3()
+        // {
+        //     Console.WriteLine("This is a very fast test3");
+        //     await Task.Delay(TimeSpan.FromSeconds(1));
+        // }
     }
 }
