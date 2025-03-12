@@ -1,36 +1,26 @@
 name: publish
+
 on:
   push:
-    branches:
-      - 'main'
+    branches: [ main ]
   pull_request:
-    branches:
-      - '*'
-
-env:
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
-  DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace }}/nuget
-  VSTEST_CONNECTION_TIMEOUT: 300 # Increase timeout to 300 seconds
-
-defaults:
-  run:
-    shell: pwsh
+    branches: [ main ]
 
 jobs:
-  create_nuget:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET Core
+    - uses: actions/checkout@v2
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x' # Target .NET 9.0
-    - run: dotnet test xUnitLoadRunner.sln --configuration Release
-    - run: dotnet pack xUnitLoadRunner.sln --configuration Release --output ${{ env.NuGetDirectory }} --no-build /bl
-    - uses: actions/upload-artifact@v4
-      with:
-        name: nuget
-        if-no-files-found: error
-        retention-days: 3
-        path: ${{ env.NuGetDirectory }}/**/*
+        dotnet-version: '9.0.x'
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Run tests
+      run: dotnet test --no-restore --verbosity normal
+    - name: Pack xUnitLoadFramework
+      run: dotnet pack src/xUnitLoadFramework/xUnitLoadFramework.csproj --configuration Release --output ./nuget --no-build /bl
