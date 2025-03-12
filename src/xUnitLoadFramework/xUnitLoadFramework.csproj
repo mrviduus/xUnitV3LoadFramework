@@ -20,9 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(MSBuildProjectDirectory)/../README.md" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="" />
     <None Include="build/**/*.props" Pack="true" PackagePath="build" />
     <None Include="buildMultiTargeting/**/*.props" Pack="true" PackagePath="buildMultiTargeting" />
   </ItemGroup>
+
+  <Import Project="build/xUnitLoadFramework.props" />
 
 </Project>
