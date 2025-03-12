@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using LoadRunnerCore;
 using LoadRunnerCore.Models;
 using LoadRunnerCore.Runner;
 
@@ -12,10 +11,10 @@ var scenario = new LoadExecutionPlan()
         Duration = TimeSpan.FromSeconds(1),
         Interval = TimeSpan.FromSeconds(1)
     },
-    Action = async () =>
+    Action = static async () =>
     {
         Console.WriteLine("Action started");
-        return true;
+        return await Task.FromResult(true);
     }
 };
 
