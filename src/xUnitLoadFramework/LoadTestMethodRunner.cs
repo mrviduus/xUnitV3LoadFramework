@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using LoadRunnerCore.Models;
 using LoadRunnerCore.Runner;
 using Xunit.Abstractions;
@@ -57,7 +52,7 @@ public class LoadTestMethodRunner(
                ?? TestMethod.Method.GetCustomAttributes(typeof(LoadTestSettingsAttribute)).FirstOrDefault();
     }
 
-    private LoadSettings CreateLoadSettings(object? loadTestSettings)
+    private LoadSettings? CreateLoadSettings(object? loadTestSettings)
     {
         if (loadTestSettings != null)
         {
