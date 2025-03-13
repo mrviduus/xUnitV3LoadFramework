@@ -16,8 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj">
-        </ProjectReference>
+<ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
