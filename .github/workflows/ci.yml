@@ -10,18 +10,18 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace}}/nuget
+  NuGetDirectory: ${{ github.workspace }}/nuget
 
 defaults:
   run:
     shell: pwsh
 
 jobs:
-  build:
+  publish_nuget_package:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -33,11 +33,10 @@ jobs:
     - name: Run tests
       run: dotnet test --no-restore --verbosity normal
     - name: Pack xUnitLoadFramework
-      run: dotnet pack src/xUnitLoadFramework/xUnitLoadFramework.csproj --configuration Release --output ./nuget --no-build /bl
-    - name: Publish to NuGet
-      uses: actions/setup-dotnet@v4
+      run: dotnet pack src/xUnitLoadFramework/xUnitLoadFramework.csproj --configuration Release --output ${{ env.NuGetDirectory }} --no-build /bl
+    - name: Setup NuGet CLI
+      uses: NuGet/setup-nuget@v1
       with:
-        name: nuget
-        if-no-files-found: error
-        retention-days: 3
-        path: ${{ env.NuGetDirectory }}/**/*
+        nuget-version: '1.0.0-alpha.${{ github.run_number }}' # Specify the desired version of NuGet CLI
+    - name: Publish to NuGet
+      run: dotnet nuget push ${{ env.NuGetDirectory }}/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

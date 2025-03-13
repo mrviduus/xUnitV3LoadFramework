@@ -4,14 +4,14 @@
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageId>xUnitLoadFramework</PackageId>
+    <PackageId>xUnitLoadRunner</PackageId>
     <Authors>Vasyl Vdovychenko</Authors>
     <Description>Run xUnit Load tests</Description>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
     <IsPackable>True</IsPackable>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>0.0.1</Version>
+    <Version>1.0.0-alpha.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
