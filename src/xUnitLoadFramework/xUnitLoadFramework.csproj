@@ -1,41 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <PackageId>xUnitLoadFramework</PackageId>
-        <Authors>Vasyl Vdovychenko</Authors>
-        <Description>Run xUnit Load tests</Description>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
-        <IsPackable>true</IsPackable>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>1.0.0-alpha.1</Version>
-        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>xUnitLoadFramework</PackageId>
+    <Authors>Vasyl Vdovychenko</Authors>
+    <Description>Run xUnit Load tests</Description>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
+    <IsPackable>true</IsPackable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>1.0.0-alpha.1</Version>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.extensibility.execution" PrivateAssets="all" />
+    <PackageReference Include="Akka" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="" />
+    <None Include="build/**/*.props" Pack="true" PackagePath="build" />
+  </ItemGroup>
+
+  <Target Name="CopyAkkaToOutput" AfterTargets="Build">
     <ItemGroup>
-        <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" PrivateAssets="all" />
+      <AkkaAssemblies Include="$(NuGetPackageRoot)akka\1.5.38\lib\netstandard2.0\Akka.dll" />
     </ItemGroup>
+    <Copy SourceFiles="@(AkkaAssemblies)" DestinationFolder="$(OutputPath)" />
+  </Target>
 
+  <Target DependsOnTargets="ResolveReferences;CopyAkkaToOutput" Name="CopyProjectReferencesToPackage">
     <ItemGroup>
-       <PackageReference Include="xunit.extensibility.execution" PrivateAssets="all"/>
-       <PackageReference Include="Akka" PrivateAssets="all" />
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+      <BuildOutputInPackage Include="$(OutputPath)Akka.dll" />
     </ItemGroup>
-
-    <ItemGroup>
-        <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="" />
-        <None Include="build/**/*.props" Pack="true" PackagePath="build" />
-    </ItemGroup>
-
-
-    <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
-        <ItemGroup>
-        <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'all'))" />
-        </ItemGroup>
-        <Copy SourceFiles="@(BuildOutputInPackage)" DestinationFolder="$(PackageOutputPath)/lib/$(TargetFramework)" />
-    </Target>
-    
+    <Copy SourceFiles="@(BuildOutputInPackage)" DestinationFolder="$(PackageOutputPath)/lib/$(TargetFramework)" />
+  </Target>
 
 </Project>
