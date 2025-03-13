@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.extensibility.execution" PrivateAssets="all" />
+    <PackageReference Include="Akka" />
   </ItemGroup>
 
   <ItemGroup>
