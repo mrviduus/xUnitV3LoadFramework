@@ -5,7 +5,7 @@
     <RootNamespace>LoadRunnerCore</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Akka" Version="1.5.38" />
+    <PackageReference Include="Akka" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Messages\" />
