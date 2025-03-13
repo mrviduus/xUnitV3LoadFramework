@@ -17,7 +17,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj">
-            <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
         </ProjectReference>
     </ItemGroup>
 
@@ -34,6 +33,7 @@
         <ItemGroup>
             <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
         </ItemGroup>
+        <Copy SourceFiles="@(BuildOutputInPackage)" DestinationFolder="$(PackageOutputPath)/lib/$(TargetFramework)" />
     </Target>
 
 </Project>
