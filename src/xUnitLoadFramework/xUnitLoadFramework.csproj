@@ -16,11 +16,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-<ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" PrivateAssets="all" />
+        <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
-       <PackageReference Include="xunit.extensibility.execution" />
+       <PackageReference Include="xunit.extensibility.execution" PrivateAssets="all"/>
+       <PackageReference Include="Akka" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
