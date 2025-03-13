@@ -28,10 +28,4 @@
     <None Include="buildMultiTargeting/**/*.props" Pack="true" PackagePath="buildMultiTargeting" />
   </ItemGroup>
 
-  <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('PrivateAssets', 'all'))" />
-    </ItemGroup>
-  </Target>
-
 </Project>

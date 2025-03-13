@@ -1,7 +1,6 @@
 <Project>
     <PropertyGroup>
         <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
-        <!-- <Message Text="xUnitLoadFramework.props is included and processed." Importance="high" /> -->
     </PropertyGroup>
     <ItemGroup>
         <AssemblyAttribute Include="Xunit.TestFramework" Condition="'$(IncludeLoadTestFramework)' == 'true'">
