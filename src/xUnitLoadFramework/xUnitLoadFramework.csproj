@@ -18,7 +18,6 @@
     <ItemGroup>
         <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj">
             <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-            <IncludeAssets>LoadRunnerCore.dll</IncludeAssets>
         </ProjectReference>
     </ItemGroup>
 
