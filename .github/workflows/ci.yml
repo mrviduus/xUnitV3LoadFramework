@@ -57,7 +57,7 @@ jobs:
         run: mkdir -p "${{ env.NuGetDirectory }}"
 
       - name: Pack xUnitLoadFramework
-        run: dotnet pack src/xUnitLoadFramework/xUnitLoadFramework.csproj --configuration Release --output "${{ env.NuGetDirectory }}" --no-build
+        run: dotnet pack src/xUnitLoadFramework/xUnitLoadFramework.csproj --configuration Release --output "${{ env.NuGetDirectory }}"
 
       - name: Setup NuGet CLI
         uses: NuGet/setup-nuget@v1
