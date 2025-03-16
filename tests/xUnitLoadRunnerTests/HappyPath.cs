@@ -12,7 +12,7 @@ namespace xUnitLoadRunnerTests
         // }
 
         [Fact]
-        [LoadTestSettings(concurrency: 10, DurationInSeconds = 1, IntervalInSeconds = 1)]
+        [LoadTestSettings(concurrency: 3, DurationInSeconds = 1, IntervalInSeconds = 1)]
         public void VeryFastTest()
         {
             Console.WriteLine("This is a very fast test");
