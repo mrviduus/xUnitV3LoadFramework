@@ -6,7 +6,8 @@
     <Nullable>enable</Nullable>
     <PackageId>xUnitLoadFramework</PackageId>
     <Authors>Vasyl Vdovychenko</Authors>
-    <Description>Run xUnit Load tests</Description>
+    <Description>xUnitLoadRunner is a powerful load testing framework designed to seamlessly integrate with xUnit. By leveraging Akka.NET actors, it enables developers to define and execute load test scenarios in parallel while collecting detailed test results and performance reports.
+    </Description>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
     <IsPackable>true</IsPackable>
