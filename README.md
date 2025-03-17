@@ -3,9 +3,6 @@
 [![NuGet](https://img.shields.io/nuget/v/xUnitLoadFramework.svg)](https://www.nuget.org/packages/xUnitLoadFramework)
 [![Downloads](https://img.shields.io/nuget/dt/xUnitLoadFramework.svg)](https://www.nuget.org/packages/xUnitLoadFramework)
 
-xUnitLoadRunner is a powerful load testing framework designed to seamlessly integrate with xUnit. By leveraging Akka.NET actors, it enables developers to define and execute load test scenarios in parallel while collecting detailed test results and performance reports.
-
-
 ## Overview
 xUnitLoadRunner is a powerful load testing framework designed to seamlessly integrate with xUnit. By leveraging Akka.NET actors, it enables developers to define and execute load test scenarios in parallel while collecting detailed test results and performance reports.
 
