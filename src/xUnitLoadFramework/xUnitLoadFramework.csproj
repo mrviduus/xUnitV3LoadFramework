@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <PackageIcon>favicon_64x64</PackageIcon>
+    <PackageIcon>favicon_64x64.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
