@@ -25,9 +25,16 @@
     <PackageReference Include="Akka" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <PackageIcon>favicon_64x64</PackageIcon>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="" />
     <None Include="build/**/*.props" Pack="true" PackagePath="build" />
+    <None Update="favicon_64x64.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Target Name="CopyAkkaToOutput" AfterTargets="Build">
