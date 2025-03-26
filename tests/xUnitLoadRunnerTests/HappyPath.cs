@@ -1,5 +1,6 @@
 ﻿using Xunit.Abstractions;
 using xUnitLoadFramework;
+using xUnitLoadFramework.Attributes;
 
 namespace xUnitLoadRunnerTests
 {

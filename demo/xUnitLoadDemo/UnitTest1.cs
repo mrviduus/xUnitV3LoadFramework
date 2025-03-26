@@ -1,4 +1,5 @@
 ﻿using xUnitLoadFramework;
+using xUnitLoadFramework.Attributes;
 
 namespace xUnitLoadDemo;
 

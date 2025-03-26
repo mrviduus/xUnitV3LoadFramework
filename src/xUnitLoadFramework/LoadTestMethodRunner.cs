@@ -2,6 +2,7 @@ using LoadRunnerCore.Models;
 using LoadRunnerCore.Runner;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using xUnitLoadFramework.Attributes;
 
 namespace xUnitLoadFramework
 {

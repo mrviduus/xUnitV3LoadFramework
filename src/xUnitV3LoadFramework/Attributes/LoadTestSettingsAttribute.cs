@@ -1,6 +1,6 @@
-namespace xUnitLoadFramework.Attributes
+namespace xUnitV3LoadFramework.Attributes
 {
-    [AttributeUsage(AttributeTargets.Method)]
+    //[AttributeUsage(AttributeTargets.Method)]
     public sealed class LoadTestSettingsAttribute : Attribute
     {
         public int Concurrency { get; set; }

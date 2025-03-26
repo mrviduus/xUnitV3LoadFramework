@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>xUnitLoadFramework</PackageId>
@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit.extensibility.execution" PrivateAssets="all" />
     <PackageReference Include="Akka" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -41,6 +41,12 @@
     <None Update="favicon_64x64.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+    <Folder Include="ObjectModel\" />
+    <Folder Include="Runners\" />
   </ItemGroup>
 
   <Target Name="CopyAkkaToOutput" AfterTargets="Build">
