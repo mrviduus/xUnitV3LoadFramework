@@ -3,9 +3,9 @@ namespace xUnitLoadFramework.Attributes
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class LoadTestSettingsAttribute : Attribute
     {
-        public int Concurrency { get; set; }
-        public int DurationInMilliseconds { get; set; }
-        public int IntervalInMilliseconds { get; set; }
+        public int Concurrency { get; }
+        public int DurationInMilliseconds { get; }
+        public int IntervalInMilliseconds { get; }
 
         public LoadTestSettingsAttribute(int concurrency = 1, int durationInMilliseconds = 1, int intervalInMilliseconds = 1)
         {
