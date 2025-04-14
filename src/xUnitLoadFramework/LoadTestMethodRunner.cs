@@ -2,6 +2,7 @@ using LoadRunnerCore.Models;
 using LoadRunnerCore.Runner;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using xUnitLoadFramework.Attributes;
 
 namespace xUnitLoadFramework
 {
@@ -71,8 +72,8 @@ namespace xUnitLoadFramework
                     return new LoadSettings
                     {
                         Concurrency = settingsAttribute.Concurrency,
-                        Duration = TimeSpan.FromSeconds(settingsAttribute.DurationInSeconds),
-                        Interval = TimeSpan.FromSeconds(settingsAttribute.IntervalInSeconds),
+                        Duration = TimeSpan.FromMilliseconds(settingsAttribute.DurationInMilliseconds),
+                        Interval = TimeSpan.FromMilliseconds(settingsAttribute.IntervalInMilliseconds),
                     };
                 }
             }

@@ -53,7 +53,7 @@ namespace xUnitLoadDemo
     public class LoadTests
     {
         [Fact]
-        [LoadTestSettings(concurrency: 5, DurationInSeconds = 10, IntervalInSeconds = 2)]
+        [LoadTestSettings(concurrency: 5, durationInMilliseconds: 10, intervalInMilliseconds: 2)]
         public void ExampleLoadTest()
         {
             // Your test logic goes here
