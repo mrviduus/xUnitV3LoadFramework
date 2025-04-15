@@ -32,6 +32,7 @@ namespace xUnitLoadFramework
             var settings = CreateLoadSettings(loadTestSettings);
             var parameters = GetTestMethodParameters(testCase);
             var test = $"{TestMethod.TestClass.Class.Name}.{TestMethod.Method.Name}({parameters})";
+
             _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"STARTED: {test}"));
 
             try
@@ -42,12 +43,12 @@ namespace xUnitLoadFramework
                 var executionPlan = CreateExecutionPlan(testCase, settings);
                 var loadResult = await LoadRunner.Run(executionPlan);
 
-                var status = loadResult.Failure > 0 ? "FAILURE" : "SUCCESS";
-                _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"{status}: {test} ({loadResult.Time}s)"));
+                // Detailed results reported clearly
+                ReportLoadResult(test, loadResult);
 
                 return new RunSummary
                 {
-                    Total = 1,
+                    Total = loadResult.Total,
                     Failed = loadResult.Failure,
                     Skipped = 0,
                     Time = loadResult.Time
@@ -66,6 +67,23 @@ namespace xUnitLoadFramework
             }
         }
 
+        private void ReportLoadResult(string test, LoadResult result)
+        {
+            var summaryMessage =
+                $"[LOAD TEST RESULT] {test}:\n" +
+                $"- Total Executions: {result.Total}\n" +
+                $"- Success: {result.Success}\n" +
+                $"- Failure: {result.Failure}\n" +
+                $"- Max Latency: {result.MaxLatency:F2} ms\n" +
+                $"- Min Latency: {result.MinLatency:F2} ms\n" +
+                $"- Average Latency: {result.AverageLatency:F2} ms\n" +
+                $"- 95th Percentile Latency: {result.Percentile95Latency:F2} ms\n" +
+                $"- Duration: {result.Time:F2} s";
+
+            // Output directly to IDE and Azure DevOps logs
+            _diagnosticMessageSink.OnMessage(new DiagnosticMessage(summaryMessage));
+        }
+
         private object? GetLoadTestSettings()
         {
             return TestMethod.TestClass.Class.GetCustomAttributes(typeof(LoadTestSettingsAttribute)).FirstOrDefault()
@@ -74,15 +92,24 @@ namespace xUnitLoadFramework
 
         private LoadSettings? CreateLoadSettings(object? loadTestSettings)
         {
-            if (loadTestSettings is LoadTestSettingsAttribute settingsAttribute)
+            if (loadTestSettings != null)
             {
-                return new LoadSettings
+                var properties = loadTestSettings.GetType().GetProperties();
+                var settingsAttribute =
+                    properties.FirstOrDefault(x => x.GetValue(loadTestSettings) is LoadTestSettingsAttribute)
+                        ?.GetValue(loadTestSettings) as LoadTestSettingsAttribute;
+
+                if (settingsAttribute != null)
                 {
-                    Concurrency = settingsAttribute.Concurrency,
-                    Duration = TimeSpan.FromMilliseconds(settingsAttribute.DurationInMilliseconds),
-                    Interval = TimeSpan.FromMilliseconds(settingsAttribute.IntervalInMilliseconds)
-                };
+                    return new LoadSettings
+                    {
+                        Concurrency = settingsAttribute.Concurrency,
+                        Duration = TimeSpan.FromMilliseconds(settingsAttribute.DurationInMilliseconds),
+                        Interval = TimeSpan.FromMilliseconds(settingsAttribute.IntervalInMilliseconds),
+                    };
+                }
             }
+
             return null;
         }
 
@@ -100,11 +127,26 @@ namespace xUnitLoadFramework
                 Name = testCase.DisplayName,
                 Action = async () =>
                 {
-                    var summary = await base.RunTestCaseAsync(testCase);
-                    return summary.Failed == 0;
+                    return await ExecuteSingleTestInvocation(testCase);
                 },
                 Settings = settings
             };
+        }
+        private async Task<bool> ExecuteSingleTestInvocation(IXunitTestCase testCase)
+        {
+            var aggregator = new ExceptionAggregator();
+            var messageBus = new MessageBus(new Xunit.Sdk.NullMessageSink());
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var summary = await testCase.RunAsync(
+                diagnosticMessageSink: new Xunit.Sdk.NullMessageSink(),
+                messageBus: messageBus,
+                constructorArguments: Array.Empty<object>(),
+                aggregator: aggregator,
+                cancellationTokenSource: cancellationTokenSource
+            );
+
+            return summary.Failed == 0 && !aggregator.HasExceptions;
         }
     }
 }
