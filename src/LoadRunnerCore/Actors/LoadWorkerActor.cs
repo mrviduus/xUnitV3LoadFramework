@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,24 +30,26 @@ namespace LoadRunnerCore.Actors
 
             try
             {
-                _logger.Info("Worker {0} started load test in parallel mode.", workerName);
+                _logger.Info("Worker '{0}' started load test.", workerName);
 
-                // Keep running until canceled or duration expires
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    // Use Settings.Concurrency to run multiple tasks in parallel
                     var tasks = Enumerable.Range(0, _executionPlan.Settings.Concurrency)
                         .Select(_ => Task.Run(async () =>
                         {
-                            var result = await _executionPlan.Action();
-                            _resultCollector.Tell(new StepResultMessage(result));
-                            _logger.Debug("Worker {0} step result: {1}", workerName, result);
+                            var stopwatch = Stopwatch.StartNew();
+                            bool result = await _executionPlan.Action();
+                            stopwatch.Stop();
+                            var latency = stopwatch.Elapsed.TotalMilliseconds;
+
+                            _resultCollector.Tell(new StepResultMessage(result, latency));
+
+                            _logger.Debug("[{0}] Result: {1}, Latency: {2:F2} ms", workerName, result, latency);
                         }, cts.Token))
                         .ToArray();
 
                     await Task.WhenAll(tasks);
 
-                    // Wait for the configured interval before the next round, unless canceled
                     if (!cts.Token.IsCancellationRequested)
                     {
                         await Task.Delay(_executionPlan.Settings.Interval, cts.Token);
@@ -55,16 +58,15 @@ namespace LoadRunnerCore.Actors
             }
             catch (TaskCanceledException)
             {
-                _logger.Info("Worker {0} canceled during load test execution.", workerName);
+                _logger.Warning("Worker '{0}' load test canceled due to duration expiration.", workerName);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Worker {0} encountered an error.", workerName);
+                _logger.Error(ex, "Worker '{0}' encountered an unexpected error.", workerName);
             }
             finally
             {
-                _logger.Info("Worker {0} returning final result.", workerName);
-                Sender.Tell(new LoadResult());
+                _logger.Info("Worker '{0}' has completed load testing.", workerName);
             }
         }
     }

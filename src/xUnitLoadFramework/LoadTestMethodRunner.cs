@@ -36,19 +36,33 @@ namespace xUnitLoadFramework
 
             try
             {
-                if (settings == null) return await base.RunTestCaseAsync(testCase);
+                if (settings == null)
+                    return await base.RunTestCaseAsync(testCase);
+
                 var executionPlan = CreateExecutionPlan(testCase, settings);
                 var loadResult = await LoadRunner.Run(executionPlan);
 
                 var status = loadResult.Failure > 0 ? "FAILURE" : "SUCCESS";
                 _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"{status}: {test} ({loadResult.Time}s)"));
 
-                return CreateRunSummary(loadResult);
+                return new RunSummary
+                {
+                    Total = 1,
+                    Failed = loadResult.Failure,
+                    Skipped = 0,
+                    Time = loadResult.Time
+                };
             }
             catch (Exception ex)
             {
                 _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"ERROR: {test} ({ex.Message})"));
-                throw;
+                return new RunSummary
+                {
+                    Total = 1,
+                    Failed = 1,
+                    Skipped = 0,
+                    Time = 0
+                };
             }
         }
 
@@ -60,24 +74,15 @@ namespace xUnitLoadFramework
 
         private LoadSettings? CreateLoadSettings(object? loadTestSettings)
         {
-            if (loadTestSettings != null)
+            if (loadTestSettings is LoadTestSettingsAttribute settingsAttribute)
             {
-                var properties = loadTestSettings.GetType().GetProperties();
-                var settingsAttribute =
-                    properties.FirstOrDefault(x => x.GetValue(loadTestSettings) is LoadTestSettingsAttribute)
-                        ?.GetValue(loadTestSettings) as LoadTestSettingsAttribute;
-
-                if (settingsAttribute != null)
+                return new LoadSettings
                 {
-                    return new LoadSettings
-                    {
-                        Concurrency = settingsAttribute.Concurrency,
-                        Duration = TimeSpan.FromMilliseconds(settingsAttribute.DurationInMilliseconds),
-                        Interval = TimeSpan.FromMilliseconds(settingsAttribute.IntervalInMilliseconds),
-                    };
-                }
+                    Concurrency = settingsAttribute.Concurrency,
+                    Duration = TimeSpan.FromMilliseconds(settingsAttribute.DurationInMilliseconds),
+                    Interval = TimeSpan.FromMilliseconds(settingsAttribute.IntervalInMilliseconds)
+                };
             }
-
             return null;
         }
 
@@ -90,27 +95,15 @@ namespace xUnitLoadFramework
 
         private LoadExecutionPlan CreateExecutionPlan(IXunitTestCase testCase, LoadSettings settings)
         {
-            var action = async () => await base.RunTestCaseAsync(testCase);
             return new LoadExecutionPlan
             {
                 Name = testCase.DisplayName,
                 Action = async () =>
                 {
-                    await action();
-                    return true;
+                    var summary = await base.RunTestCaseAsync(testCase);
+                    return summary.Failed == 0;
                 },
                 Settings = settings
-            };
-        }
-
-        private RunSummary CreateRunSummary(LoadResult loadResult)
-        {
-            return new RunSummary
-            {
-                Total = loadResult.Total,
-                Failed = loadResult.Failure,
-                Skipped = loadResult.Total - loadResult.Failure,
-                Time = loadResult.Time
             };
         }
     }
