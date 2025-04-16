@@ -67,6 +67,13 @@ namespace LoadRunnerCore.Actors
             finally
             {
                 _logger.Info("Worker '{0}' has completed load testing.", workerName);
+
+                // Clearly collect final result from ResultCollectorActor
+                var finalResult = await _resultCollector.Ask<LoadResult>(
+                    new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
+
+                // Explicitly reply to the sender to avoid timeout!
+                Sender.Tell(finalResult);
             }
         }
     }
