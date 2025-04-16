@@ -30,8 +30,17 @@ namespace xUnitLoadFramework
 
         protected override async Task<RunSummary> RunTestCaseAsync(IXunitTestCase testCase)
         {
+            if (!string.IsNullOrEmpty(testCase.SkipReason))
+            {
+                // If test case is skipped, bypass load test logic entirely
+                return await base.RunTestCaseAsync(testCase);
+            }
             var loadTestSettings = GetLoadTestSettings();
             var settings = CreateLoadSettings(loadTestSettings);
+            if (settings == null)
+            {
+                return await base.RunTestCaseAsync(testCase);
+            }
             var parameters = GetTestMethodParameters(testCase);
             var test = $"{TestMethod.TestClass.Class.Name}.{TestMethod.Method.Name}({parameters})";
             _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"STARTED: {test}"));
@@ -39,8 +48,7 @@ namespace xUnitLoadFramework
 
             try
             {
-                if (settings == null)
-                    return await base.RunTestCaseAsync(testCase);
+
 
                 var executionPlan = CreateExecutionPlan(testCase, settings);
                 var loadResult = await LoadRunner.Run(executionPlan);
