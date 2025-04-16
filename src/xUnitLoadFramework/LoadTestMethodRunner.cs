@@ -9,6 +9,7 @@ namespace xUnitLoadFramework
     public class LoadTestMethodRunner : XunitTestMethodRunner
     {
         private readonly IMessageSink _diagnosticMessageSink;
+        private readonly object[] _constructorArguments;
 
         public LoadTestMethodRunner(
             ITestMethod testMethod,
@@ -24,6 +25,7 @@ namespace xUnitLoadFramework
                 cancellationTokenSource, constructorArguments)
         {
             _diagnosticMessageSink = diagnosticMessageSink;
+            _constructorArguments = constructorArguments;
         }
 
         protected override async Task<RunSummary> RunTestCaseAsync(IXunitTestCase testCase)
@@ -33,6 +35,7 @@ namespace xUnitLoadFramework
             var parameters = GetTestMethodParameters(testCase);
             var test = $"{TestMethod.TestClass.Class.Name}.{TestMethod.Method.Name}({parameters})";
             _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"STARTED: {test}"));
+            var xunitTest = new XunitTest(testCase, testCase.DisplayName);
 
             try
             {
@@ -45,18 +48,12 @@ namespace xUnitLoadFramework
                 // Detailed results reported clearly
                 ReportLoadResult(test, loadResult);
 
-                return new RunSummary
-                {
-                    Total = loadResult.Total,
-                    Failed = loadResult.Failure,
-                    Skipped = 0,
-                    Time = loadResult.Time
-                };
+                // Aggregated result reporting
+                return ReportAggregatedResult(xunitTest, loadResult);
             }
             catch (Exception ex)
             {
-                _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"ERROR: {test} ({ex.Message})"));
-                throw;
+                return HandleExecutionException(xunitTest, ex);
             }
         }
 
@@ -98,19 +95,39 @@ namespace xUnitLoadFramework
 
         private LoadExecutionPlan CreateExecutionPlan(IXunitTestCase testCase, LoadSettings settings)
         {
-            async Task<RunSummary> Action() => await base.RunTestCaseAsync(testCase);
             return new LoadExecutionPlan
             {
                 Name = testCase.DisplayName,
                 Action = async () =>
                 {
-                    await Action();
-                    return true;
+                    // Execute the test case only once per iteration using LoadRunnerCore
+                    var summary = await ExecuteSingleTestInvocation(testCase);
+                    return summary;
                 },
                 Settings = settings
             };
         }
-        
+
+        // Properly isolated single invocation clearly using xUnit infrastructure
+        private async Task<bool> ExecuteSingleTestInvocation(IXunitTestCase testCase)
+        {
+            var aggregator = new ExceptionAggregator();
+            var cancellationTokenSource = new CancellationTokenSource();
+            using var silentBus = new SilentMessageBus();
+
+            var result = await testCase.RunAsync(
+                diagnosticMessageSink: _diagnosticMessageSink,
+                messageBus: silentBus,
+                constructorArguments: _constructorArguments,
+                aggregator: aggregator,
+                cancellationTokenSource: cancellationTokenSource
+            );
+
+            // Determine success from captured messages
+            bool passed = result.Failed == 0 && !aggregator.HasExceptions;
+
+            return passed;
+        }
         private void ReportLoadResult(string test, LoadResult result)
         {
             var summaryMessage =
@@ -126,6 +143,37 @@ namespace xUnitLoadFramework
 
             // Output directly to IDE and Azure DevOps logs
             _diagnosticMessageSink.OnMessage(new DiagnosticMessage(summaryMessage));
+        }
+        
+        private RunSummary ReportAggregatedResult(XunitTest xunitTest, LoadResult loadResult)
+        {
+            var aggregatedSummary = new RunSummary
+            {
+                Total = 1,
+                Failed = loadResult.Failure > 0 ? 1 : 0,
+                Skipped = 0,
+                Time = loadResult.Time
+            };
+
+            if (aggregatedSummary.Failed == 0)
+            {
+                MessageBus.QueueMessage(new TestPassed(xunitTest, loadResult.Time, null));
+            }
+            else
+            {
+                MessageBus.QueueMessage(new TestFailed(xunitTest, 0, "One or more tests failed", null, null, null, null));
+            }
+
+            MessageBus.QueueMessage(new TestFinished(xunitTest, loadResult.Time, null));
+
+            return aggregatedSummary;
+        }
+        private RunSummary HandleExecutionException(XunitTest xunitTest, Exception ex)
+        {
+            MessageBus.QueueMessage(new TestFailed(xunitTest, 0, ex.Message, null, null, null, null));
+            MessageBus.QueueMessage(new TestFinished(xunitTest, 0, null));
+
+            return new RunSummary { Total = 1, Failed = 1 };
         }
     }
 }
