@@ -32,7 +32,6 @@ namespace xUnitLoadFramework
             var settings = CreateLoadSettings(loadTestSettings);
             var parameters = GetTestMethodParameters(testCase);
             var test = $"{TestMethod.TestClass.Class.Name}.{TestMethod.Method.Name}({parameters})";
-
             _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"STARTED: {test}"));
 
             try
@@ -57,31 +56,8 @@ namespace xUnitLoadFramework
             catch (Exception ex)
             {
                 _diagnosticMessageSink.OnMessage(new DiagnosticMessage($"ERROR: {test} ({ex.Message})"));
-                return new RunSummary
-                {
-                    Total = 1,
-                    Failed = 1,
-                    Skipped = 0,
-                    Time = 0
-                };
+                throw;
             }
-        }
-
-        private void ReportLoadResult(string test, LoadResult result)
-        {
-            var summaryMessage =
-                $"[LOAD TEST RESULT] {test}:\n" +
-                $"- Total Executions: {result.Total}\n" +
-                $"- Success: {result.Success}\n" +
-                $"- Failure: {result.Failure}\n" +
-                $"- Max Latency: {result.MaxLatency:F2} ms\n" +
-                $"- Min Latency: {result.MinLatency:F2} ms\n" +
-                $"- Average Latency: {result.AverageLatency:F2} ms\n" +
-                $"- 95th Percentile Latency: {result.Percentile95Latency:F2} ms\n" +
-                $"- Duration: {result.Time:F2} s";
-
-            // Output directly to IDE and Azure DevOps logs
-            _diagnosticMessageSink.OnMessage(new DiagnosticMessage(summaryMessage));
         }
 
         private object? GetLoadTestSettings()
@@ -122,31 +98,34 @@ namespace xUnitLoadFramework
 
         private LoadExecutionPlan CreateExecutionPlan(IXunitTestCase testCase, LoadSettings settings)
         {
+            async Task<RunSummary> Action() => await base.RunTestCaseAsync(testCase);
             return new LoadExecutionPlan
             {
                 Name = testCase.DisplayName,
                 Action = async () =>
                 {
-                    return await ExecuteSingleTestInvocation(testCase);
+                    await Action();
+                    return true;
                 },
                 Settings = settings
             };
         }
-        private async Task<bool> ExecuteSingleTestInvocation(IXunitTestCase testCase)
+        
+        private void ReportLoadResult(string test, LoadResult result)
         {
-            var aggregator = new ExceptionAggregator();
-            var messageBus = new MessageBus(new Xunit.Sdk.NullMessageSink());
-            var cancellationTokenSource = new CancellationTokenSource();
+            var summaryMessage =
+                $"[LOAD TEST RESULT] {test}:\n" +
+                $"- Total Executions: {result.Total}\n" +
+                $"- Success: {result.Success}\n" +
+                $"- Failure: {result.Failure}\n" +
+                $"- Max Latency: {result.MaxLatency:F2} ms\n" +
+                $"- Min Latency: {result.MinLatency:F2} ms\n" +
+                $"- Average Latency: {result.AverageLatency:F2} ms\n" +
+                $"- 95th Percentile Latency: {result.Percentile95Latency:F2} ms\n" +
+                $"- Duration: {result.Time:F2} s";
 
-            var summary = await testCase.RunAsync(
-                diagnosticMessageSink: new Xunit.Sdk.NullMessageSink(),
-                messageBus: messageBus,
-                constructorArguments: Array.Empty<object>(),
-                aggregator: aggregator,
-                cancellationTokenSource: cancellationTokenSource
-            );
-
-            return summary.Failed == 0 && !aggregator.HasExceptions;
+            // Output directly to IDE and Azure DevOps logs
+            _diagnosticMessageSink.OnMessage(new DiagnosticMessage(summaryMessage));
         }
     }
 }
