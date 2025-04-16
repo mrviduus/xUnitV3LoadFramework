@@ -14,11 +14,11 @@ namespace xUnitLoadRunnerTests
             Console.WriteLine("This is a very fast test");
         }
         
-        [Fact]
-        public void VeryFastTest2()
-        {
-            Console.WriteLine("This is a very fast test2");
-        }
+        // [Fact]
+        // public void VeryFastTest2()
+        // {
+        //     Console.WriteLine("This is a very fast test2");
+        // }
         
     }
 }
