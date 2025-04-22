@@ -4,8 +4,8 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="xunit.extensibility.execution" Version="2.9.0" />
     <PackageVersion Include="Akka" Version="1.5.38" />
-    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1"/>
+    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="2.0.1" />
   </ItemGroup>
 </Project>
