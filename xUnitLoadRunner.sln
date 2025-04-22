@@ -8,25 +8,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5BFA8B32
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{6E1DB491-F51E-46D3-8AF0-385C2C9C2070}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadRunnerCore", "src\LoadRunnerCore\LoadRunnerCore.csproj", "{69E465F0-C9EB-41FC-9C7F-3EF53668033C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoadRunnerCore", "src\LoadRunnerCore\LoadRunnerCore.csproj", "{69E465F0-C9EB-41FC-9C7F-3EF53668033C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitLoadFramework", "src\xUnitLoadFramework\xUnitLoadFramework.csproj", "{F6E412AE-34C7-4E02-B66D-A04939085439}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xUnitLoadFramework", "src\xUnitLoadFramework\xUnitLoadFramework.csproj", "{F6E412AE-34C7-4E02-B66D-A04939085439}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitLoadRunnerTests", "tests\xUnitLoadRunnerTests\xUnitLoadRunnerTests.csproj", "{92CF667F-359C-436B-81CC-D3B5585D1A79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xUnitLoadRunnerTests", "tests\xUnitLoadRunnerTests\xUnitLoadRunnerTests.csproj", "{92CF667F-359C-436B-81CC-D3B5585D1A79}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C37046B6-628A-4D9E-B72B-98CC69942DCC}"
 	ProjectSection(SolutionItems) = preProject
-		TODO.MD = TODO.MD
-		README.md = README.md
-		Directory.Build.props = Directory.Build.props
 		CHANGELOG.md = CHANGELOG.md
-		LICENSE = LICENSE
 		CONTRIBUTING.md = CONTRIBUTING.md
+		Directory.Build.props = Directory.Build.props
+		src\Directory.Packages.props = src\Directory.Packages.props
+		LICENSE = LICENSE
+		README.md = README.md
+		TODO.MD = TODO.MD
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitLoadDemo", "demo\xUnitLoadDemo\xUnitLoadDemo.csproj", "{A528A9AC-CF07-4DCF-8722-0C5B1F9A4EE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "xUnitLoadDemo", "demo\xUnitLoadDemo\xUnitLoadDemo.csproj", "{A528A9AC-CF07-4DCF-8722-0C5B1F9A4EE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadRunnerConsole", "tests\LoadRunnerConsole\LoadRunnerConsole.csproj", "{840B0540-3C43-4721-BF00-53BD8B745B83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoadRunnerConsole", "tests\LoadRunnerConsole\LoadRunnerConsole.csproj", "{840B0540-3C43-4721-BF00-53BD8B745B83}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xUnitV3Tests", "tests\xUnitV3Tests\xUnitV3Tests.csproj", "{50BAAED1-8EE6-45C5-AB64-2EA025B84484}"
 EndProject
@@ -64,9 +65,6 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {D6969B20-59B0-4637-B4B1-F3520E54D9D8}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{69E465F0-C9EB-41FC-9C7F-3EF53668033C} = {E7AEF382-0643-47CF-9945-44B1B83C40BD}
 		{F6E412AE-34C7-4E02-B66D-A04939085439} = {E7AEF382-0643-47CF-9945-44B1B83C40BD}
@@ -74,5 +72,8 @@ Global
 		{A528A9AC-CF07-4DCF-8722-0C5B1F9A4EE6} = {6E1DB491-F51E-46D3-8AF0-385C2C9C2070}
 		{840B0540-3C43-4721-BF00-53BD8B745B83} = {5BFA8B32-5FB9-40B2-903B-58E9D6EB26A8}
 		{50BAAED1-8EE6-45C5-AB64-2EA025B84484} = {5BFA8B32-5FB9-40B2-903B-58E9D6EB26A8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D6969B20-59B0-4637-B4B1-F3520E54D9D8}
 	EndGlobalSection
 EndGlobal

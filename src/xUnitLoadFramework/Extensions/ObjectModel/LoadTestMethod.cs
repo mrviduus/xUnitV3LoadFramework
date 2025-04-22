@@ -8,24 +8,24 @@ using Xunit.v3;
 namespace xUnitLoadFramework.Extensions.ObjectModel;
 
 [DebuggerDisplay(@"\{ class = {TestClass.TestClassName}, method = {MethodName} \}")]
-public class ObservationTestMethod : ITestMethod, IXunitSerializable
+public class LoadTestMethod : ITestMethod, IXunitSerializable
 {
     MethodInfo? method;
-    ObservationTestClass? testClass;
+    LoadTestClass? testClass;
     readonly Lazy<IReadOnlyDictionary<string, IReadOnlyCollection<string>>> traits;
     readonly Lazy<string> uniqueID;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
-    public ObservationTestMethod()
+    public LoadTestMethod()
     {
         traits = new(() => ExtensibilityPointFactory.GetMethodTraits(Method, TestClass.Traits));
         uniqueID = new(() => UniqueIDGenerator.ForTestMethod(TestClass.UniqueID, MethodName));
     }
 
 #pragma warning disable CS0618
-    public ObservationTestMethod(
-        ObservationTestClass testClass,
+    public LoadTestMethod(
+        LoadTestClass testClass,
         MethodInfo method) :
             this()
 #pragma warning restore CS0618
@@ -38,13 +38,13 @@ public class ObservationTestMethod : ITestMethod, IXunitSerializable
         Method.Name.Replace('_', ' ');
 
     public MethodInfo Method =>
-        method ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(ObservationTestMethod)}.{nameof(Method)}");
+        method ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(LoadTestMethod)}.{nameof(Method)}");
 
     public string MethodName =>
         Method.Name;
 
-    public ObservationTestClass TestClass =>
-        testClass ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(ObservationTestMethod)}.{nameof(TestClass)}");
+    public LoadTestClass TestClass =>
+        testClass ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(LoadTestMethod)}.{nameof(TestClass)}");
 
     ITestClass ITestMethod.TestClass =>
         TestClass;
@@ -57,12 +57,12 @@ public class ObservationTestMethod : ITestMethod, IXunitSerializable
 
     public void Deserialize(IXunitSerializationInfo info)
     {
-        testClass = Guard.NotNull("Could not retrieve TestClass from serialization", info.GetValue<ObservationTestClass>("c"));
+        testClass = Guard.NotNull("Could not retrieve TestClass from serialization", info.GetValue<LoadTestClass>("c"));
 
         var reflectedType = Guard.NotNull("Could not retrieve the class name of the test method", info.GetValue<string>("t"));
         var @class = Guard.NotNull(() => $"Could not look up type {reflectedType}", TypeHelper.GetType(reflectedType));
         var methodName = Guard.NotNull("Could not retrieve MethodName from serialization", info.GetValue<string>("n"));
-        method = Guard.NotNull(() => $"Could not find test method {methodName} on test class {testClass.TestClassName}", @class.GetMethod(methodName, ObservationTestClass.MethodBindingFlags));
+        method = Guard.NotNull(() => $"Could not find test method {methodName} on test class {testClass.TestClassName}", @class.GetMethod(methodName, LoadTestClass.MethodBindingFlags));
     }
 
     public void Serialize(IXunitSerializationInfo info)

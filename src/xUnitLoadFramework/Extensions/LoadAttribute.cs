@@ -1,7 +1,7 @@
 namespace xUnitLoadFramework.Extensions;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class ObservationAttribute : Attribute
+public class LoadAttribute : Attribute
 {
-    public int Order { get; set; } = 0;
+	public int Order { get; set; } = 0;
 }

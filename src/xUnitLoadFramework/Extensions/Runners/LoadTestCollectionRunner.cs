@@ -5,12 +5,12 @@ using xUnitLoadFramework.Extensions.ObjectModel;
 
 namespace xUnitLoadFramework.Extensions.Runners;
 
-public class ObservationTestCollectionRunner :
-    TestCollectionRunner<ObservationTestCollectionRunnerContext, ObservationTestCollection, ObservationTestClass, ObservationTestCase>
+public class LoadTestCollectionRunner :
+    TestCollectionRunner<LoadTestCollectionRunnerContext, LoadTestCollection, LoadTestClass, LoadTestCase>
 {
-    public static ObservationTestCollectionRunner Instance { get; } = new();
+    public static LoadTestCollectionRunner Instance { get; } = new();
 
-    protected override ValueTask<RunSummary> FailTestClass(ObservationTestCollectionRunnerContext ctxt, ObservationTestClass? testClass, IReadOnlyCollection<ObservationTestCase> testCases, Exception exception)
+    protected override ValueTask<RunSummary> FailTestClass(LoadTestCollectionRunnerContext ctxt, LoadTestClass? testClass, IReadOnlyCollection<LoadTestCase> testCases, Exception exception)
     {
         var result = XunitRunnerHelper.FailTestCases(
             Guard.ArgumentNotNull(ctxt).MessageBus,
@@ -25,9 +25,9 @@ public class ObservationTestCollectionRunner :
     }
 
     protected override async ValueTask<RunSummary> RunTestClass(
-        ObservationTestCollectionRunnerContext ctxt,
-        ObservationTestClass? testClass,
-        IReadOnlyCollection<ObservationTestCase> testCases)
+        LoadTestCollectionRunnerContext ctxt,
+        LoadTestClass? testClass,
+        IReadOnlyCollection<LoadTestCase> testCases)
     {
         Guard.ArgumentNotNull(testClass);
 
@@ -56,7 +56,7 @@ public class ObservationTestCollectionRunner :
             return await FailTestClass(ctxt, testClass, testCases, ex);
         }
 
-        var result = await ObservationTestClassRunner.Instance.Run(specification, testClass, testCases, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
+        var result = await LoadTestClassRunner.Instance.Run(specification, testClass, testCases, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
 
         ctxt.Aggregator.Run(specification.OnFinish);
 
@@ -69,24 +69,24 @@ public class ObservationTestCollectionRunner :
     }
 
     public async ValueTask<RunSummary> Run(
-        ObservationTestCollection testCollection,
-        IReadOnlyCollection<ObservationTestCase> testCases,
+        LoadTestCollection testCollection,
+        IReadOnlyCollection<LoadTestCase> testCases,
         IMessageBus messageBus,
         ExceptionAggregator exceptionAggregator,
         CancellationTokenSource cancellationTokenSource)
     {
-        await using var ctxt = new ObservationTestCollectionRunnerContext(testCollection, testCases, messageBus, exceptionAggregator, cancellationTokenSource);
+        await using var ctxt = new LoadTestCollectionRunnerContext(testCollection, testCases, messageBus, exceptionAggregator, cancellationTokenSource);
         await ctxt.InitializeAsync();
 
         return await Run(ctxt);
     }
 }
 
-public class ObservationTestCollectionRunnerContext(
-    ObservationTestCollection testCollection,
-    IReadOnlyCollection<ObservationTestCase> testCases,
+public class LoadTestCollectionRunnerContext(
+    LoadTestCollection testCollection,
+    IReadOnlyCollection<LoadTestCase> testCases,
     IMessageBus messageBus,
     ExceptionAggregator aggregator,
     CancellationTokenSource cancellationTokenSource) :
-        TestCollectionRunnerContext<ObservationTestCollection, ObservationTestCase>(testCollection, testCases, ExplicitOption.Off, messageBus, aggregator, cancellationTokenSource)
+        TestCollectionRunnerContext<LoadTestCollection, LoadTestCase>(testCollection, testCases, ExplicitOption.Off, messageBus, aggregator, cancellationTokenSource)
 { }

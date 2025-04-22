@@ -2,10 +2,10 @@ using Xunit.Sdk;
 
 namespace xUnitLoadFramework.Extensions.ObjectModel;
 
-public class ObservationTest(ObservationTestCase testCase) :
+public class LoadTest(LoadTestCase testCase) :
     ITest
 {
-    public ObservationTestCase TestCase { get; } = testCase;
+    public LoadTestCase TestCase { get; } = testCase;
 
     ITestCase ITest.TestCase => TestCase;
 

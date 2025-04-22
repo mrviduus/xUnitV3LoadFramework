@@ -4,12 +4,12 @@ using Xunit.v3;
 
 namespace xUnitLoadFramework.Extensions.ObjectModel;
 
-public class ObservationTestCollection(
-    ObservationTestAssembly testAssembly,
+public class LoadTestCollection(
+    LoadTestAssembly testAssembly,
     string displayName) :
         ITestCollection
 {
-    public ObservationTestAssembly TestAssembly { get; } =
+    public LoadTestAssembly TestAssembly { get; } =
         Guard.ArgumentNotNull(testAssembly);
 
     ITestAssembly ITestCollection.TestAssembly =>

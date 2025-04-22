@@ -7,22 +7,22 @@ using Xunit.v3;
 namespace xUnitLoadFramework.Extensions.ObjectModel;
 
 [DebuggerDisplay(@"\{ class = {TestMethod.TestClass.Class.Name}, method = {TestMethod.Method.Name}, display = {TestCaseDisplayName} \}")]
-public class ObservationTestCase : ITestCase, IXunitSerializable
+public class LoadTestCase : ITestCase, IXunitSerializable
 {
-    ObservationTestMethod? testMethod;
+    LoadTestMethod? testMethod;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
-    public ObservationTestCase()
+    public LoadTestCase()
     { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="XunitTestCase"/> class.
     /// </summary>
     /// <param name="testMethod">The test method this test case belongs to.</param>
-    /// <param name="order">The value from <see cref="ObservationAttribute.Order"/>.</param>
-    public ObservationTestCase(
-        ObservationTestMethod testMethod,
+    /// <param name="order">The value from <see cref="LoadAttribute.Order"/>.</param>
+    public LoadTestCase(
+        LoadTestMethod testMethod,
         int order)
     {
         this.testMethod = Guard.ArgumentNotNull(testMethod);
@@ -46,7 +46,7 @@ public class ObservationTestCase : ITestCase, IXunitSerializable
     public string TestCaseDisplayName =>
         $"{TestClass.DisplayName}, it {TestMethod.DisplayName}";
 
-    public ObservationTestClass TestClass =>
+    public LoadTestClass TestClass =>
         TestMethod.TestClass;
 
     ITestClass? ITestCase.TestClass =>
@@ -64,14 +64,14 @@ public class ObservationTestCase : ITestCase, IXunitSerializable
     string? ITestCaseMetadata.TestClassSimpleName =>
         TestClass.TestClassSimpleName;
 
-    public ObservationTestCollection TestCollection =>
+    public LoadTestCollection TestCollection =>
         TestMethod.TestClass.TestCollection;
 
     ITestCollection ITestCase.TestCollection =>
         TestCollection;
 
-    public ObservationTestMethod TestMethod =>
-        testMethod ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(ObservationTestCase)}.{nameof(TestMethod)}");
+    public LoadTestMethod TestMethod =>
+        testMethod ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(LoadTestCase)}.{nameof(TestMethod)}");
 
     ITestMethod? ITestCase.TestMethod =>
         TestMethod;
@@ -96,7 +96,7 @@ public class ObservationTestCase : ITestCase, IXunitSerializable
 
     public void Deserialize(IXunitSerializationInfo info)
     {
-        testMethod = Guard.NotNull("Could not retrieve TestMethod from serialization", info.GetValue<ObservationTestMethod>("tm"));
+        testMethod = Guard.NotNull("Could not retrieve TestMethod from serialization", info.GetValue<LoadTestMethod>("tm"));
         Order = info.GetValue<int>("o");
     }
 

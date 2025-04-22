@@ -8,28 +8,28 @@ using Xunit.v3;
 namespace xUnitLoadFramework.Extensions.ObjectModel;
 
 [DebuggerDisplay(@"\{ class = {TestClassName} \}")]
-public class ObservationTestClass : ITestClass, IXunitSerializable
+public class LoadTestClass : ITestClass, IXunitSerializable
 {
     internal static BindingFlags MethodBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
 
     Type? @class;
-    ObservationTestAssembly? testAssembly;
-    readonly Lazy<ObservationTestCollection> testCollection;
+    LoadTestAssembly? testAssembly;
+    readonly Lazy<LoadTestCollection> testCollection;
     readonly Lazy<IReadOnlyDictionary<string, IReadOnlyCollection<string>>> traits;
     readonly Lazy<string> uniqueID;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
-    public ObservationTestClass()
+    public LoadTestClass()
     {
-        testCollection = new(() => new ObservationTestCollection(TestAssembly, Class.FullName ?? Class.Name));
+        testCollection = new(() => new LoadTestCollection(TestAssembly, Class.FullName ?? Class.Name));
         traits = new(() => ExtensibilityPointFactory.GetClassTraits(Class, TestCollection.Traits));
         uniqueID = new(() => UniqueIDGenerator.ForTestClass(TestCollection.UniqueID, TestClassName));
     }
 
 #pragma warning disable CS0618
-    public ObservationTestClass(
-        ObservationTestAssembly testAssembly,
+    public LoadTestClass(
+        LoadTestAssembly testAssembly,
         Type @class) :
             this()
 #pragma warning restore CS0618
@@ -39,7 +39,7 @@ public class ObservationTestClass : ITestClass, IXunitSerializable
     }
 
     public Type Class =>
-        @class ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(ObservationTestClass)}.{nameof(Class)}");
+        @class ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(LoadTestClass)}.{nameof(Class)}");
 
     public string DisplayName =>
         Class.Name.Replace('_', ' ');
@@ -47,8 +47,8 @@ public class ObservationTestClass : ITestClass, IXunitSerializable
     public MethodInfo[] Methods =>
         Class.GetMethods(MethodBindingFlags);
 
-    ObservationTestAssembly TestAssembly =>
-        testAssembly ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(ObservationTestClass)}.{nameof(TestAssembly)}");
+    LoadTestAssembly TestAssembly =>
+        testAssembly ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(LoadTestClass)}.{nameof(TestAssembly)}");
 
     public string TestClassName =>
         Class.FullName ?? throw new InvalidOperationException("Test class must have a full name");
@@ -59,7 +59,7 @@ public class ObservationTestClass : ITestClass, IXunitSerializable
     public string TestClassSimpleName =>
         Class.ToSimpleName();
 
-    public ObservationTestCollection TestCollection =>
+    public LoadTestCollection TestCollection =>
         testCollection.Value;
 
     ITestCollection ITestClass.TestCollection =>
@@ -73,7 +73,7 @@ public class ObservationTestClass : ITestClass, IXunitSerializable
 
     public void Deserialize(IXunitSerializationInfo info)
     {
-        testAssembly = Guard.NotNull("Could not retrieve TestAssembly from serialization", info.GetValue<ObservationTestAssembly>("a"));
+        testAssembly = Guard.NotNull("Could not retrieve TestAssembly from serialization", info.GetValue<LoadTestAssembly>("a"));
         var typeName = Guard.NotNull("Could not retrieve TestClassName from serialization", info.GetValue<string>("c"));
         @class = Guard.NotNull(() => $"Failed to deserialize type '{typeName}' in assembly '{testAssembly.AssemblyName}'", TypeHelper.GetType(testAssembly.AssemblyName, typeName));
     }

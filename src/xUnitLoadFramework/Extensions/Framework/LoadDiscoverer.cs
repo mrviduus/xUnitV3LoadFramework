@@ -6,26 +6,26 @@ using xUnitLoadFramework.Extensions.ObjectModel;
 
 namespace xUnitLoadFramework.Extensions.Framework;
 
-public class ObservationDiscoverer(ObservationTestAssembly testAssembly) :
-    TestFrameworkDiscoverer<ObservationTestClass>(testAssembly)
+public class LoadDiscoverer(LoadTestAssembly testAssembly) :
+    TestFrameworkDiscoverer<LoadTestClass>(testAssembly)
 {
-    public new ObservationTestAssembly TestAssembly { get; } = testAssembly;
+    public new LoadTestAssembly TestAssembly { get; } = testAssembly;
 
-    protected override ValueTask<ObservationTestClass> CreateTestClass(Type @class) =>
-        new(new ObservationTestClass(TestAssembly, @class));
+    protected override ValueTask<LoadTestClass> CreateTestClass(Type @class) =>
+        new(new LoadTestClass(TestAssembly, @class));
 
     static async ValueTask<bool> FindTestsForMethod(
-        ObservationTestMethod testMethod,
+        LoadTestMethod testMethod,
         ITestFrameworkDiscoveryOptions discoveryOptions,
-        Func<ObservationTestCase, ValueTask<bool>> discoveryCallback)
+        Func<LoadTestCase, ValueTask<bool>> discoveryCallback)
     {
-        var observationAttribute = testMethod.Method.GetCustomAttributes<ObservationAttribute>().FirstOrDefault();
-        if (observationAttribute is null)
+        var LoadAttribute = testMethod.Method.GetCustomAttributes<LoadAttribute>().FirstOrDefault();
+        if (LoadAttribute is null)
             return true;
 
-        var order = observationAttribute.Order;
+        var order = LoadAttribute.Order;
 
-        var testCase = new ObservationTestCase(testMethod, order);
+        var testCase = new LoadTestCase(testMethod, order);
         if (!await discoveryCallback(testCase))
             return false;
 
@@ -33,7 +33,7 @@ public class ObservationDiscoverer(ObservationTestAssembly testAssembly) :
     }
 
     protected override async ValueTask<bool> FindTestsForType(
-        ObservationTestClass testClass,
+        LoadTestClass testClass,
         ITestFrameworkDiscoveryOptions discoveryOptions,
         Func<ITestCase, ValueTask<bool>> discoveryCallback)
     {
@@ -42,7 +42,7 @@ public class ObservationDiscoverer(ObservationTestAssembly testAssembly) :
 
         foreach (var method in testClass.Methods)
         {
-            var testMethod = new ObservationTestMethod(testClass, method);
+            var testMethod = new LoadTestMethod(testClass, method);
 
             try
             {
