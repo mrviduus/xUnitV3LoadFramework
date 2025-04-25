@@ -1,16 +1,15 @@
 using Xunit.Sdk;
 using Xunit.v3;
-using xUnitLoadFramework.Extensions.ObjectModel;
 
-namespace xUnitLoadFramework.Extensions.Runners;
+namespace ObservationExample;
 
 public class LoadTestAssemblyRunner :
-	TestAssemblyRunner<LoadTestAssemblyRunnerContext, LoadTestAssembly, LoadTestCollection, LoadTestCase>
+	TestAssemblyRunner<ObservationTestAssemblyRunnerContext, LoadTestAssembly, LoadTestCollection, LoadTestCase>
 {
 	public static LoadTestAssemblyRunner Instance { get; } = new();
 
-	protected override ValueTask<string> GetTestFrameworkDisplayName(LoadTestAssemblyRunnerContext ctxt) =>
-		new("Load Framework");
+	protected override ValueTask<string> GetTestFrameworkDisplayName(ObservationTestAssemblyRunnerContext ctxt) =>
+		new("Observation Framework");
 
 	public async ValueTask<RunSummary> Run(
 		LoadTestAssembly testAssembly,
@@ -19,14 +18,14 @@ public class LoadTestAssemblyRunner :
 		ITestFrameworkExecutionOptions executionOptions,
 		CancellationToken cancellationToken)
 	{
-		await using var ctxt = new LoadTestAssemblyRunnerContext(testAssembly, testCases, executionMessageSink, executionOptions, cancellationToken);
+		await using var ctxt = new ObservationTestAssemblyRunnerContext(testAssembly, testCases, executionMessageSink, executionOptions, cancellationToken);
 		await ctxt.InitializeAsync();
 
 		return await Run(ctxt);
 	}
 
 	protected override ValueTask<RunSummary> RunTestCollection(
-		LoadTestAssemblyRunnerContext ctxt,
+		ObservationTestAssemblyRunnerContext ctxt,
 		LoadTestCollection testCollection,
 		IReadOnlyCollection<LoadTestCase> testCases) =>
 			LoadTestCollectionRunner.Instance.Run(
@@ -38,7 +37,7 @@ public class LoadTestAssemblyRunner :
 			);
 }
 
-public class LoadTestAssemblyRunnerContext(
+public class ObservationTestAssemblyRunnerContext(
 	LoadTestAssembly testAssembly,
 	IReadOnlyCollection<LoadTestCase> testCases,
 	IMessageSink executionMessageSink,

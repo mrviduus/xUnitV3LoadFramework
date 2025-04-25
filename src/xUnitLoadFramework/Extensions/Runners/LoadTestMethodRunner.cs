@@ -1,11 +1,13 @@
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit.Sdk;
 using Xunit.v3;
-using xUnitLoadFramework.Extensions.ObjectModel;
 
-namespace xUnitLoadFramework.Extensions.Runners;
+namespace ObservationExample;
 
 public class LoadTestMethodRunner :
-    TestMethodRunner<LoadTestMethodRunnerContext, LoadTestMethod, LoadTestCase>
+    TestMethodRunner<ObservationTestMethodRunnerContext, LoadTestMethod, LoadTestCase>
 {
     public static LoadTestMethodRunner Instance { get; } = new();
 
@@ -17,19 +19,19 @@ public class LoadTestMethodRunner :
         ExceptionAggregator aggregator,
         CancellationTokenSource cancellationTokenSource)
     {
-        await using var ctxt = new LoadTestMethodRunnerContext(specification, testMethod, testCases, messageBus, aggregator, cancellationTokenSource);
+        await using var ctxt = new ObservationTestMethodRunnerContext(specification, testMethod, testCases, messageBus, aggregator, cancellationTokenSource);
         await ctxt.InitializeAsync();
 
         return await Run(ctxt);
     }
 
     protected override ValueTask<RunSummary> RunTestCase(
-        LoadTestMethodRunnerContext ctxt,
+        ObservationTestMethodRunnerContext ctxt,
         LoadTestCase testCase) =>
            LoadTestCaseRunner.Instance.Run(ctxt.Specification, testCase, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
 }
 
-public class LoadTestMethodRunnerContext(
+public class ObservationTestMethodRunnerContext(
     Specification specification,
     LoadTestMethod testMethod,
     IReadOnlyCollection<LoadTestCase> testCases,

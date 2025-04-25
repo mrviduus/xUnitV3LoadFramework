@@ -1,13 +1,12 @@
 using System.Reflection;
 using Xunit.v3;
-using xUnitLoadFramework.Extensions.ObjectModel;
 
-namespace xUnitLoadFramework.Extensions.Framework;
+namespace ObservationExample;
 
 public class LoadTestFramework : TestFramework
 {
     public override string TestFrameworkDisplayName =>
-        "Load Framework";
+        "Observation Framework";
 
     protected override ITestFrameworkDiscoverer CreateDiscoverer(Assembly assembly) =>
         new LoadDiscoverer(new LoadTestAssembly(assembly));

@@ -1,8 +1,9 @@
+using System.Collections.Generic;
+using System.Linq;
 using Xunit.Sdk;
 using Xunit.v3;
-using xUnitLoadFramework.Extensions.ObjectModel;
 
-namespace xUnitLoadFramework.Extensions.Framework;
+namespace ObservationExample;
 
 public class LoadTestCaseOrderer : ITestCaseOrderer
 {

@@ -1,13 +1,15 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit.Sdk;
 using Xunit.v3;
-using xUnitLoadFramework.Extensions.ObjectModel;
-using xUnitLoadFramework.Extensions.Runners;
 
-namespace xUnitLoadFramework.Extensions.Framework;
+namespace ObservationExample;
 
-// We use ITestCase as our test case type, because we will see both LoadTestCase objects
+// We use ITestCase as our test case type, because we will see both ObservationTestCase objects
 // as well as ExecutionErrorTestCase. ITestCase is the common denominator. We will end up dispatching
-// the test cases appropriately in LoadTestMethodRunner.
+// the test cases appropriately in ObservationTestMethodRunner.
 public class LoadExecutor(LoadTestAssembly testAssembly) :
     TestFrameworkExecutor<ITestCase>(testAssembly)
 {

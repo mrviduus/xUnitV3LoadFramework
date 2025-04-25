@@ -1,10 +1,12 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using Xunit.Internal;
 using Xunit.Sdk;
 using Xunit.v3;
 
-namespace xUnitLoadFramework.Extensions.ObjectModel;
+namespace ObservationExample;
 
 [DebuggerDisplay(@"\{ class = {TestMethod.TestClass.Class.Name}, method = {TestMethod.Method.Name}, display = {TestCaseDisplayName} \}")]
 public class LoadTestCase : ITestCase, IXunitSerializable

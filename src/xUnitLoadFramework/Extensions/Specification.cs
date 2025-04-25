@@ -1,4 +1,4 @@
-namespace xUnitLoadFramework.Extensions;
+namespace ObservationExample;
 
 public abstract class Specification
 {

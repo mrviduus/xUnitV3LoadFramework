@@ -1,6 +1,6 @@
+using System.Collections.Generic;
+using ObservationExample;
 using Xunit.Sdk;
-
-namespace xUnitLoadFramework.Extensions.ObjectModel;
 
 public class LoadTest(LoadTestCase testCase) :
     ITest

@@ -2,7 +2,7 @@
     <PropertyGroup>
         <_ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true' or '$(GITHUB_ACTIONS)' == 'true' or '$(GITLAB_CI)' == 'true'">True</_ContinuousIntegrationBuild>
 
-        <LangVersion>10</LangVersion>
+        <LangVersion>12</LangVersion>
         <TreatWarningsAsErrors Condition="'$(Configuration)' != 'Debug'">true</TreatWarningsAsErrors>
         <Deterministic>true</Deterministic>
         <Features>strict</Features>

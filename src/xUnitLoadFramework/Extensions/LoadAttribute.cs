@@ -1,4 +1,4 @@
-namespace xUnitLoadFramework.Extensions;
+namespace ObservationExample;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class LoadAttribute : Attribute

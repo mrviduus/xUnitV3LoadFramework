@@ -1,10 +1,12 @@
+using System;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Sdk;
 using Xunit.v3;
-using xUnitLoadFramework.Extensions.ObjectModel;
 
-namespace xUnitLoadFramework.Extensions.Framework;
+namespace ObservationExample;
 
 public class LoadDiscoverer(LoadTestAssembly testAssembly) :
     TestFrameworkDiscoverer<LoadTestClass>(testAssembly)
@@ -19,11 +21,11 @@ public class LoadDiscoverer(LoadTestAssembly testAssembly) :
         ITestFrameworkDiscoveryOptions discoveryOptions,
         Func<LoadTestCase, ValueTask<bool>> discoveryCallback)
     {
-        var LoadAttribute = testMethod.Method.GetCustomAttributes<LoadAttribute>().FirstOrDefault();
-        if (LoadAttribute is null)
+        var observationAttribute = testMethod.Method.GetCustomAttributes<LoadAttribute>().FirstOrDefault();
+        if (observationAttribute is null)
             return true;
 
-        var order = LoadAttribute.Order;
+        var order = observationAttribute.Order;
 
         var testCase = new LoadTestCase(testMethod, order);
         if (!await discoveryCallback(testCase))

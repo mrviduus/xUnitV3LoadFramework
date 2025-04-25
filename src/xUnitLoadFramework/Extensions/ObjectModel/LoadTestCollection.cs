@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using Xunit.Internal;
 using Xunit.Sdk;
 using Xunit.v3;
 
-namespace xUnitLoadFramework.Extensions.ObjectModel;
+namespace ObservationExample;
 
 public class LoadTestCollection(
     LoadTestAssembly testAssembly,
