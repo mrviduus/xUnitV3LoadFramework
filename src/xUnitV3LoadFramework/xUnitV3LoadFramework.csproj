@@ -32,12 +32,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="favicon_64x64.png" Pack="true" PackagePath=""/>
+    <None Include="favicon_64x64.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="" />
     <None Include="build/**/*.props" Pack="true" PackagePath="build" />
+    <Compile Remove="ObjectModel\**" />
+    <Compile Remove="Runners\**" />
+    <EmbeddedResource Remove="ObjectModel\**" />
+    <EmbeddedResource Remove="Runners\**" />
+    <None Remove="ObjectModel\**" />
+    <None Remove="Runners\**" />
     <None Update="favicon_64x64.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -45,8 +51,6 @@
 
   <ItemGroup>
     <Folder Include="Extensions\" />
-    <Folder Include="ObjectModel\" />
-    <Folder Include="Runners\" />
   </ItemGroup>
 
   <Target Name="CopyAkkaToOutput" AfterTargets="Build">
@@ -58,7 +62,7 @@
 
   <Target DependsOnTargets="ResolveReferences;CopyAkkaToOutput" Name="CopyProjectReferencesToPackage">
     <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
       <BuildOutputInPackage Include="$(OutputPath)Akka.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(BuildOutputInPackage)" DestinationFolder="$(PackageOutputPath)/lib/$(TargetFramework)" />

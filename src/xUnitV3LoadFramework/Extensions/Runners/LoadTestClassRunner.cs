@@ -5,11 +5,11 @@ using xUnitV3LoadFramework.Extensions.ObjectModel;
 namespace xUnitV3LoadFramework.Extensions.Runners;
 
 public class LoadTestClassRunner :
-    TestClassRunner<ObservationTestClassRunnerContext, LoadTestClass, LoadTestMethod, LoadTestCase>
+    TestClassRunner<LoadTestClassRunnerContext, LoadTestClass, LoadTestMethod, LoadTestCase>
 {
     public static LoadTestClassRunner Instance { get; } = new();
 
-    protected override IReadOnlyCollection<LoadTestCase> OrderTestCases(ObservationTestClassRunnerContext ctxt) =>
+    protected override IReadOnlyCollection<LoadTestCase> OrderTestCases(LoadTestClassRunnerContext ctxt) =>
         [.. ctxt.TestCases.OrderBy(tc => tc.Order)];
 
     public async ValueTask<RunSummary> Run(
@@ -20,14 +20,14 @@ public class LoadTestClassRunner :
         ExceptionAggregator aggregator,
         CancellationTokenSource cancellationTokenSource)
     {
-        await using var ctxt = new ObservationTestClassRunnerContext(specification, testClass, testCases, messageBus, aggregator, cancellationTokenSource);
+        await using var ctxt = new LoadTestClassRunnerContext(specification, testClass, testCases, messageBus, aggregator, cancellationTokenSource);
         await ctxt.InitializeAsync();
 
         return await Run(ctxt);
     }
 
     protected override ValueTask<RunSummary> RunTestMethod(
-        ObservationTestClassRunnerContext ctxt,
+        LoadTestClassRunnerContext ctxt,
         LoadTestMethod? testMethod,
         IReadOnlyCollection<LoadTestCase> testCases,
         object?[] constructorArguments)
@@ -38,7 +38,7 @@ public class LoadTestClassRunner :
     }
 }
 
-public class ObservationTestClassRunnerContext(
+public class LoadTestClassRunnerContext(
     Specification specification,
     LoadTestClass testClass,
     IReadOnlyCollection<LoadTestCase> testCases,

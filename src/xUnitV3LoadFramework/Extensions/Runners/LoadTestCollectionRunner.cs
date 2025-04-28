@@ -6,11 +6,11 @@ using xUnitV3LoadFramework.Extensions.ObjectModel;
 namespace xUnitV3LoadFramework.Extensions.Runners;
 
 public class LoadTestCollectionRunner :
-    TestCollectionRunner<ObservationTestCollectionRunnerContext, LoadCollection, LoadTestClass, LoadTestCase>
+    TestCollectionRunner<LoadTestCollectionRunnerContext, LoadCollection, LoadTestClass, LoadTestCase>
 {
     public static LoadTestCollectionRunner Instance { get; } = new();
 
-    protected override ValueTask<RunSummary> FailTestClass(ObservationTestCollectionRunnerContext ctxt, LoadTestClass? testClass, IReadOnlyCollection<LoadTestCase> testCases, Exception exception)
+    protected override ValueTask<RunSummary> FailTestClass(LoadTestCollectionRunnerContext ctxt, LoadTestClass? testClass, IReadOnlyCollection<LoadTestCase> testCases, Exception exception)
     {
         var result = XunitRunnerHelper.FailTestCases(
             Guard.ArgumentNotNull(ctxt).MessageBus,
@@ -25,7 +25,7 @@ public class LoadTestCollectionRunner :
     }
 
     protected override async ValueTask<RunSummary> RunTestClass(
-        ObservationTestCollectionRunnerContext ctxt,
+        LoadTestCollectionRunnerContext ctxt,
         LoadTestClass? testClass,
         IReadOnlyCollection<LoadTestCase> testCases)
     {
@@ -75,14 +75,14 @@ public class LoadTestCollectionRunner :
         ExceptionAggregator exceptionAggregator,
         CancellationTokenSource cancellationTokenSource)
     {
-        await using var ctxt = new ObservationTestCollectionRunnerContext(testCollection, testCases, messageBus, exceptionAggregator, cancellationTokenSource);
+        await using var ctxt = new LoadTestCollectionRunnerContext(testCollection, testCases, messageBus, exceptionAggregator, cancellationTokenSource);
         await ctxt.InitializeAsync();
 
         return await Run(ctxt);
     }
 }
 
-public class ObservationTestCollectionRunnerContext(
+public class LoadTestCollectionRunnerContext(
     LoadCollection testCollection,
     IReadOnlyCollection<LoadTestCase> testCases,
     IMessageBus messageBus,

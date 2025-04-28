@@ -9,100 +9,121 @@ namespace xUnitV3LoadFramework.Extensions.ObjectModel;
 [DebuggerDisplay(@"\{ class = {TestMethod.TestClass.Class.Name}, method = {TestMethod.Method.Name}, display = {TestCaseDisplayName} \}")]
 public class LoadTestCase : ITestCase, IXunitSerializable
 {
-    LoadTestMethod? testMethod;
+	LoadTestMethod? testMethod;
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
-    public LoadTestCase()
-    { }
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
+	public LoadTestCase()
+	{ }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="XunitTestCase"/> class.
-    /// </summary>
-    /// <param name="testMethod">The test method this test case belongs to.</param>
-    /// <param name="order">The value from <see cref="LoadAttribute.Order"/>.</param>
-    public LoadTestCase(
-        LoadTestMethod testMethod,
-        int order)
-    {
-        this.testMethod = Guard.ArgumentNotNull(testMethod);
-        Order = order;
-    }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="XunitTestCase"/> class.
+	/// </summary>
+	/// <param name="testMethod">The test method this test case belongs to.</param>
+	/// <param name="order">The value from <see cref="LoadAttribute.Order"/>.</param>
+	public LoadTestCase(
+		LoadTestMethod testMethod,
+		int order)
+	{
+		this.testMethod = Guard.ArgumentNotNull(testMethod);
+		Order = order;
+	}
 
-    bool ITestCaseMetadata.Explicit =>
-        false;
+	public LoadTestCase(
+		LoadTestMethod testMethod,
+		int concurrency,
+		int duration,
+		int interval)
+	{
+		testMethod = Guard.ArgumentNotNull(testMethod);
+		Concurrency = concurrency;
+		Duration = duration;
+		Interval = interval;
+	}
 
-    public int Order { get; private set; }
+	bool ITestCaseMetadata.Explicit =>
+		false;
 
-    string? ITestCaseMetadata.SkipReason =>
-        null;
+	public int Order { get; private set; }
+	public int Concurrency { get; set; }
+	public int Duration { get; set; }
+	public int Interval { get; set; }
 
-    string? ITestCaseMetadata.SourceFilePath =>
-        null;
+	string? ITestCaseMetadata.SkipReason =>
+		null;
 
-    int? ITestCaseMetadata.SourceLineNumber =>
-        null;
+	string? ITestCaseMetadata.SourceFilePath =>
+		null;
 
-    public string TestCaseDisplayName =>
-        $"{TestClass.DisplayName}, it {TestMethod.DisplayName}";
+	int? ITestCaseMetadata.SourceLineNumber =>
+		null;
 
-    public LoadTestClass TestClass =>
-        TestMethod.TestClass;
+	public string TestCaseDisplayName =>
+		$"{TestClass.DisplayName}, it {TestMethod.DisplayName}";
 
-    ITestClass? ITestCase.TestClass =>
-        TestClass;
+	public LoadTestClass TestClass =>
+		TestMethod.TestClass;
 
-    int? ITestCaseMetadata.TestClassMetadataToken =>
-        TestClass.Class.MetadataToken;
+	ITestClass? ITestCase.TestClass =>
+		TestClass;
 
-    string? ITestCaseMetadata.TestClassName =>
-        TestClass.TestClassName;
+	int? ITestCaseMetadata.TestClassMetadataToken =>
+		TestClass.Class.MetadataToken;
 
-    string? ITestCaseMetadata.TestClassNamespace =>
-        TestClass.TestClassNamespace;
+	string? ITestCaseMetadata.TestClassName =>
+		TestClass.TestClassName;
 
-    string? ITestCaseMetadata.TestClassSimpleName =>
-        TestClass.TestClassSimpleName;
+	string? ITestCaseMetadata.TestClassNamespace =>
+		TestClass.TestClassNamespace;
 
-    public LoadCollection TestCollection =>
-        TestMethod.TestClass.TestCollection;
+	string? ITestCaseMetadata.TestClassSimpleName =>
+		TestClass.TestClassSimpleName;
 
-    ITestCollection ITestCase.TestCollection =>
-        TestCollection;
+	public LoadCollection TestCollection =>
+		TestMethod.TestClass.TestCollection;
 
-    public LoadTestMethod TestMethod =>
-        testMethod ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(LoadTestCase)}.{nameof(TestMethod)}");
+	ITestCollection ITestCase.TestCollection =>
+		TestCollection;
 
-    ITestMethod? ITestCase.TestMethod =>
-        TestMethod;
+	public LoadTestMethod TestMethod =>
+		testMethod ?? throw new InvalidOperationException($"Attempted to retrieve an uninitialized {nameof(LoadTestCase)}.{nameof(TestMethod)}");
 
-    int? ITestCaseMetadata.TestMethodMetadataToken =>
-        TestMethod.Method.MetadataToken;
+	ITestMethod? ITestCase.TestMethod =>
+		TestMethod;
 
-    string? ITestCaseMetadata.TestMethodName =>
-        TestMethod.MethodName;
+	int? ITestCaseMetadata.TestMethodMetadataToken =>
+		TestMethod.Method.MetadataToken;
 
-    string[]? ITestCaseMetadata.TestMethodParameterTypesVSTest =>
-        null;
+	string? ITestCaseMetadata.TestMethodName =>
+		TestMethod.MethodName;
 
-    string? ITestCaseMetadata.TestMethodReturnTypeVSTest =>
-        null;
+	string[]? ITestCaseMetadata.TestMethodParameterTypesVSTest =>
+		null;
 
-    public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Traits =>
-        TestMethod.Traits;
+	string? ITestCaseMetadata.TestMethodReturnTypeVSTest =>
+		null;
 
-    public string UniqueID =>
-        UniqueIDGenerator.ForTestCase(TestMethod.UniqueID, testMethodGenericTypes: null, testMethodArguments: null);
+	public IReadOnlyDictionary<string, IReadOnlyCollection<string>> Traits =>
+		TestMethod.Traits;
 
-    public void Deserialize(IXunitSerializationInfo info)
-    {
-        testMethod = Guard.NotNull("Could not retrieve TestMethod from serialization", info.GetValue<LoadTestMethod>("tm"));
-        Order = info.GetValue<int>("o");
-    }
+	public string UniqueID =>
+		UniqueIDGenerator.ForTestCase(TestMethod.UniqueID, testMethodGenericTypes: null, testMethodArguments: null);
 
-    public void Serialize(IXunitSerializationInfo info)
-    {
-        info.AddValue("o", Order);
-        info.AddValue("tm", TestMethod);
-    }
+	public void Deserialize(IXunitSerializationInfo info)
+	{
+		testMethod = Guard.NotNull("Could not retrieve TestMethod from serialization", info.GetValue<LoadTestMethod>("tm"));
+		Order = info.GetValue<int>("order");
+		Concurrency = info.GetValue<int>("concurrency");
+		Duration = info.GetValue<int>("duration");
+		Interval = info.GetValue<int>("interval");
+	}
+
+	public void Serialize(IXunitSerializationInfo info)
+	{
+		info.AddValue("tm", TestMethod);
+		info.AddValue("order", Order);
+		info.AddValue("concurrency", Concurrency);
+		info.AddValue("duration", Duration);
+		info.AddValue("interval", Interval);
+	}
 }
