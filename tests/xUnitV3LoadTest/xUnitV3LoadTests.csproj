@@ -36,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\LoadRunnerCore\LoadRunnerCore.csproj" />
     <ProjectReference Include="..\..\src\xUnitV3LoadFramework\xUnitV3LoadFramework.csproj" />
   </ItemGroup>
 

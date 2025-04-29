@@ -1,7 +1,7 @@
-using LoadRunnerCore.Models;
-using LoadRunnerCore.Runner;
 using Xunit.Sdk;
 using Xunit.v3;
+using xUnitV3LoadFramework.Core.Models;
+using xUnitV3LoadFramework.Core.Runner;
 using xUnitV3LoadFramework.Extensions.ObjectModel;
 
 namespace xUnitV3LoadFramework.Extensions.Runners;
@@ -46,16 +46,21 @@ public class LoadTestRunner :
 		//var loadAttribute = test.TestCase.TestMethod.Method.GetCustomAttributes<LoadAttribute>().FirstOrDefault();
 		await using var ctxt = new LoadTestRunnerContext(specification, test, messageBus, skipReason, aggregator, cancellationTokenSource);
 		await ctxt.InitializeAsync();
-
 		var loadSettings = CreateLoadSettings(test);
 		if (loadSettings == null)
+		{
 			return await Run(ctxt);
+		}
 		var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
 		var loadResult = await LoadRunner.Run(executionPlan);
 
 		var status = loadResult.Failure > 0 ? "FAILURE" : "SUCCESS";
-
-		return await Run(ctxt);
+		return new RunSummary
+		{
+			Total = loadResult.Total,
+			Failed = loadResult.Failure,
+			Time = (decimal)loadSettings.Duration.TotalSeconds
+		};
 	}
 	private LoadSettings CreateLoadSettings(LoadTest test)
 	{
@@ -82,7 +87,7 @@ public class LoadTestRunner :
 
 	private LoadExecutionPlan CreateExecutionPlan(LoadTestRunnerContext ctx, LoadSettings settings)
 	{
-		var action = async () => await base.Run(ctx);
+		var action = async () => await base.RunTest(ctx);
 		return new LoadExecutionPlan
 		{
 			Name = ctx.Test.TestDisplayName,
