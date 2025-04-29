@@ -31,37 +31,54 @@ public class LoadTestRunner :
 		base.InvokeTest(ctxt, ctxt.Specification);
 
 	public async ValueTask<RunSummary> Run(
-		Specification specification,
-		LoadTest test,
-		IMessageBus messageBus,
-		string? skipReason,
-		ExceptionAggregator aggregator,
-		CancellationTokenSource cancellationTokenSource)
+	Specification specification,
+	LoadTest test,
+	IMessageBus messageBus,
+	string? skipReason,
+	ExceptionAggregator aggregator,
+	CancellationTokenSource cancellationTokenSource)
 	{
-		//var concurrency = test.TestCase.Concurrency;
-		//var duration = test.TestCase.Duration;
-		//var interval = test.TestCase.Interval;
-
-
-		//var loadAttribute = test.TestCase.TestMethod.Method.GetCustomAttributes<LoadAttribute>().FirstOrDefault();
 		await using var ctxt = new LoadTestRunnerContext(specification, test, messageBus, skipReason, aggregator, cancellationTokenSource);
 		await ctxt.InitializeAsync();
+
+		// Queue TestStarting explicitly to populate metadata
+		await OnTestStarting(ctxt);
+
+		var summary = new RunSummary { Total = 1 };
+		var elapsedTime = TimeSpan.Zero;
+
 		var loadSettings = CreateLoadSettings(test);
 		if (loadSettings == null)
 		{
-			return await Run(ctxt);
+			summary.NotRun = 1;
+			await OnTestNotRun(ctxt, "", null);
 		}
-		var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
-		var loadResult = await LoadRunner.Run(executionPlan);
-
-		var status = loadResult.Failure > 0 ? "FAILURE" : "SUCCESS";
-		return new RunSummary
+		else
 		{
-			Total = loadResult.Total,
-			Failed = loadResult.Failure,
-			Time = (decimal)loadSettings.Duration.TotalSeconds
-		};
+			var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
+			var loadResult = await LoadRunner.Run(executionPlan);
+			elapsedTime = loadSettings.Duration;
+			summary.Time = (decimal)elapsedTime.TotalSeconds;
+
+			if (loadResult.Failure > 0)
+			{
+				summary.Failed = loadResult.Failure;
+				var exception = new Exception($"{loadResult.Failure} load test(s) failed.");
+				await OnTestFailed(ctxt, exception, summary.Time, "", null);
+			}
+			else
+			{
+				await OnTestPassed(ctxt, summary.Time, "", null);
+			}
+		}
+
+		// IMPORTANT: Queue TestFinished explicitly to ensure test metadata is completed
+		await OnTestFinished(ctxt, summary.Time, "", null, null);
+
+		return summary;
 	}
+
+
 	private LoadSettings CreateLoadSettings(LoadTest test)
 	{
 		var concurrency = test.TestCase.Concurrency;
