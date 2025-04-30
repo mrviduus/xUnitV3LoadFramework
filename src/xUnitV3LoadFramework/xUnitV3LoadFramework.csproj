@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     <PackageId>xUnitV3LoadFramework</PackageId>
     <Authors>Vasyl Vdovychenko</Authors>
     <Description>xUnitLoadRunner is a powerful load testing framework designed to seamlessly integrate with xUnit. By leveraging Akka.NET actors, it enables developers to define and execute load test scenarios in parallel while collecting detailed test results and performance reports.

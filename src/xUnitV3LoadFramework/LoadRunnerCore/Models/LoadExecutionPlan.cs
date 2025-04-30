@@ -2,8 +2,8 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Models
 {
     public class LoadExecutionPlan
     {
-        public string Name { get; set; }
-        public LoadSettings Settings { get; set; }
-        public Func<Task<bool>> Action { get; set; }
+        public required string Name { get; set; }
+        public required LoadSettings Settings { get; set; }
+        public required Func<Task<bool>> Action { get; set; }
     }
 }
