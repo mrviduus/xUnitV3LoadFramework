@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Xunit.Internal;
 using Xunit.Sdk;
 using Xunit.v3;
+using xUnitV3LoadFramework.Attributes;
 
 namespace xUnitV3LoadFramework.Extensions.ObjectModel;
 

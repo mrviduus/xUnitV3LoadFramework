@@ -1,7 +1,7 @@
+using LoadRunnerCore.Models;
+using LoadRunnerCore.Runner;
 using Xunit.Sdk;
 using Xunit.v3;
-using xUnitV3LoadFramework.Core.Models;
-using xUnitV3LoadFramework.Core.Runner;
 using xUnitV3LoadFramework.Extensions.ObjectModel;
 
 namespace xUnitV3LoadFramework.Extensions.Runners;
@@ -11,9 +11,6 @@ public class LoadTestRunner :
 {
 	public static LoadTestRunner Instance { get; } = new();
 
-	// We don't want to claim to create or dispose the object here, because we share an already created
-	// instance among all the tests, and we don't want to dispatch the messages related to creation
-	// and disposal either. So we return false for the creation/disposal options.
 	protected override ValueTask<(object? Instance, SynchronizationContext? SyncContext, ExecutionContext? ExecutionContext)> CreateTestClassInstance(LoadTestRunnerContext ctxt) =>
 		throw new NotSupportedException();
 
@@ -31,53 +28,64 @@ public class LoadTestRunner :
 		base.InvokeTest(ctxt, ctxt.Specification);
 
 	public async ValueTask<RunSummary> Run(
-	Specification specification,
-	LoadTest test,
-	IMessageBus messageBus,
-	string? skipReason,
-	ExceptionAggregator aggregator,
-	CancellationTokenSource cancellationTokenSource)
+		Specification specification,
+		LoadTest test,
+		IMessageBus messageBus,
+		string? skipReason,
+		ExceptionAggregator aggregator,
+		CancellationTokenSource cancellationTokenSource)
 	{
 		await using var ctxt = new LoadTestRunnerContext(specification, test, messageBus, skipReason, aggregator, cancellationTokenSource);
 		await ctxt.InitializeAsync();
+		var loadSettings = CreateLoadSettings(test);
+		if (loadSettings == null)
+		{
+			return await Run(ctxt);
+		}
 
-		// Queue TestStarting explicitly to populate metadata
 		await OnTestStarting(ctxt);
 
 		var summary = new RunSummary { Total = 1 };
 		var elapsedTime = TimeSpan.Zero;
 
-		var loadSettings = CreateLoadSettings(test);
-		if (loadSettings == null)
+		var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
+		var loadResult = await LoadRunner.Run(executionPlan);
+		elapsedTime = loadSettings.Duration;
+		summary.Time = (decimal)elapsedTime.TotalSeconds;
+
+		ReportLoadResult(ctxt, loadResult);
+
+		if (loadResult.Failure > 0)
 		{
-			summary.NotRun = 1;
-			await OnTestNotRun(ctxt, "", null);
+			summary.Failed = loadResult.Failure;
+			var exception = new Exception($"{loadResult.Failure} load test(s) failed.");
+			await OnTestFailed(ctxt, exception, summary.Time, "", null);
 		}
 		else
 		{
-			var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
-			var loadResult = await LoadRunner.Run(executionPlan);
-			elapsedTime = loadSettings.Duration;
-			summary.Time = (decimal)elapsedTime.TotalSeconds;
-
-			if (loadResult.Failure > 0)
-			{
-				summary.Failed = loadResult.Failure;
-				var exception = new Exception($"{loadResult.Failure} load test(s) failed.");
-				await OnTestFailed(ctxt, exception, summary.Time, "", null);
-			}
-			else
-			{
-				await OnTestPassed(ctxt, summary.Time, "", null);
-			}
+			await OnTestPassed(ctxt, summary.Time, "", null);
 		}
 
-		// IMPORTANT: Queue TestFinished explicitly to ensure test metadata is completed
 		await OnTestFinished(ctxt, summary.Time, "", null, null);
 
 		return summary;
 	}
 
+	private void ReportLoadResult(LoadTestRunnerContext ctxt, LoadResult result)
+	{
+		var summaryMessage =
+			$"[LOAD TEST RESULT] {ctxt.Test.TestDisplayName}:\n" +
+			$"- Total Executions: {result.Total}\n" +
+			$"- Success: {result.Success}\n" +
+			$"- Failure: {result.Failure}\n" +
+			$"- Max Latency: {result.MaxLatency:F2} ms\n" +
+			$"- Min Latency: {result.MinLatency:F2} ms\n" +
+			$"- Average Latency: {result.AverageLatency:F2} ms\n" +
+			$"- 95th Percentile Latency: {result.Percentile95Latency:F2} ms\n" +
+			$"- Duration: {result.Time:F2} s";
+
+		ctxt.MessageBus.QueueMessage(new DiagnosticMessage(summaryMessage));
+	}
 
 	private LoadSettings CreateLoadSettings(LoadTest test)
 	{
@@ -85,13 +93,7 @@ public class LoadTestRunner :
 		var duration = test.TestCase.Duration;
 		var interval = test.TestCase.Interval;
 
-		if (concurrency <= 0)
-			return null;
-
-		if (duration <= 0)
-			return null;
-
-		if (interval <= 0)
+		if (concurrency <= 0 || duration <= 0 || interval <= 0)
 			return null;
 
 		return new LoadSettings

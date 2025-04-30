@@ -47,7 +47,10 @@
 
   <ItemGroup>
     <Folder Include="Extensions\" />
-    <Folder Include="Core\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LoadRunnerCore\LoadRunnerCore.csproj" />
   </ItemGroup>
 
   <Target Name="CopyAkkaToOutput" AfterTargets="Build">

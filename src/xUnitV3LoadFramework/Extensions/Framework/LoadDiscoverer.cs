@@ -2,6 +2,7 @@ using System.Reflection;
 using Xunit;
 using Xunit.Sdk;
 using Xunit.v3;
+using xUnitV3LoadFramework.Attributes;
 using xUnitV3LoadFramework.Extensions.ObjectModel;
 
 namespace xUnitV3LoadFramework.Extensions.Framework;
