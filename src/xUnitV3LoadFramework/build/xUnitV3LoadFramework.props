@@ -1,11 +1,7 @@
 <Project>
-    <PropertyGroup>
-        <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
-    </PropertyGroup>
-    <ItemGroup>
-        <AssemblyAttribute Include="Xunit.TestFramework" Condition="'$(IncludeLoadTestFramework)' == 'true'">
-            <_Parameter1>xUnitLoadFramework.LoadTestFramework</_Parameter1>
-            <_Parameter2>xUnitLoadFramework</_Parameter2>
-        </AssemblyAttribute>
-    </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="Xunit.TestFramework">
+      <_Parameter1>xUnitV3LoadFramework.LoadTestFramework</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>
