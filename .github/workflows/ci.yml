@@ -1,4 +1,5 @@
 name: publish
+
 on:
   push:
     branches:
@@ -14,7 +15,7 @@ env:
 
 defaults:
   run:
-    shell: bash  # Changed to bash for compatibility with `sed` and conditionals
+    shell: bash  # For sed and conditional logic
 
 jobs:
   publish_nuget_package:
@@ -41,17 +42,17 @@ jobs:
 
       - name: Update .csproj with Version
         run: |
-          sed -i 's|<Version>.*</Version>|<Version>${{ env.VERSION }}</Version>|' src/xUnitLoadFramework/xUnitLoadFramework.csproj
+          sed -i 's|<Version>.*</Version>|<Version>${{ env.VERSION }}</Version>|' src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj
           echo "Updated version in .csproj to: ${{ env.VERSION }}"
 
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test --no-restore --verbosity normal
+        run: dotnet test src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --no-restore --verbosity normal
 
       - name: Ensure NuGet Directory Exists
         run: mkdir -p "${{ env.NuGetDirectory }}"
