@@ -11,7 +11,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\LoadRunnerCore\LoadRunnerCore.csproj" />
-      <ProjectReference Include="..\..\src\xUnitLoadFramework\xUnitLoadFramework.csproj" />
     </ItemGroup>
 
 </Project>
