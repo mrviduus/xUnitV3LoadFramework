@@ -56,8 +56,8 @@ jobs:
       - name: Ensure NuGet Directory Exists
         run: mkdir -p "${{ env.NuGetDirectory }}"
 
-      - name: Pack xUnitLoadFramework
-        run: dotnet pack src/xUnitLoadFramework/xUnitLoadFramework.csproj --configuration Release --output "${{ env.NuGetDirectory }}"
+      - name: Pack xUnitV3LoadFramework
+        run: dotnet pack src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --configuration Release --output "${{ env.NuGetDirectory }}"
 
       - name: Setup NuGet CLI
         uses: NuGet/setup-nuget@v1
