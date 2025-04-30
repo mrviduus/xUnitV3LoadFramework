@@ -93,8 +93,8 @@ public class LoadTestRunner :
 		var duration = test.TestCase.Duration;
 		var interval = test.TestCase.Interval;
 
-		if (concurrency <= 0 || duration <= 0 || interval <= 0)
-			return null;
+		// if (concurrency <= 0 || duration <= 0 || interval <= 0)
+		// 	return null;
 
 		return new LoadSettings
 		{
