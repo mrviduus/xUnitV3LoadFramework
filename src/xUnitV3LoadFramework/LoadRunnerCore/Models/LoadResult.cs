@@ -2,7 +2,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Models
 {
 	public class LoadResult
 	{
-		public string ScenarioName { get; set; }
+		public string ScenarioName { get; set; } = string.Empty;
 		public int Total { get; set; }
 		public int Success { get; set; }
 		public int Failure { get; set; }
