@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
     <AssemblyAttribute Include="Xunit.TestFramework">
-      <_Parameter1>xUnitV3LoadFramework.LoadTestFramework</_Parameter1>
+      <_Parameter1>typeof(xUnitV3LoadFramework.Extensions.Framework.LoadTestFramework)</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 </Project>
