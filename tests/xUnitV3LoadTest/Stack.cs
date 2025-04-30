@@ -1,5 +1,7 @@
 ﻿// This is a copy of the Stack class from StackSample
 
+namespace xUnitV3LoadTests;
+
 public class Stack<T>
 {
 	readonly LinkedList<T> elements = [];

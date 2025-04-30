@@ -151,6 +151,8 @@ using xUnitV3LoadFramework.Extensions.Framework;
 //		Assert.Equal(element1, stack.Pop());
 //}
 
+namespace xUnitV3LoadTests;
+
 public class Load_when_you_push_several_items_onto_the_stack : Specification
 {
 	const int element1 = 10;

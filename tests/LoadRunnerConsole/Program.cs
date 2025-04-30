@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
-using LoadRunnerCore.Models;
-using LoadRunnerCore.Runner;
+using xUnitV3LoadFramework.LoadRunnerCore.Models;
+using xUnitV3LoadFramework.LoadRunnerCore.Runner;
+
 
 var scenario = new LoadExecutionPlan()
 {

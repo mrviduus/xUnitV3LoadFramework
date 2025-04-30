@@ -1,8 +1,8 @@
-using LoadRunnerCore.Models;
-using LoadRunnerCore.Runner;
 using Xunit.Sdk;
 using Xunit.v3;
 using xUnitV3LoadFramework.Extensions.ObjectModel;
+using xUnitV3LoadFramework.LoadRunnerCore.Models;
+using xUnitV3LoadFramework.LoadRunnerCore.Runner;
 
 namespace xUnitV3LoadFramework.Extensions.Runners;
 

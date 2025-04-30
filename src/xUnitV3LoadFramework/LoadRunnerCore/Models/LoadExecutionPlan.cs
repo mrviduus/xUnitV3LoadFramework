@@ -1,7 +1,4 @@
-using System;
-using System.Threading.Tasks;
-
-namespace LoadRunnerCore.Models
+namespace xUnitV3LoadFramework.LoadRunnerCore.Models
 {
     public class LoadExecutionPlan
     {

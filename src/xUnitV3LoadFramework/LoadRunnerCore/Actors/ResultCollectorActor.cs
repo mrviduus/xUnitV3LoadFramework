@@ -1,11 +1,9 @@
 using Akka.Actor;
 using Akka.Event;
-using LoadRunnerCore.Messages;
-using LoadRunnerCore.Models;
-using System.Collections.Generic;
-using System.Linq;
+using xUnitV3LoadFramework.LoadRunnerCore.Messages;
+using xUnitV3LoadFramework.LoadRunnerCore.Models;
 
-namespace LoadRunnerCore.Actors
+namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 {
 	public class ResultCollectorActor : ReceiveActor
 	{

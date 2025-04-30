@@ -1,6 +1,4 @@
-using System;
-
-namespace LoadRunnerCore.Models
+namespace xUnitV3LoadFramework.LoadRunnerCore.Models
 {
     public class LoadSettings
     {

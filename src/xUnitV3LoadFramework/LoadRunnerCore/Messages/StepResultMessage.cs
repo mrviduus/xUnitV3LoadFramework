@@ -1,4 +1,4 @@
-namespace LoadRunnerCore.Messages
+namespace xUnitV3LoadFramework.LoadRunnerCore.Messages
 {
 	public class StepResultMessage
 	{

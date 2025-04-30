@@ -1,14 +1,10 @@
+using System.Diagnostics;
 using Akka.Actor;
 using Akka.Event;
-using LoadRunnerCore.Messages;
-using LoadRunnerCore.Models;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using xUnitV3LoadFramework.LoadRunnerCore.Messages;
+using xUnitV3LoadFramework.LoadRunnerCore.Models;
 
-namespace LoadRunnerCore.Actors
+namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 {
 	public class LoadWorkerActor : ReceiveActor
 	{

@@ -1,11 +1,9 @@
 using Akka.Actor;
-using LoadRunnerCore.Actors;
-using LoadRunnerCore.Messages;
-using LoadRunnerCore.Models;
-using System;
-using System.Threading.Tasks;
+using xUnitV3LoadFramework.LoadRunnerCore.Actors;
+using xUnitV3LoadFramework.LoadRunnerCore.Messages;
+using xUnitV3LoadFramework.LoadRunnerCore.Models;
 
-namespace LoadRunnerCore.Runner
+namespace xUnitV3LoadFramework.LoadRunnerCore.Runner
 {
 	public static class LoadRunner
 	{
