@@ -37,13 +37,13 @@ public class LoadTestRunner :
 	{
 
 		await using var ctxt = new LoadTestRunnerContext(specification, test, messageBus, skipReason, aggregator, cancellationTokenSource);
-		await ctxt.InitializeAsync();
-		
 		if (!string.IsNullOrEmpty(skipReason))
 		{
 			await OnTestSkipped(ctxt, skipReason, 0m, "", null );
 			return new RunSummary { Total = 1, Skipped = 1 };
 		}
+		await ctxt.InitializeAsync();
+		
 		var loadSettings = CreateLoadSettings(test);
 
 		await OnTestStarting(ctxt);

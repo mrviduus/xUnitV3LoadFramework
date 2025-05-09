@@ -31,7 +31,7 @@ public class When_running_standard_load_scenarios : Specification
 
     [Load(order: 3, concurrency: 1, duration: 3000, interval: 1000, Skip = "testing skip")]
     public void should_skip_scenario() =>
-        Console.WriteLine(">> Executing third scenario");
+        Console.WriteLine(">> This test should be skipped");
     
     
 }
