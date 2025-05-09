@@ -22,6 +22,9 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 		private async Task RunWorkAsync()
 		{
 			var workerName = Self.Path.Name;
+			
+			_resultCollector.Tell(new StartLoadMessage());
+			
 			using var cts = new CancellationTokenSource(_executionPlan.Settings.Duration);
 
 			try
