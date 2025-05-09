@@ -1,9 +1,9 @@
-# 🚀 xUnitLoadRunner
+# 🚀 xUnitV3LoadFramework
 
 [![NuGet](https://img.shields.io/nuget/v/xUnitLoadFramework.svg)](https://www.nuget.org/packages/xUnitLoadFramework)
 [![Downloads](https://img.shields.io/nuget/dt/xUnitLoadFramework.svg)](https://www.nuget.org/packages/xUnitLoadFramework)
 
-**xUnitLoadRunner** is a robust and user-friendly load testing framework built to seamlessly integrate with **xUnit** and powered by **Akka.NET actors**. It allows developers to efficiently define, execute, and analyze parallel load test scenarios, making load testing a natural part of your automated testing workflow.
+**xUnitV3LoadFramework** is a robust and user-friendly load testing framework built to seamlessly integrate with **xUnit** and powered by **Akka.NET actors**. It allows developers to efficiently define, execute, and analyze parallel load test scenarios, making load testing a natural part of your automated testing workflow.
 
 ---
 
@@ -98,13 +98,14 @@ dotnet test
 ## 📖 Documentation
 
 For detailed documentation, examples, and more information, visit the [official documentation](#).
+Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/tests/xUnitV3LoadTest)
 
 ---
 
 ## 🤝 Contributing
 
 Your contributions and feedback are always welcome!
-- Submit issues or suggestions via [GitHub Issues](#).
+- Submit issues or suggestions via [GitHub Issues](https://github.com/mrviduus/xUnitV3LoadFramework/issues).
 - Open pull requests following our [Contributing Guidelines](CONTRIBUTING.md).
 
 ---

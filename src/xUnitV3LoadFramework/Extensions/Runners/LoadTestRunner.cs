@@ -38,19 +38,14 @@ public class LoadTestRunner :
 		await using var ctxt = new LoadTestRunnerContext(specification, test, messageBus, skipReason, aggregator, cancellationTokenSource);
 		await ctxt.InitializeAsync();
 		var loadSettings = CreateLoadSettings(test);
-		if (loadSettings == null)
-		{
-			return await Run(ctxt);
-		}
 
 		await OnTestStarting(ctxt);
 
 		var summary = new RunSummary { Total = 1 };
-		var elapsedTime = TimeSpan.Zero;
 
 		var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
 		var loadResult = await LoadRunner.Run(executionPlan);
-		elapsedTime = loadSettings.Duration;
+		var elapsedTime = loadSettings.Duration;
 		summary.Time = (decimal)elapsedTime.TotalSeconds;
 
 		ReportLoadResult(ctxt, loadResult);
@@ -93,9 +88,6 @@ public class LoadTestRunner :
 		var duration = test.TestCase.Duration;
 		var interval = test.TestCase.Interval;
 
-		// if (concurrency <= 0 || duration <= 0 || interval <= 0)
-		// 	return null;
-
 		return new LoadSettings
 		{
 			Concurrency = concurrency,
@@ -106,13 +98,13 @@ public class LoadTestRunner :
 
 	private LoadExecutionPlan CreateExecutionPlan(LoadTestRunnerContext ctx, LoadSettings settings)
 	{
-		var action = async () => await base.RunTest(ctx);
+		async Task<TimeSpan> Action() => await base.RunTest(ctx);
 		return new LoadExecutionPlan
 		{
 			Name = ctx.Test.TestDisplayName,
 			Action = async () =>
 			{
-				await action();
+				await Action();
 				return true;
 			},
 			Settings = settings
