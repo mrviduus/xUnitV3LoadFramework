@@ -52,8 +52,6 @@ public class LoadTestRunner :
 
 		var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
 		var loadResult = await LoadRunner.Run(executionPlan);
-		var elapsedTime = loadSettings.Duration;
-		summary.Time = (decimal)elapsedTime.TotalSeconds;
 
 		var reportLoadResult = ReportLoadResult(ctxt, loadResult);
 
