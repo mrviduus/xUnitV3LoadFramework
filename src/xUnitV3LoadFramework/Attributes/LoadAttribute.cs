@@ -1,7 +1,9 @@
+using Xunit;
+
 namespace xUnitV3LoadFramework.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class LoadAttribute : Attribute
+public class LoadAttribute : FactAttribute
 {
 	public LoadAttribute(int order, int concurrency, int duration, int interval)
 	{
