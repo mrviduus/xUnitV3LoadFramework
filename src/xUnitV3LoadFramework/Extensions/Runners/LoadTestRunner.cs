@@ -35,8 +35,15 @@ public class LoadTestRunner :
 		ExceptionAggregator aggregator,
 		CancellationTokenSource cancellationTokenSource)
 	{
+
 		await using var ctxt = new LoadTestRunnerContext(specification, test, messageBus, skipReason, aggregator, cancellationTokenSource);
 		await ctxt.InitializeAsync();
+		
+		if (!string.IsNullOrEmpty(skipReason))
+		{
+			await OnTestSkipped(ctxt, skipReason, 0m, "", null );
+			return new RunSummary { Total = 1, Skipped = 1 };
+		}
 		var loadSettings = CreateLoadSettings(test);
 
 		await OnTestStarting(ctxt);
@@ -48,25 +55,25 @@ public class LoadTestRunner :
 		var elapsedTime = loadSettings.Duration;
 		summary.Time = (decimal)elapsedTime.TotalSeconds;
 
-		ReportLoadResult(ctxt, loadResult);
+		var reportLoadResult = ReportLoadResult(ctxt, loadResult);
 
 		if (loadResult.Failure > 0)
 		{
 			summary.Failed = loadResult.Failure;
 			var exception = new Exception($"{loadResult.Failure} load test(s) failed.");
-			await OnTestFailed(ctxt, exception, summary.Time, "", null);
+			await OnTestFailed(ctxt, exception, summary.Time, reportLoadResult, null);
 		}
 		else
 		{
-			await OnTestPassed(ctxt, summary.Time, "", null);
+			await OnTestPassed(ctxt, summary.Time, reportLoadResult, null);
 		}
 
-		await OnTestFinished(ctxt, summary.Time, "", null, null);
+		await OnTestFinished(ctxt, summary.Time, reportLoadResult, null, null);
 
 		return summary;
 	}
 
-	private void ReportLoadResult(LoadTestRunnerContext ctxt, LoadResult result)
+	private string ReportLoadResult(LoadTestRunnerContext ctxt, LoadResult result)
 	{
 		var summaryMessage =
 			$"[LOAD TEST RESULT] {ctxt.Test.TestDisplayName}:\n" +
@@ -80,6 +87,7 @@ public class LoadTestRunner :
 			$"- Duration: {result.Time:F2} s";
 
 		ctxt.MessageBus.QueueMessage(new DiagnosticMessage(summaryMessage));
+		return summaryMessage;
 	}
 
 	private LoadSettings CreateLoadSettings(LoadTest test)

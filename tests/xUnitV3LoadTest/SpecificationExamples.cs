@@ -29,9 +29,11 @@ public class When_running_standard_load_scenarios : Specification
     public void should_run_second_scenario() =>
         Console.WriteLine(">> Executing second scenario");
 
-    [Load(order: 3, concurrency: 1, duration: 3000, interval: 1000)]
-    public void should_run_third_scenario() =>
+    [Load(order: 3, concurrency: 1, duration: 3000, interval: 1000, Skip = "testing skip")]
+    public void should_skip_scenario() =>
         Console.WriteLine(">> Executing third scenario");
+    
+    
 }
 
 //=========================================================//

@@ -28,11 +28,13 @@ public class LoadDiscoverer(LoadTestAssembly testAssembly) :
 		var cuncurrency = loadAttribute.Concurrency;
 		var duration = loadAttribute.Duration;
 		var interval = loadAttribute.Interval;
+		var skipReason = loadAttribute.Skip;
 
 		var testCase = new LoadTestCase(testMethod, order);
 		testCase.Concurrency = cuncurrency;
 		testCase.Duration = duration;
 		testCase.Interval = interval;
+		testCase.SkipReason = skipReason;
 		//var testCase = new LoadTestCase(testMethod, cuncurrency, duration, interval);
 		if (!await discoveryCallback(testCase))
 			return false;

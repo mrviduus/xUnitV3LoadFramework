@@ -25,7 +25,7 @@ public class LoadTestCaseRunner :
 	protected override ValueTask<RunSummary> RunTest(
 		LoadTestCaseRunnerContext ctxt,
 		LoadTest test) =>
-			LoadTestRunner.Instance.Run(ctxt.Specification, test, ctxt.MessageBus, null, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
+			LoadTestRunner.Instance.Run(ctxt.Specification, test, ctxt.MessageBus, test.TestCase.SkipReason, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
 
 
 }
