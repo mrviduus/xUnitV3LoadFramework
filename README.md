@@ -21,7 +21,7 @@
 Install via NuGet package manager:
 
 ```bash
-dotnet add package xUnitLoadFramework
+dotnet add package xUnitV3LoadFramework
 ```
 
 ---
@@ -29,7 +29,7 @@ dotnet add package xUnitLoadFramework
 ## 🚦 Quick Start
 
 ### Defining a Load Test
-Use the `LoadTestSettings` attribute to configure your test's concurrency level, duration, and intervals.
+Use the `Load` attribute (inheriting from `FactAttribute`) to configure concurrency level, duration, interval, and execution order.
 
 ### Running Your Load Test
 Execute your tests using the standard xUnit command:
@@ -42,28 +42,56 @@ dotnet test
 
 ## 📝 Usage Example
 
-Here's a quick example demonstrating how to define and execute load tests:
+Here's a clear example demonstrating how to define and execute load tests using the `Specification` base class and the `[Load]` attribute:
 
 ```csharp
-using xUnitLoadFramework;
-using Xunit;
+using xUnitV3LoadFramework.Attributes;
+using xUnitV3LoadFramework.Extensions;
+using xUnitV3LoadFramework.Extensions.Framework;
+using System;
 
-namespace xUnitLoadDemo
+[assembly: TestFramework(typeof(LoadTestFramework))]
+
+namespace xUnitLoadDemo;
+
+public class ExampleLoadSpecification : Specification
 {
-    public class LoadTests
+    protected override void EstablishContext()
     {
-        [Fact]
-        [LoadTestSettings(concurrency: 5, DurationInSeconds = 10, IntervalInSeconds = 2)]
-        public void ExampleLoadTest()
-        {
-            // Your test logic goes here
-            Console.WriteLine("Running load test...");
-        }
+        Console.WriteLine(">> Setup phase");
+    }
+
+    protected override void Because()
+    {
+        Console.WriteLine(">> Action phase");
+    }
+
+    [Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
+    public void should_run_load_scenario_1()
+    {
+        Console.WriteLine(">> Running Load 1");
+    }
+
+    [Load(order: 2, concurrency: 3, duration: 7000, interval: 300)]
+    public void should_run_load_scenario_2()
+    {
+        Console.WriteLine(">> Running Load 2");
     }
 }
 ```
 
-The above example runs your test concurrently with 5 actors for 10 seconds, executing every 2 seconds.
+Each `[Load]` attribute defines:
+
+- `order`: the test execution order  
+- `concurrency`: number of parallel executions  
+- `duration`: how long to run (in milliseconds)  
+- `interval`: delay between each wave of execution (in milliseconds)
+
+Run your tests using:
+
+```bash
+dotnet test
+```
 
 ---
 
@@ -93,4 +121,3 @@ For questions, suggestions, or feedback, please open an issue or contact directl
 
 - **Vasyl Vdovychenko**  
   [LinkedIn](https://www.linkedin.com/in/vasyl-vdovychenko) | [Email](mailto:mrviduus@gmail.com)
-
