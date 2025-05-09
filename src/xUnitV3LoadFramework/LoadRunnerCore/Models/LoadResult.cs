@@ -6,7 +6,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Models
 		public int Total { get; set; }
 		public int Success { get; set; }
 		public int Failure { get; set; }
-		public decimal Time { get; set; }
+		public double Time { get; set; }
 
 		// New metrics
 		public double MaxLatency { get; set; }

@@ -13,10 +13,18 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 		private int _failure;
 		private readonly List<double> _latencies = new();
 		private readonly ILoggingAdapter _logger = Context.GetLogger();
-
+		
+		private DateTime? _startTime = null;
+		
 		public ResultCollectorActor(string scenarioName)
 		{
 			_scenarioName = scenarioName;
+			
+			Receive<StartLoadMessage>(_ => 
+			{
+				_startTime = DateTime.UtcNow;
+				_logger.Info("Load scenario '{0}' started at {1}", _scenarioName, _startTime);
+			});
 
 			Receive<StepResultMessage>(msg =>
 			{
@@ -33,6 +41,8 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 
 			Receive<GetLoadResultMessage>(_ =>
 			{
+				var endTime = DateTime.UtcNow;
+				var totalTimeSec = (_startTime.HasValue) ? (endTime - _startTime.Value).TotalSeconds : 0;
 				var result = new LoadResult
 				{
 					ScenarioName = _scenarioName,
@@ -42,7 +52,9 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 					MaxLatency = _latencies.Any() ? _latencies.Max() : 0,
 					MinLatency = _latencies.Any() ? _latencies.Min() : 0,
 					AverageLatency = _latencies.Any() ? _latencies.Average() : 0,
-					Percentile95Latency = _latencies.Any() ? CalculatePercentile(_latencies, 95) : 0
+					Percentile95Latency = _latencies.Any() ? CalculatePercentile(_latencies, 95) : 0,
+					// it is for the total time taken for the test
+					Time = totalTimeSec
 				};
 
 				_logger.Info("Scenario '{0}' completed. {1}", _scenarioName,
