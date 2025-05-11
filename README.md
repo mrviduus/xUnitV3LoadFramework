@@ -97,8 +97,11 @@ dotnet test
 
 ## 📖 Documentation
 
-For detailed documentation, examples, and more information, visit the [official documentation](#).
-Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/tests/xUnitV3LoadTest)
+The documentation for **xUnitV3LoadFramework** is currently in progress. Stay tuned for updates!
+
+In the meantime, you can explore the [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/demo/) for practical use cases and refer to the source code for detailed insights.
+
+Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/demo/)
 
 ---
 
