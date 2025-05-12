@@ -1,11 +1,6 @@
 #pragma warning disable IDE1006
 using xUnitV3LoadFramework.Attributes;
 using xUnitV3LoadFramework.Extensions;
-using xUnitV3LoadFramework.Extensions.Framework;
-using System;
-
-[assembly: TestFramework(typeof(LoadTestFramework))]
-[assembly: CaptureConsole]
 
 namespace xUnitV3LoadTests;
 

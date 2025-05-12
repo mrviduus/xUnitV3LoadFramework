@@ -99,9 +99,9 @@ dotnet test
 
 The documentation for **xUnitV3LoadFramework** is currently in progress. Stay tuned for updates!
 
-In the meantime, you can explore the [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/demo/) for practical use cases and refer to the source code for detailed insights.
+In the meantime, you can explore the [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/examples/) for practical use cases and refer to the source code for detailed insights.
 
-Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/demo/)
+Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/examples/)
 
 ---
 
