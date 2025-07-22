@@ -9,26 +9,80 @@ namespace xUnitV3LoadFramework.Examples;
 public static class ResultAnalysisExample
 {
     /// <summary>
-    /// Analyzes all test results in the TestResults folder and generates a summary report
+    /// Analyzes all test results in the TestResults folders across test projects and generates a summary report
     /// </summary>
     public static async Task AnalyzeTestResults()
     {
-        var testResultsDir = Path.Combine(GetProjectRoot(), "TestResults");
+        var solutionRoot = GetProjectRoot();
+        var testResultsFolders = FindTestResultsFolders(solutionRoot);
         
-        if (!Directory.Exists(testResultsDir))
+        if (!testResultsFolders.Any())
         {
-            Console.WriteLine("No TestResults folder found.");
+            Console.WriteLine("No TestResults folders found in any test projects.");
             return;
         }
 
-        var runDirs = Directory.GetDirectories(testResultsDir, "Run_*");
-        Console.WriteLine($"Found {runDirs.Length} test runs");
+        Console.WriteLine($"Found TestResults folders in {testResultsFolders.Count} test projects:");
+        foreach (var folder in testResultsFolders)
+        {
+            var projectName = Path.GetFileName(Path.GetDirectoryName(folder));
+            Console.WriteLine($"  - {projectName}");
+        }
         Console.WriteLine();
 
-        foreach (var runDir in runDirs.OrderBy(d => d))
+        // Analyze all test runs across all test projects
+        var allRunDirs = new List<string>();
+        foreach (var testResultsDir in testResultsFolders)
+        {
+            var runDirs = Directory.GetDirectories(testResultsDir, "Run_*");
+            allRunDirs.AddRange(runDirs);
+        }
+
+        Console.WriteLine($"Found {allRunDirs.Count} total test runs across all projects");
+        Console.WriteLine();
+
+        foreach (var runDir in allRunDirs.OrderBy(d => d))
         {
             await AnalyzeTestRun(runDir);
         }
+    }
+
+    /// <summary>
+    /// Finds all TestResults folders in test projects within the solution
+    /// </summary>
+    private static List<string> FindTestResultsFolders(string solutionRoot)
+    {
+        var testResultsFolders = new List<string>();
+        
+        // Search for TestResults folders in common test project locations
+        var searchPaths = new[]
+        {
+            Path.Combine(solutionRoot, "tests"),
+            Path.Combine(solutionRoot, "test"),
+            Path.Combine(solutionRoot, "examples"),
+            solutionRoot // Also search solution root in case there are test projects at the root
+        };
+
+        foreach (var searchPath in searchPaths)
+        {
+            if (Directory.Exists(searchPath))
+            {
+                // Find all directories that contain .csproj files (test projects)
+                var projectDirs = Directory.GetDirectories(searchPath, "*", SearchOption.AllDirectories)
+                    .Where(dir => Directory.GetFiles(dir, "*.csproj").Any());
+
+                foreach (var projectDir in projectDirs)
+                {
+                    var testResultsDir = Path.Combine(projectDir, "TestResults");
+                    if (Directory.Exists(testResultsDir))
+                    {
+                        testResultsFolders.Add(testResultsDir);
+                    }
+                }
+            }
+        }
+
+        return testResultsFolders;
     }
 
     /// <summary>
@@ -132,35 +186,36 @@ public static class ResultAnalysisExample
     /// </summary>
     public static async Task<List<string>> FindSlowTests(double latencyThresholdMs = 100.0)
     {
-        var testResultsDir = Path.Combine(GetProjectRoot(), "TestResults");
+        var solutionRoot = GetProjectRoot();
+        var testResultsFolders = FindTestResultsFolders(solutionRoot);
         var slowTests = new List<string>();
         
-        if (!Directory.Exists(testResultsDir))
-            return slowTests;
-
-        var jsonFiles = Directory.GetFiles(testResultsDir, "*.json", SearchOption.AllDirectories);
-        
-        foreach (var jsonFile in jsonFiles)
+        foreach (var testResultsDir in testResultsFolders)
         {
-            try
+            var jsonFiles = Directory.GetFiles(testResultsDir, "*.json", SearchOption.AllDirectories);
+            
+            foreach (var jsonFile in jsonFiles)
             {
-                var json = await File.ReadAllTextAsync(jsonFile);
-                var result = JsonSerializer.Deserialize<LoadTestResult>(json, new JsonSerializerOptions
+                try
                 {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-                
-                if (result?.Summary.AverageLatency > latencyThresholdMs)
+                    var json = await File.ReadAllTextAsync(jsonFile);
+                    var result = JsonSerializer.Deserialize<LoadTestResult>(json, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
+                    
+                    if (result?.Summary.AverageLatency > latencyThresholdMs)
+                    {
+                        slowTests.Add($"{result.TestName}: {result.Summary.AverageLatency:F2}ms avg latency");
+                    }
+                }
+                catch (Exception ex)
                 {
-                    slowTests.Add($"{result.TestName}: {result.Summary.AverageLatency:F2}ms avg latency");
+                    Console.WriteLine($"Error analyzing {jsonFile}: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error analyzing {jsonFile}: {ex.Message}");
-            }
         }
-
+        
         return slowTests;
     }
 
@@ -169,34 +224,36 @@ public static class ResultAnalysisExample
     /// </summary>
     public static async Task GeneratePerformanceTrend(string testName)
     {
-        var testResultsDir = Path.Combine(GetProjectRoot(), "TestResults");
-        if (!Directory.Exists(testResultsDir))
-            return;
-
+        var solutionRoot = GetProjectRoot();
+        var testResultsFolders = FindTestResultsFolders(solutionRoot);
         var matchingResults = new List<(DateTime timestamp, LoadTestResult result)>();
-        var jsonFiles = Directory.GetFiles(testResultsDir, "*.json", SearchOption.AllDirectories);
         
-        foreach (var jsonFile in jsonFiles)
+        foreach (var testResultsDir in testResultsFolders)
         {
-            try
+            var jsonFiles = Directory.GetFiles(testResultsDir, "*.json", SearchOption.AllDirectories);
+            
+            foreach (var jsonFile in jsonFiles)
             {
-                var json = await File.ReadAllTextAsync(jsonFile);
-                var result = JsonSerializer.Deserialize<LoadTestResult>(json, new JsonSerializerOptions
+                try
                 {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                    var json = await File.ReadAllTextAsync(jsonFile);
+                    var result = JsonSerializer.Deserialize<LoadTestResult>(json, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
                 
-                if (result?.TestName.Contains(testName, StringComparison.OrdinalIgnoreCase) == true)
+                    if (result?.TestName.Contains(testName, StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        matchingResults.Add((result.Timestamp, result));
+                    }
+                }
+                catch (Exception ex)
                 {
-                    matchingResults.Add((result.Timestamp, result));
+                    Console.WriteLine($"Error reading {jsonFile}: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading {jsonFile}: {ex.Message}");
-            }
         }
-
+        
         if (!matchingResults.Any())
         {
             Console.WriteLine($"No results found for test containing: {testName}");

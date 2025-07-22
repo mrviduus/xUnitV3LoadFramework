@@ -65,9 +65,9 @@ public static class LoadTestResultsExporter
     /// </summary>
     private static string GetTestResultsDirectory()
     {
-        // Find the project root by looking for the .sln file
+        // Find the test project root by looking for a .csproj file
         var currentDir = Directory.GetCurrentDirectory();
-        var projectRoot = FindProjectRoot(currentDir);
+        var projectRoot = FindTestProjectRoot(currentDir);
         
         var testResultsDir = Path.Combine(projectRoot, "TestResults");
         Directory.CreateDirectory(testResultsDir);
@@ -76,7 +76,26 @@ public static class LoadTestResultsExporter
     }
 
     /// <summary>
-    /// Finds the project root directory by looking for the solution file
+    /// Finds the test project root directory by looking for the .csproj file
+    /// </summary>
+    private static string FindTestProjectRoot(string startDir)
+    {
+        var dir = new DirectoryInfo(startDir);
+        
+        while (dir != null)
+        {
+            if (dir.GetFiles("*.csproj").Any())
+                return dir.FullName;
+            
+            dir = dir.Parent;
+        }
+        
+        // Fallback to current directory if no project file found
+        return startDir;
+    }
+
+    /// <summary>
+    /// Finds the solution root directory by looking for the solution file
     /// </summary>
     private static string FindProjectRoot(string startDir)
     {
