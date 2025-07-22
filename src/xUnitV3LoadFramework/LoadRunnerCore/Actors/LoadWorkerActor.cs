@@ -39,46 +39,83 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
             // Create a cancellation token that will expire after the test duration
             using var cts = new CancellationTokenSource(_executionPlan.Settings.Duration);
 
+            // Track all running tasks
+            var runningTasks = new List<Task>();
+            
+            // Calculate how many batches we expect to run
+            var expectedBatches = (int)Math.Ceiling(_executionPlan.Settings.Duration.TotalMilliseconds / _executionPlan.Settings.Interval.TotalMilliseconds);
+            var expectedTotalRequests = expectedBatches * _executionPlan.Settings.Concurrency;
+            
+            _logger.Info("LoadWorkerActor '{0}' starting. Expected batches: {1}, Expected total requests: {2}", 
+                workerName, expectedBatches, expectedTotalRequests);
+
             try
             {
-                // Log the start of the load test
-                _logger.Info("LoadWorkerActor '{0}' started load test.", workerName);
+                // Use a timer to ensure consistent intervals
+                var startTime = DateTime.UtcNow;
+                var batchNumber = 0;
 
-                // Loop until the cancellation token is triggered
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    // Create a collection of tasks to execute the load test concurrently
-                    var tasks = Enumerable.Range(0, _executionPlan.Settings.Concurrency)
-                        .Select(_ => Task.Run(async () =>
-                        {
-                            // Measure the execution time of the action
-                            var stopwatch = Stopwatch.StartNew();
-                            bool result = await _executionPlan.Action();
-                            stopwatch.Stop();
-                            var latency = stopwatch.Elapsed.TotalMilliseconds;
-
-                            // Send the result and latency to the result collector
-                            _resultCollector.Tell(new StepResultMessage(result, latency));
-
-                            // Log the result and latency for debugging
-                            _logger.Debug("[{0}] Result: {1}, Latency: {2:F2} ms", workerName, result, latency);
-                        }, cts.Token))
-                        .ToArray();
-
-                    // Wait for all tasks to complete
-                    await Task.WhenAll(tasks);
-
-                    // If the cancellation token is not triggered, wait for the specified interval
-                    if (!cts.Token.IsCancellationRequested)
+                    var currentTime = DateTime.UtcNow;
+                    var elapsedTime = currentTime - startTime;
+                    
+                    // Calculate when this batch should have started
+                    var expectedBatchStartTime = TimeSpan.FromMilliseconds(batchNumber * _executionPlan.Settings.Interval.TotalMilliseconds);
+                    
+                    // If we've exceeded the duration, stop
+                    if (elapsedTime >= _executionPlan.Settings.Duration)
                     {
-                        await Task.Delay(_executionPlan.Settings.Interval, cts.Token);
+                        break;
+                    }
+
+                    // Start the batch of tasks
+                    var batchTasks = new List<Task>();
+                    for (int i = 0; i < _executionPlan.Settings.Concurrency; i++)
+                    {
+                        var task = ExecuteActionAsync(workerName, cts.Token);
+                        batchTasks.Add(task);
+                        runningTasks.Add(task);
+                    }
+
+                    _logger.Debug("[{0}] Batch {1} started at {2:F2}ms (expected: {3:F2}ms). Tasks in batch: {4}", 
+                        workerName, batchNumber + 1, elapsedTime.TotalMilliseconds, 
+                        expectedBatchStartTime.TotalMilliseconds, batchTasks.Count);
+
+                    // Remove completed tasks
+                    runningTasks.RemoveAll(t => t.IsCompleted);
+
+                    batchNumber++;
+
+                    // Calculate when the next batch should start
+                    var nextBatchStartTime = TimeSpan.FromMilliseconds(batchNumber * _executionPlan.Settings.Interval.TotalMilliseconds);
+                    var timeUntilNextBatch = startTime.Add(nextBatchStartTime) - DateTime.UtcNow;
+
+                    // If we're behind schedule, log it but continue immediately
+                    if (timeUntilNextBatch <= TimeSpan.Zero)
+                    {
+                        _logger.Warning("[{0}] Running behind schedule. Next batch should have started {1:F2}ms ago", 
+                            workerName, -timeUntilNextBatch.TotalMilliseconds);
+                    }
+                    else if (!cts.Token.IsCancellationRequested && elapsedTime.Add(timeUntilNextBatch) < _executionPlan.Settings.Duration)
+                    {
+                        // Wait until the next batch should start
+                        try
+                        {
+                            await Task.Delay(timeUntilNextBatch, cts.Token);
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            // Expected when duration expires
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // We've reached the end of the test duration
+                        break;
                     }
                 }
-            }
-            catch (TaskCanceledException)
-            {
-                // Log a warning if the load test was canceled due to duration expiration
-                _logger.Warning("LoadWorkerActor '{0}' load test canceled due to duration expiration.", workerName);
             }
             catch (Exception ex)
             {
@@ -87,6 +124,26 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
             }
             finally
             {
+                // Log status before waiting for tasks
+                _logger.Info("LoadWorkerActor '{0}' finished spawning tasks. Waiting for {1} tasks to complete.", 
+                    workerName, runningTasks.Count(t => !t.IsCompleted));
+
+                // Wait for all remaining tasks with a reasonable timeout
+                try
+                {
+                    var completionTimeout = TimeSpan.FromSeconds(Math.Max(30, _executionPlan.Settings.Duration.TotalSeconds));
+                    var allTasks = Task.WhenAll(runningTasks.Where(t => !t.IsCompleted));
+                    
+                    if (await Task.WhenAny(allTasks, Task.Delay(completionTimeout)) != allTasks)
+                    {
+                        _logger.Warning("LoadWorkerActor '{0}' timed out waiting for tasks to complete.", workerName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warning("LoadWorkerActor '{0}' error while waiting for tasks: {1}", workerName, ex.Message);
+                }
+
                 // Log the completion of the load test
                 _logger.Info("LoadWorkerActor '{0}' has completed load testing.", workerName);
 
@@ -96,6 +153,34 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 
                 // Send the final result back to the original sender
                 Sender.Tell(finalResult);
+            }
+        }
+
+        private async Task ExecuteActionAsync(string workerName, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Notify that we're starting a request
+                _resultCollector.Tell(new RequestStartedMessage());
+                
+                // Measure the execution time of the action
+                var stopwatch = Stopwatch.StartNew();
+                bool result = await _executionPlan.Action();
+                stopwatch.Stop();
+                var latency = stopwatch.Elapsed.TotalMilliseconds;
+
+                // Send the result and latency to the result collector
+                _resultCollector.Tell(new StepResultMessage(result, latency));
+
+                // Log the result and latency for debugging
+                _logger.Debug("[{0}] Task completed - Result: {1}, Latency: {2:F2} ms", 
+                    workerName, result, latency);
+            }
+            catch (Exception ex)
+            {
+                // Report failure
+                _resultCollector.Tell(new StepResultMessage(false, 0));
+                _logger.Error(ex, "[{0}] Task failed with error", workerName);
             }
         }
     }

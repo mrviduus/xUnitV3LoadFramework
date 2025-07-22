@@ -76,6 +76,8 @@ public class LoadTestRunner :
 		var summaryMessage =
 			$"[LOAD TEST RESULT] {ctxt.Test.TestDisplayName}:\n" +
 			$"- Total Executions: {result.Total}\n" +
+			$"- Requests Started: {result.RequestsStarted}\n" +
+			$"- Requests In-Flight: {result.RequestsInFlight}\n" +
 			$"- Success: {result.Success}\n" +
 			$"- Failure: {result.Failure}\n" +
 			$"- Max Latency: {result.MaxLatency:F2} ms\n" +

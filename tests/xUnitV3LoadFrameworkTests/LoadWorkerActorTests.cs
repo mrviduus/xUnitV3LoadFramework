@@ -55,7 +55,9 @@ namespace xUnitV3LoadTests
                         MaxLatency = latencies.Any() ? latencies.Max() : 0,
                         MinLatency = latencies.Any() ? latencies.Min() : 0,
                         AverageLatency = latencies.Any() ? latencies.Average() : 0,
-                        Percentile95Latency = latencies.Any() ? CalculatePercentile(latencies, 95) : 0
+                        Percentile95Latency = latencies.Any() ? CalculatePercentile(latencies, 95) : 0,
+                        RequestsStarted = _successCount + _failureCount, // For backward compatibility
+                        RequestsInFlight = 0
                     };
                     Sender.Tell(result);
                 });
