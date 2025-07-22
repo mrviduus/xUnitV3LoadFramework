@@ -197,21 +197,22 @@ public static class ResultAnalysisExample
             foreach (var jsonFile in jsonFiles)
             {
                 try
-            {
-                var json = await File.ReadAllTextAsync(jsonFile);
-                var result = JsonSerializer.Deserialize<LoadTestResult>(json, new JsonSerializerOptions
                 {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
-                
-                if (result?.Summary.AverageLatency > latencyThresholdMs)
-                {
-                    slowTests.Add($"{result.TestName}: {result.Summary.AverageLatency:F2}ms avg latency");
+                    var json = await File.ReadAllTextAsync(jsonFile);
+                    var result = JsonSerializer.Deserialize<LoadTestResult>(json, new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    });
+                    
+                    if (result?.Summary.AverageLatency > latencyThresholdMs)
+                    {
+                        slowTests.Add($"{result.TestName}: {result.Summary.AverageLatency:F2}ms avg latency");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error analyzing {jsonFile}: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error analyzing {jsonFile}: {ex.Message}");
+                }
             }
         }
         
@@ -239,16 +240,17 @@ public static class ResultAnalysisExample
                     var result = JsonSerializer.Deserialize<LoadTestResult>(json, new JsonSerializerOptions
                     {
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                });
+                    });
                 
-                if (result?.TestName.Contains(testName, StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    matchingResults.Add((result.Timestamp, result));
+                    if (result?.TestName.Contains(testName, StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        matchingResults.Add((result.Timestamp, result));
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error reading {jsonFile}: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error reading {jsonFile}: {ex.Message}");
+                }
             }
         }
         
