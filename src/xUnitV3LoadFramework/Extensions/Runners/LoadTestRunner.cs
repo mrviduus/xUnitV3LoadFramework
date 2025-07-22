@@ -1,6 +1,7 @@
 using Xunit.Sdk;
 using Xunit.v3;
 using xUnitV3LoadFramework.Extensions.ObjectModel;
+using xUnitV3LoadFramework.Extensions.Reports;
 using xUnitV3LoadFramework.LoadRunnerCore.Models;
 using xUnitV3LoadFramework.LoadRunnerCore.Runner;
 
@@ -53,7 +54,7 @@ public class LoadTestRunner :
 		var executionPlan = CreateExecutionPlan(ctxt, loadSettings);
 		var loadResult = await LoadRunner.Run(executionPlan);
 
-		var reportLoadResult = ReportLoadResult(ctxt, loadResult);
+		var reportLoadResult = await ReportLoadResult(ctxt, loadResult);
 
 		if (loadResult.Failure > 0)
 		{
@@ -71,7 +72,7 @@ public class LoadTestRunner :
 		return summary;
 	}
 
-	private string ReportLoadResult(LoadTestRunnerContext ctxt, LoadResult result)
+	private async Task<string> ReportLoadResult(LoadTestRunnerContext ctxt, LoadResult result)
 	{
 		var summaryMessage =
 			$"[LOAD TEST RESULT] {ctxt.Test.TestDisplayName}:\n" +
@@ -87,6 +88,33 @@ public class LoadTestRunner :
 			$"- Duration: {result.Time:F2} s";
 
 		ctxt.MessageBus.QueueMessage(new DiagnosticMessage(summaryMessage));
+
+		// Export results to JSON file
+		try
+		{
+			var testConfiguration = new TestConfigurationInfo
+			{
+				Concurrency = ctxt.Test.TestCase.Concurrency,
+				Duration = ctxt.Test.TestCase.Duration,
+				Interval = ctxt.Test.TestCase.Interval,
+				TestMethod = ctxt.Test.TestCase.TestMethod.Method.Name,
+				TestClass = ctxt.Test.TestCase.TestMethod.TestClass.Class.Name,
+				Assembly = ctxt.Test.TestCase.TestMethod.TestClass.TestCollection.TestAssembly.Assembly.GetName().Name ?? "Unknown"
+			};
+
+			var jsonFilePath = await LoadTestResultsExporter.ExportResultsAsync(
+				ctxt.Test.TestDisplayName,
+				result,
+				testConfiguration
+			);
+
+			ctxt.MessageBus.QueueMessage(new DiagnosticMessage($"Results saved to: {jsonFilePath}"));
+		}
+		catch (Exception ex)
+		{
+			ctxt.MessageBus.QueueMessage(new DiagnosticMessage($"Failed to export JSON results: {ex.Message}"));
+		}
+
 		return summaryMessage;
 	}
 
