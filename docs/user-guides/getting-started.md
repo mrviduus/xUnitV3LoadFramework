@@ -10,8 +10,8 @@ Add the framework to your test project:
 
 ```xml
 <PackageReference Include="xUnitV3LoadFramework" Version="1.0.0" />
-<PackageReference Include="xunit" Version="2.6.1" />
-<PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+<PackageReference Include="xunit.v3" Version="1.0.0-pre.100" />
+<PackageReference Include="xunit.runner.visualstudio" Version="3.0.0-pre.30" />
 ```
 
 ### 2. Create Your First Load Test

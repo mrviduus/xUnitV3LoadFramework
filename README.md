@@ -9,10 +9,45 @@
 
 ## 🌟 Features
 
-- ✅ Easily define load test scenarios with intuitive attributes.
-- ✅ Parallel load test execution using Akka.NET actors.
-- ✅ Detailed aggregation and analysis of test results.
-- ✅ Fully integrated with xUnit testing framework.
+### Hybrid Execution Model
+- **Channel-based Workers**: Fixed worker pools with pre-allocated channels for consistent performance
+- **Task-based Workers**: Dynamic task creation for flexible workload handling
+- **Automatic Optimization**: Framework automatically selects optimal worker counts based on system resources
+
+### Comprehensive Metrics
+- **Latency Percentiles**: P50, P95, P99 latency measurements
+- **Throughput Analysis**: Requests per second with real-time monitoring
+- **Resource Utilization**: Memory usage, worker thread tracking, GC pressure
+- **Queue Time Tracking**: Average and maximum queue times
+
+### xUnit v3 Integration
+- **Native Test Framework**: Seamless integration with xUnit v3 test discovery and execution
+- **Attribute-based Configuration**: Simple `[Load]` attributes for test configuration
+- **Test Result Integration**: Load test results integrated with xUnit test results
+
+### Actor-based Architecture
+- **Akka.NET Foundation**: Built on proven actor model for reliability and scalability
+- **Message-driven Processing**: Asynchronous message passing for high throughput
+- **Fault Tolerance**: Supervisor hierarchies for robust error handling
+
+---
+
+## 📊 Performance Highlights
+
+- **High Throughput**: Tested up to 500,000 requests with sustained performance
+- **Low Latency**: Sub-millisecond overhead for test execution framework
+- **Resource Efficient**: Optimized memory usage and GC pressure management
+- **Scalable**: Automatic scaling based on available system resources
+
+---
+
+## 🔧 System Requirements
+
+- .NET 8.0+
+- xUnit v3 (preview)
+- Akka.NET 1.5.41+
+- Minimum 4GB RAM for high-load scenarios
+- Multi-core CPU recommended for optimal performance
 
 ---
 
@@ -40,7 +75,9 @@ dotnet test
 
 ---
 
-## 📝 Usage Example
+## 📝 Usage Examples
+
+### Basic Load Test Example
 
 Here's a clear example demonstrating how to define and execute load tests using the `Specification` base class and the `[Load]` attribute:
 
@@ -80,6 +117,21 @@ public class ExampleLoadSpecification : Specification
 }
 ```
 
+### API Load Testing Example
+
+```csharp
+public class ApiLoadTests : Specification
+{
+    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
+    public async Task<bool> When_testing_api_endpoint()
+    {
+        using var client = new HttpClient();
+        var response = await client.GetAsync("https://api.example.com/health");
+        return response.IsSuccessStatusCode;
+    }
+}
+```
+
 Each `[Load]` attribute defines:
 
 - `order`: the test execution order  
@@ -97,9 +149,44 @@ dotnet test
 
 ## 📖 Documentation
 
-The documentation for **xUnitV3LoadFramework** is currently in progress. Stay tuned for updates!
+### Getting Started
+- [Quick Start Guide](docs/user-guides/getting-started.md)
+- [Load Attribute Configuration](docs/user-guides/load-attribute-configuration.md)
+- [Writing Effective Tests](docs/user-guides/writing-effective-tests.md)
 
-In the meantime, you can explore the [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/examples/) for practical use cases and refer to the source code for detailed insights.
+### Architecture & Design
+- [Actor System Overview](docs/architecture/actor-system-overview.md)
+- [Hybrid Load Worker Design](docs/architecture/hybrid-load-worker.md)
+
+### User Guides
+- [Performance Optimization](docs/user-guides/performance-optimization.md)
+- [Monitoring & Metrics](docs/user-guides/monitoring-metrics.md)
+
+### API Reference
+- [Load Attributes](docs/api-reference/README.md)
+- [Core Classes](docs/api-reference/README.md)
+- [Actors](docs/api-reference/README.md)
+- [Messages](docs/api-reference/README.md)
+- [Models](docs/api-reference/README.md)
+
+### Best Practices
+- [Load Test Design](docs/best-practices/load-test-design.md)
+- [Resource Management](docs/best-practices/resource-management.md)
+- [Troubleshooting](docs/best-practices/troubleshooting.md)
+
+### Advanced Topics
+- [Migration from xUnit v2](docs/advanced/migration-guide.md)
+- [Custom Extensions](docs/advanced/custom-extensions.md)
+- [Performance Tuning](docs/advanced/performance-tuning.md)
+- [CI/CD Integration](docs/advanced/cicd-integration.md)
+
+### Examples & Scenarios
+- [Database Load Testing](docs/examples/database-load-testing.md)
+- [API Load Testing](docs/examples/api-load-testing.md)
+- [Transactional Scenarios](docs/examples/transactional-scenarios.md)
+- [Real-world Examples](docs/examples/real-world-examples.md)
+
+For comprehensive documentation, visit the [docs folder](docs/).
 
 Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/examples/)
 

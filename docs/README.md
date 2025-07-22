@@ -5,9 +5,9 @@ A high-performance load testing framework built on xUnit v3 and Akka.NET, featur
 ## 📚 Documentation Index
 
 ### Getting Started
-- [Quick Start Guide](getting-started/quickstart.md)
-- [Installation](getting-started/installation.md)
-- [Basic Usage](getting-started/basic-usage.md)
+- [Quick Start Guide](user-guides/quickstart.md)
+- [Installation](user-guides/installation.md)
+- [Basic Usage](user-guides/basic-usage.md)
 
 ### Architecture & Design
 - [Framework Architecture](architecture/framework-architecture.md)
