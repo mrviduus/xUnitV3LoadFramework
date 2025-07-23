@@ -2,6 +2,7 @@ using Xunit.Internal;
 using Xunit.Sdk;
 using Xunit.v3;
 using xUnitV3LoadFramework.Extensions.ObjectModel;
+using xUnitV3LoadFramework.Extensions.Framework;
 
 namespace xUnitV3LoadFramework.Extensions.Runners;
 
@@ -31,6 +32,61 @@ public class LoadTestCollectionRunner :
     {
         ArgumentNullException.ThrowIfNull(testClass);
 
+        // Check if we have standard test cases (non-load tests)
+        var standardTestCases = testCases.OfType<StandardTestCase>().ToArray();
+        var loadTestCases = testCases.Where(tc => tc is not StandardTestCase).ToArray();
+
+        var totalResult = new RunSummary();
+
+        // Handle standard test cases
+        if (standardTestCases.Length > 0)
+        {
+            var standardResult = await RunStandardTestClass(ctxt, testClass, standardTestCases);
+            totalResult.Aggregate(standardResult);
+        }
+
+        // Handle load test cases
+        if (loadTestCases.Length > 0)
+        {
+            var loadResult = await RunLoadTestClass(ctxt, testClass, loadTestCases);
+            totalResult.Aggregate(loadResult);
+        }
+
+        return totalResult;
+    }
+
+    private async ValueTask<RunSummary> RunStandardTestClass(
+        LoadTestCollectionRunnerContext ctxt,
+        LoadTestClass testClass,
+        StandardTestCase[] testCases)
+    {
+        object? testClassInstance = null;
+
+        // Create instance of the standard test class (doesn't need to inherit from Specification)
+        try
+        {
+            testClassInstance = Activator.CreateInstance(testClass.Class);
+        }
+        catch (Exception ex)
+        {
+            return await FailTestClass(ctxt, testClass, testCases.Cast<LoadTestCase>().ToArray(), ex);
+        }
+
+        if (testClassInstance == null)
+        {
+            return await FailTestClass(ctxt, testClass, testCases.Cast<LoadTestCase>().ToArray(), 
+                new InvalidOperationException("Failed to create instance of test class"));
+        }
+
+        // Run standard test cases using a simple runner
+        return await RunStandardTestCases(ctxt, testClass, testClassInstance, testCases);
+    }
+
+    private async ValueTask<RunSummary> RunLoadTestClass(
+        LoadTestCollectionRunnerContext ctxt,
+        LoadTestClass testClass,
+        LoadTestCase[] testCases)
+    {
         object? testClassInstance = null;
 
         // We don't use the aggregator here because we're shortcutting everything to just return failure,
@@ -66,6 +122,68 @@ public class LoadTestCollectionRunner :
             disposable.Dispose();
 
         return result;
+    }
+
+    private async ValueTask<RunSummary> RunStandardTestCases(
+        LoadTestCollectionRunnerContext ctxt,
+        LoadTestClass testClass,
+        object testClassInstance,
+        StandardTestCase[] testCases)
+    {
+        var summary = new RunSummary();
+
+        foreach (var testCase in testCases)
+        {
+            try
+            {
+                var result = await RunSingleStandardTest(ctxt, testCase, testClassInstance);
+                summary.Aggregate(result);
+            }
+            catch (Exception ex)
+            {
+                // Handle individual test failure
+                var failedResult = XunitRunnerHelper.FailTestCases(
+                    ctxt.MessageBus,
+                    ctxt.CancellationTokenSource,
+                    new[] { testCase },
+                    ex,
+                    sendTestClassMessages: false,
+                    sendTestMethodMessages: true
+                );
+                summary.Aggregate(failedResult);
+            }
+        }
+
+        return summary;
+    }
+
+    private async ValueTask<RunSummary> RunSingleStandardTest(
+        LoadTestCollectionRunnerContext ctxt, 
+        StandardTestCase testCase,
+        object testClassInstance)
+    {
+        var testMethod = (LoadTestMethod)testCase.TestMethod;
+        var method = testMethod.Method;
+
+        try
+        {
+            // Execute the test method
+            var result = method.Invoke(testClassInstance, null);
+
+            // Handle async methods
+            if (result is Task task)
+            {
+                await task;
+            }
+
+            // Return success - RunSummary uses Total with no Failed/Skipped to indicate success
+            return new RunSummary { Total = 1 };
+        }
+        catch (Exception)
+        {
+            // Return failure - set Failed count
+            return new RunSummary { Total = 1, Failed = 1 };
+        }
     }
 
     public async ValueTask<RunSummary> Run(
