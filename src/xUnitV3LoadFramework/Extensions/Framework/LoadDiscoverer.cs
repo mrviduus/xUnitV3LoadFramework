@@ -47,22 +47,72 @@ public class LoadDiscoverer(LoadTestAssembly testAssembly) :
 		ITestFrameworkDiscoveryOptions discoveryOptions,
 		Func<ITestCase, ValueTask<bool>> discoveryCallback)
 	{
-		if (!typeof(Specification).IsAssignableFrom(testClass.Class))
-			return true;
-
-		foreach (var method in testClass.Methods)
+		// Check if the class should use load framework
+		var useLoadFramework = testClass.Class.GetCustomAttributes<UseLoadFrameworkAttribute>().Any();
+		
+		if (useLoadFramework)
 		{
-			var testMethod = new LoadTestMethod(testClass, method);
+			// For load framework classes, only process classes that inherit from Specification
+			if (!typeof(Specification).IsAssignableFrom(testClass.Class))
+				return true;
 
-			try
+			// Process methods looking for [Load] attributes
+			foreach (var method in testClass.Methods)
 			{
-				if (!await FindTestsForMethod(testMethod, discoveryOptions, discoveryCallback))
-					return false;
+				var testMethod = new LoadTestMethod(testClass, method);
+
+				try
+				{
+					if (!await FindTestsForMethod(testMethod, discoveryOptions, discoveryCallback))
+						return false;
+				}
+				catch (Exception ex)
+				{
+					TestContext.Current.SendDiagnosticMessage("Exception during discovery of test class {0}:{1}{2}", testClass.Class.FullName, Environment.NewLine, ex);
+				}
 			}
-			catch (Exception ex)
+		}
+		else
+		{
+			// For classes without [UseLoadFramework], discover standard xUnit tests
+			foreach (var method in testClass.Methods)
 			{
-				TestContext.Current.SendDiagnosticMessage("Exception during discovery of test class {0}:{1}{2}", testClass.Class.FullName, Environment.NewLine, ex);
+				var testMethod = new LoadTestMethod(testClass, method);
+
+				try
+				{
+					if (!await FindStandardTestsForMethod(testMethod, discoveryOptions, discoveryCallback))
+						return false;
+				}
+				catch (Exception ex)
+				{
+					TestContext.Current.SendDiagnosticMessage("Exception during discovery of test class {0}:{1}{2}", testClass.Class.FullName, Environment.NewLine, ex);
+				}
 			}
+		}
+		
+		return true;
+	}
+
+	static async ValueTask<bool> FindStandardTestsForMethod(
+		LoadTestMethod testMethod,
+		ITestFrameworkDiscoveryOptions discoveryOptions,
+		Func<ITestCase, ValueTask<bool>> discoveryCallback)
+	{
+		// Check for [Fact] attribute
+		var factAttribute = testMethod.Method.GetCustomAttributes<FactAttribute>().FirstOrDefault();
+		if (factAttribute is not null)
+		{
+			var testCase = new StandardTestCase(testMethod, factAttribute);
+			return await discoveryCallback(testCase);
+		}
+
+		// Check for [Theory] attribute (which inherits from FactAttribute)
+		var theoryAttribute = testMethod.Method.GetCustomAttributes<TheoryAttribute>().FirstOrDefault();
+		if (theoryAttribute is not null)
+		{
+			var testCase = new StandardTestCase(testMethod, theoryAttribute);
+			return await discoveryCallback(testCase);
 		}
 
 		return true;
