@@ -74,18 +74,8 @@ public class LoadTestRunner :
 
 	private async Task<string> ReportLoadResult(LoadTestRunnerContext ctxt, LoadResult result)
 	{
-		var summaryMessage =
-			$"[LOAD TEST RESULT] {ctxt.Test.TestDisplayName}:\n" +
-			$"- Total Executions: {result.Total}\n" +
-			$"- Requests Started: {result.RequestsStarted}\n" +
-			$"- Requests In-Flight: {result.RequestsInFlight}\n" +
-			$"- Success: {result.Success}\n" +
-			$"- Failure: {result.Failure}\n" +
-			$"- Max Latency: {result.MaxLatency:F2} ms\n" +
-			$"- Min Latency: {result.MinLatency:F2} ms\n" +
-			$"- Average Latency: {result.AverageLatency:F2} ms\n" +
-			$"- 95th Percentile Latency: {result.Percentile95Latency:F2} ms\n" +
-			$"- Duration: {result.Time:F2} s";
+		var reportGenerator = new LoadTestResultReport(ctxt, result);
+		var summaryMessage = reportGenerator.GenerateSummaryMessage();
 
 		ctxt.MessageBus.QueueMessage(new DiagnosticMessage(summaryMessage));
 
@@ -108,11 +98,11 @@ public class LoadTestRunner :
 				testConfiguration
 			);
 
-			ctxt.MessageBus.QueueMessage(new DiagnosticMessage($"Results saved to: {jsonFilePath}"));
+			ctxt.MessageBus.QueueMessage(new DiagnosticMessage($"\nResults saved to: {jsonFilePath}"));
 		}
 		catch (Exception ex)
 		{
-			ctxt.MessageBus.QueueMessage(new DiagnosticMessage($"Failed to export JSON results: {ex.Message}"));
+			ctxt.MessageBus.QueueMessage(new DiagnosticMessage($"\nFailed to export JSON results: {ex.Message}"));
 		}
 
 		return summaryMessage;
