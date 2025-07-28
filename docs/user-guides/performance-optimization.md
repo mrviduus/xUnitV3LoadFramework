@@ -9,29 +9,42 @@ Optimize your load tests and systems under test for maximum performance and reli
 The framework provides two execution models - choose based on your needs:
 
 ```csharp
-// Hybrid Model (Recommended for most scenarios)
-// - Fixed worker pools with channel-based distribution
-// - Predictable resource usage and consistent performance
-// - Optimal for sustained load and long-running tests
+using xUnitV3LoadFramework.Attributes;
+using xUnitV3LoadFramework.Extensions;
 
-[Load(concurrency: 100, duration: 300000)]
-public async Task Optimized_With_Hybrid_Workers() 
+[UseLoadFramework]
+public class OptimizedLoadTests : Specification
 {
-    // Framework automatically uses hybrid workers for better performance
-    await ExecuteTestLogic();
-}
+    // Hybrid Model (Recommended for most scenarios)
+    // - Fixed worker pools with channel-based distribution
+    // - Predictable resource usage and consistent performance
+    // - Optimal for sustained load and long-running tests
 
-// Task Model (Good for short bursts or low concurrency)
-// - Dynamic task creation per batch
-// - More flexible but higher GC pressure
-// - Better for short tests with variable workload
-```
+    [Load(order: 1, concurrency: 100, duration: 300000, interval: 1000)]
+    public async Task Optimized_With_Hybrid_Workers() 
+    {
+        // Framework automatically uses hybrid workers for better performance
+        await ExecuteTestLogic();
+    }
+
+    // Task Model (Good for short bursts or low concurrency)
+    // - Dynamic task creation per batch
+    // - More flexible but higher GC pressure
+    // - Better for short tests with variable workload
+
+    private async Task ExecuteTestLogic()
+    {
+        // Your test implementation here
+        await Task.Delay(10);
+    }
+}
 
 ### 2. Optimal Concurrency Configuration
 
 Calculate optimal concurrency based on system resources:
 
 ```csharp
+[UseLoadFramework]
 public class OptimizedConcurrencyTests : Specification
 {
     private static int CalculateOptimalConcurrency()
@@ -51,12 +64,14 @@ public class OptimizedConcurrencyTests : Specification
         return ioBoundConcurrency;
     }
     
-    [Load(concurrency: 64, duration: 120000)] // Calculated for 8-core system
+    [Load(order: 1, concurrency: 64, duration: 120000, interval: 1000)] // Calculated for 8-core system
     public async Task Should_Use_Optimal_Concurrency()
     {
         // Your I/O-bound test logic
         await _httpClient.GetAsync("/api/data");
     }
+    
+    private readonly HttpClient _httpClient = new HttpClient();
 }
 ```
 
@@ -65,13 +80,24 @@ public class OptimizedConcurrencyTests : Specification
 Optimize metrics collection for high-throughput tests:
 
 ```csharp
-// Use appropriate reporting intervals
-[Load(concurrency: 1000, duration: 600000, interval: 10000)] // Report every 10s for long tests
-public async Task High_Throughput_With_Optimized_Reporting() { }
+[UseLoadFramework]
+public class OptimizedReportingTests : Specification
+{
+    // Use appropriate reporting intervals
+    [Load(order: 1, concurrency: 1000, duration: 600000, interval: 10000)] // Report every 10s for long tests
+    public async Task High_Throughput_With_Optimized_Reporting() 
+    {
+        await _httpClient.GetAsync("/api/data");
+    }
 
-[Load(concurrency: 50, duration: 30000, interval: 1000)] // Report every 1s for short tests
-public async Task Standard_Load_With_Detailed_Reporting() { }
-```
+    [Load(order: 2, concurrency: 50, duration: 30000, interval: 1000)] // Report every 1s for short tests
+    public async Task Standard_Load_With_Detailed_Reporting() 
+    {
+        await _httpClient.GetAsync("/api/data");
+    }
+    
+    private readonly HttpClient _httpClient = new HttpClient();
+}
 
 ## 🚀 HTTP Client Optimization
 
@@ -80,6 +106,7 @@ public async Task Standard_Load_With_Detailed_Reporting() { }
 Configure HTTP connections for maximum throughput:
 
 ```csharp
+[UseLoadFramework]
 public class OptimizedHttpLoadTests : Specification
 {
     private static readonly HttpClient OptimizedClient;
@@ -108,15 +135,18 @@ public class OptimizedHttpLoadTests : Specification
         _ = OptimizedClient.GetAsync("https://api.example.com/health").Result;
     }
     
-    protected override void Because()
+    protected override async void Because()
     {
         // Use the optimized shared client
         var response = await OptimizedClient.GetAsync("/api/data");
         Assert.True(response.IsSuccessStatusCode);
     }
     
-    [Load(concurrency: 500, duration: 300000)]
-    public async Task Should_Handle_High_Throughput_HTTP() { }
+    [Load(order: 1, concurrency: 500, duration: 300000, interval: 1000)]
+    public async Task Should_Handle_High_Throughput_HTTP() 
+    {
+        // Test implementation is in Because() method
+    }
 }
 ```
 
@@ -125,45 +155,64 @@ public class OptimizedHttpLoadTests : Specification
 Optimize HTTP requests and responses for performance:
 
 ```csharp
-[Load(concurrency: 200, duration: 120000)]
-public async Task Should_Use_Optimized_HTTP_Patterns()
+[UseLoadFramework]
+public class HttpOptimizationTests : Specification
 {
-    // Pre-allocate request content when possible
-    using var content = new StringContent(
-        GetReusableJsonContent(), 
-        Encoding.UTF8, 
-        "application/json"
-    );
-    
-    var response = await _httpClient.PostAsync("/api/process", content);
-    
-    // Efficient response handling
-    if (response.IsSuccessStatusCode)
+    private static string CachedJsonContent;
+    private readonly HttpClient _httpClient = new HttpClient();
+
+    [Load(order: 1, concurrency: 200, duration: 120000, interval: 1000)]
+    public async Task Should_Use_Optimized_HTTP_Patterns()
     {
-        // Stream large responses
-        if (response.Content.Headers.ContentLength > 1024 * 1024)
+        // Pre-allocate request content when possible
+        using var content = new StringContent(
+            GetReusableJsonContent(), 
+            Encoding.UTF8, 
+            "application/json"
+        );
+        
+        var response = await _httpClient.PostAsync("/api/process", content);
+        
+        // Efficient response handling
+        if (response.IsSuccessStatusCode)
         {
-            await using var stream = await response.Content.ReadAsStreamAsync();
-            await ProcessLargeResponseStream(stream);
+            // Stream large responses
+            if (response.Content.Headers.ContentLength > 1024 * 1024)
+            {
+                await using var stream = await response.Content.ReadAsStreamAsync();
+                await ProcessLargeResponseStream(stream);
+            }
+            else
+            {
+                // Small responses can be read directly
+                var responseData = await response.Content.ReadAsStringAsync();
+                ProcessResponse(responseData);
+            }
         }
-        else
-        {
-            // Small responses can be read directly
-            var responseData = await response.Content.ReadAsStringAsync();
-            ProcessResponse(responseData);
-        }
+        
+        // Explicit disposal for high-throughput scenarios
+        response?.Dispose();
+    }
+
+    private static string GetReusableJsonContent()
+    {
+        // Cache JSON strings to avoid repeated serialization
+        return CachedJsonContent ??= JsonSerializer.Serialize(new { data = "test" });
     }
     
-    // Explicit disposal for high-throughput scenarios
-    response?.Dispose();
+    private async Task ProcessLargeResponseStream(Stream stream)
+    {
+        // Process stream without loading all into memory
+        var buffer = new byte[4096];
+        await stream.ReadAsync(buffer, 0, buffer.Length);
+    }
+    
+    private void ProcessResponse(string responseData)
+    {
+        // Process response data
+        Assert.NotNull(responseData);
+    }
 }
-
-private static string GetReusableJsonContent()
-{
-    // Cache JSON strings to avoid repeated serialization
-    return CachedJsonContent ??= JsonSerializer.Serialize(new { data = "test" });
-}
-private static string CachedJsonContent;
 ```
 
 ### 3. DNS and Connection Optimization
@@ -171,6 +220,7 @@ private static string CachedJsonContent;
 Optimize DNS resolution and connections:
 
 ```csharp
+[UseLoadFramework]
 public class NetworkOptimizedTests : Specification
 {
     protected override void EstablishContext()
@@ -184,11 +234,13 @@ public class NetworkOptimizedTests : Specification
         ServicePointManager.DnsRefreshTimeout = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
     }
     
-    [Load(concurrency: 300, duration: 180000)]
+    [Load(order: 1, concurrency: 300, duration: 180000, interval: 1000)]
     public async Task Should_Handle_Optimized_Network_Load() 
     {
         await _httpClient.GetAsync("/api/data");
     }
+    
+    private readonly HttpClient _httpClient = new HttpClient();
 }
 ```
 
@@ -199,6 +251,7 @@ public class NetworkOptimizedTests : Specification
 Optimize database connections for load testing:
 
 ```csharp
+[UseLoadFramework]
 public class OptimizedDatabaseTests : Specification, IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
@@ -232,7 +285,7 @@ public class OptimizedDatabaseTests : Specification, IDisposable
         _serviceProvider = services.BuildServiceProvider();
     }
     
-    protected override void Because()
+    protected override async void Because()
     {
         using var scope = _serviceProvider.CreateScope();
         using var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
@@ -250,8 +303,11 @@ public class OptimizedDatabaseTests : Specification, IDisposable
         Assert.NotNull(user);
     }
     
-    [Load(concurrency: 100, duration: 180000)]
-    public async Task Should_Handle_Optimized_Database_Load() { }
+    [Load(order: 1, concurrency: 100, duration: 180000, interval: 1000)]
+    public async Task Should_Handle_Optimized_Database_Load() 
+    {
+        // Test implementation is in Because() method
+    }
     
     public void Dispose() => _serviceProvider?.Dispose();
 }
@@ -262,52 +318,66 @@ public class OptimizedDatabaseTests : Specification, IDisposable
 Write efficient queries for load testing:
 
 ```csharp
-[Load(concurrency: 150, duration: 240000)]
-public async Task Should_Execute_Optimized_Database_Operations()
+[UseLoadFramework]
+public class DatabaseQueryOptimizationTests : Specification
 {
-    using var scope = _serviceProvider.CreateScope();
-    using var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
-    
-    var scenario = Random.Shared.NextDouble();
-    
-    if (scenario < 0.7) // 70% read operations
+    private readonly ServiceProvider _serviceProvider;
+
+    public DatabaseQueryOptimizationTests()
     {
-        // Optimized read with pagination
-        var users = await context.Users
-            .Where(u => u.IsActive)
-            .OrderBy(u => u.Id)
-            .Skip(Random.Shared.Next(0, 1000))
-            .Take(20)
-            .AsNoTracking()
-            .ToListAsync();
-        
-        Assert.True(users.Count > 0);
+        var services = new ServiceCollection();
+        services.AddDbContext<TestDbContext>(options => 
+            options.UseSqlServer("Server=localhost;Database=LoadTest;Trusted_Connection=true;"));
+        _serviceProvider = services.BuildServiceProvider();
     }
-    else if (scenario < 0.95) // 25% update operations
+
+    [Load(order: 1, concurrency: 150, duration: 240000, interval: 1000)]
+    public async Task Should_Execute_Optimized_Database_Operations()
     {
-        // Efficient update without loading entity
-        var userId = Random.Shared.Next(1, 10000);
-        var rowsAffected = await context.Users
-            .Where(u => u.Id == userId)
-            .ExecuteUpdateAsync(u => u.SetProperty(p => p.LastAccessTime, DateTime.UtcNow));
+        using var scope = _serviceProvider.CreateScope();
+        using var context = scope.ServiceProvider.GetRequiredService<TestDbContext>();
         
-        // Update operations may not find the user (expected)
-        Assert.True(rowsAffected <= 1);
-    }
-    else // 5% write operations
-    {
-        // Batch inserts for efficiency
-        var newUsers = Enumerable.Range(0, 5)
-            .Select(i => new User 
-            { 
-                Name = $"LoadTestUser_{Guid.NewGuid():N}",
-                Email = $"test_{i}@loadtest.com",
-                IsActive = true
-            })
-            .ToList();
+        var scenario = Random.Shared.NextDouble();
         
-        context.Users.AddRange(newUsers);
-        await context.SaveChangesAsync();
+        if (scenario < 0.7) // 70% read operations
+        {
+            // Optimized read with pagination
+            var users = await context.Users
+                .Where(u => u.IsActive)
+                .OrderBy(u => u.Id)
+                .Skip(Random.Shared.Next(0, 1000))
+                .Take(20)
+                .AsNoTracking()
+                .ToListAsync();
+            
+            Assert.True(users.Count > 0);
+        }
+        else if (scenario < 0.95) // 25% update operations
+        {
+            // Efficient update without loading entity
+            var userId = Random.Shared.Next(1, 10000);
+            var rowsAffected = await context.Users
+                .Where(u => u.Id == userId)
+                .ExecuteUpdateAsync(u => u.SetProperty(p => p.LastAccessTime, DateTime.UtcNow));
+            
+            // Update operations may not find the user (expected)
+            Assert.True(rowsAffected <= 1);
+        }
+        else // 5% write operations
+        {
+            // Batch inserts for efficiency
+            var newUsers = Enumerable.Range(0, 5)
+                .Select(i => new User 
+                { 
+                    Name = $"LoadTestUser_{Guid.NewGuid():N}",
+                    Email = $"test_{i}@loadtest.com",
+                    IsActive = true
+                })
+                .ToList();
+            
+            context.Users.AddRange(newUsers);
+            await context.SaveChangesAsync();
+        }
     }
 }
 ```
@@ -319,6 +389,7 @@ public async Task Should_Execute_Optimized_Database_Operations()
 Minimize memory allocation and garbage collection:
 
 ```csharp
+[UseLoadFramework]
 public class MemoryOptimizedTests : Specification
 {
     // Reuse objects to reduce GC pressure
@@ -327,8 +398,10 @@ public class MemoryOptimizedTests : Specification
         
     private static readonly ObjectPool<JsonSerializerOptions> JsonOptionsPool = 
         new DefaultObjectPool<JsonSerializerOptions>(new JsonOptionsPooledObjectPolicy());
+        
+    private readonly HttpClient _httpClient = new HttpClient();
     
-    protected override void Because()
+    protected override async void Because()
     {
         // Reuse StringBuilder
         var sb = StringBuilderCache.Value;
@@ -353,8 +426,16 @@ public class MemoryOptimizedTests : Specification
         }
     }
     
-    [Load(concurrency: 200, duration: 600000)] // Long-running test
-    public async Task Should_Handle_Long_Running_Load_Without_Memory_Leaks() { }
+    [Load(order: 1, concurrency: 200, duration: 600000, interval: 2000)] // Long-running test
+    public async Task Should_Handle_Long_Running_Load_Without_Memory_Leaks() 
+    {
+        // Test implementation is in Because() method
+    }
+    
+    private string GenerateTestData()
+    {
+        return $"test_data_{Guid.NewGuid():N}";
+    }
 }
 ```
 
@@ -363,45 +444,63 @@ public class MemoryOptimizedTests : Specification
 Handle large payloads efficiently:
 
 ```csharp
-[Load(concurrency: 50, duration: 300000)]
-public async Task Should_Handle_Large_Payloads_Efficiently()
+[UseLoadFramework]
+public class StreamingOptimizedTests : Specification
 {
-    // Stream large requests
-    using var requestStream = new MemoryStream();
-    await GenerateLargePayload(requestStream);
-    requestStream.Position = 0;
-    
-    using var content = new StreamContent(requestStream);
-    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-    
-    var response = await _httpClient.PostAsync("/api/upload", content);
-    
-    if (response.IsSuccessStatusCode)
-    {
-        // Stream large responses
-        await using var responseStream = await response.Content.ReadAsStreamAsync();
-        await ProcessLargeResponse(responseStream);
-    }
-    
-    // Explicit cleanup for large objects
-    requestStream?.Dispose();
-    response?.Dispose();
-}
+    private readonly HttpClient _httpClient = new HttpClient();
 
-private async Task ProcessLargeResponse(Stream responseStream)
-{
-    var buffer = new byte[8192];
-    var totalBytesRead = 0;
-    
-    int bytesRead;
-    while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+    [Load(order: 1, concurrency: 50, duration: 300000, interval: 2000)]
+    public async Task Should_Handle_Large_Payloads_Efficiently()
     {
-        totalBytesRead += bytesRead;
-        // Process buffer contents without accumulating in memory
-        ProcessBuffer(buffer, bytesRead);
+        // Stream large requests
+        using var requestStream = new MemoryStream();
+        await GenerateLargePayload(requestStream);
+        requestStream.Position = 0;
+        
+        using var content = new StreamContent(requestStream);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        
+        var response = await _httpClient.PostAsync("/api/upload", content);
+        
+        if (response.IsSuccessStatusCode)
+        {
+            // Stream large responses
+            await using var responseStream = await response.Content.ReadAsStreamAsync();
+            await ProcessLargeResponse(responseStream);
+        }
+        
+        // Explicit cleanup for large objects
+        requestStream?.Dispose();
+        response?.Dispose();
+    }
+
+    private async Task ProcessLargeResponse(Stream responseStream)
+    {
+        var buffer = new byte[8192];
+        var totalBytesRead = 0;
+        
+        int bytesRead;
+        while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+        {
+            totalBytesRead += bytesRead;
+            // Process buffer contents without accumulating in memory
+            ProcessBuffer(buffer, bytesRead);
+        }
+        
+        Assert.True(totalBytesRead > 0, "Should have received response data");
     }
     
-    Assert.True(totalBytesRead > 0, "Should have received response data");
+    private async Task GenerateLargePayload(Stream stream)
+    {
+        var data = Encoding.UTF8.GetBytes("Large payload data...");
+        await stream.WriteAsync(data, 0, data.Length);
+    }
+    
+    private void ProcessBuffer(byte[] buffer, int bytesRead)
+    {
+        // Process buffer without storing
+        Assert.True(bytesRead > 0);
+    }
 }
 ```
 
@@ -412,8 +511,11 @@ private async Task ProcessLargeResponse(Stream responseStream)
 Configure thread pool for optimal performance:
 
 ```csharp
+[UseLoadFramework]
 public class ThreadPoolOptimizedTests : Specification
 {
+    private readonly HttpClient _httpClient = new HttpClient();
+
     protected override void EstablishContext()
     {
         // Configure thread pool for load testing
@@ -437,7 +539,7 @@ public class ThreadPoolOptimizedTests : Specification
         Thread.Sleep(100); // Allow warm-up to complete
     }
     
-    [Load(concurrency: 400, duration: 300000)]
+    [Load(order: 1, concurrency: 400, duration: 300000, interval: 1000)]
     public async Task Should_Handle_High_Concurrency_With_Optimized_Thread_Pool() 
     {
         await _httpClient.GetAsync("/api/data");
@@ -450,8 +552,12 @@ public class ThreadPoolOptimizedTests : Specification
 Minimize garbage collection impact:
 
 ```csharp
+[UseLoadFramework]
 public class GCOptimizedTests : Specification
 {
+    private int _initialGen0, _initialGen1, _initialGen2;
+    private readonly HttpClient _httpClient = new HttpClient();
+
     protected override void EstablishContext()
     {
         // Force initial GC to start with clean slate
@@ -460,11 +566,11 @@ public class GCOptimizedTests : Specification
         GC.Collect();
         
         // Monitor GC during test
-        var initialGen0 = GC.CollectionCount(0);
-        var initialGen1 = GC.CollectionCount(1);
-        var initialGen2 = GC.CollectionCount(2);
+        _initialGen0 = GC.CollectionCount(0);
+        _initialGen1 = GC.CollectionCount(1);
+        _initialGen2 = GC.CollectionCount(2);
         
-        Console.WriteLine($"Initial GC counts - Gen0: {initialGen0}, Gen1: {initialGen1}, Gen2: {initialGen2}");
+        Console.WriteLine($"Initial GC counts - Gen0: {_initialGen0}, Gen1: {_initialGen1}, Gen2: {_initialGen2}");
     }
     
     protected override void DestroyContext()
@@ -479,11 +585,17 @@ public class GCOptimizedTests : Specification
     }
     
     // Use value types and object pooling to reduce allocations
-    [Load(concurrency: 300, duration: 600000)]
+    [Load(order: 1, concurrency: 300, duration: 600000, interval: 2000)]
     public async Task Should_Minimize_GC_Pressure() 
     {
         // Efficient patterns that minimize allocations
         await ExecuteWithMinimalAllocations();
+    }
+    
+    private async Task ExecuteWithMinimalAllocations()
+    {
+        // Use efficient patterns to minimize allocations
+        await _httpClient.GetAsync("/api/data");
     }
 }
 ```
@@ -495,11 +607,13 @@ public class GCOptimizedTests : Specification
 Monitor system resources during load tests:
 
 ```csharp
+[UseLoadFramework]
 public class MonitoredLoadTests : Specification
 {
     private PerformanceCounter _cpuCounter;
     private PerformanceCounter _memoryCounter;
-    private readonly Timer _monitoringTimer;
+    private Timer _monitoringTimer;
+    private readonly HttpClient _httpClient = new HttpClient();
     
     protected override void EstablishContext()
     {
@@ -525,7 +639,7 @@ public class MonitoredLoadTests : Specification
             Console.WriteLine("WARNING: Low memory detected");
     }
     
-    [Load(concurrency: 200, duration: 300000)]
+    [Load(order: 1, concurrency: 200, duration: 300000, interval: 1000)]
     public async Task Should_Monitor_System_Resources() 
     {
         await _httpClient.GetAsync("/api/data");
@@ -545,12 +659,13 @@ public class MonitoredLoadTests : Specification
 Track application-specific performance metrics:
 
 ```csharp
+[UseLoadFramework]
 public class CustomMetricsTests : Specification
 {
     private readonly ConcurrentDictionary<string, Counter> _customCounters = new();
     private readonly ConcurrentBag<TimeSpan> _operationTimes = new();
     
-    protected override void Because()
+    protected override async void Because()
     {
         var stopwatch = Stopwatch.StartNew();
         
@@ -594,8 +709,30 @@ public class CustomMetricsTests : Specification
         }
     }
     
-    [Load(concurrency: 100, duration: 180000)]
-    public async Task Should_Track_Custom_Performance_Metrics() { }
+    [Load(order: 1, concurrency: 100, duration: 180000, interval: 1000)]
+    public async Task Should_Track_Custom_Performance_Metrics() 
+    {
+        // Test implementation is in Because() method
+    }
+    
+    private async Task<BusinessResult> ExecuteBusinessOperation()
+    {
+        // Simulate business operation
+        await Task.Delay(Random.Shared.Next(10, 100));
+        return new BusinessResult { RequiredSpecialProcessing = Random.Shared.NextDouble() > 0.8 };
+    }
+    
+    private class BusinessResult
+    {
+        public bool RequiredSpecialProcessing { get; set; }
+    }
+    
+    private class Counter
+    {
+        private int _value;
+        public int Value => _value;
+        public void Increment() => Interlocked.Increment(ref _value);
+    }
 }
 ```
 

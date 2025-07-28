@@ -84,13 +84,11 @@ Here's a clear example demonstrating how to define and execute load tests using 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
 using xUnitV3LoadFramework.Extensions;
-using xUnitV3LoadFramework.Extensions.Framework;
 using System;
-
-[assembly: TestFramework(typeof(LoadTestFramework))]
 
 namespace xUnitLoadDemo;
 
+[UseLoadFramework]
 public class ExampleLoadSpecification : Specification
 {
     protected override void EstablishContext()
@@ -120,14 +118,34 @@ public class ExampleLoadSpecification : Specification
 ### API Load Testing Example
 
 ```csharp
+using xUnitV3LoadFramework.Attributes;
+using xUnitV3LoadFramework.Extensions;
+
+[UseLoadFramework]
 public class ApiLoadTests : Specification
 {
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task<bool> When_testing_api_endpoint()
+    private HttpClient _httpClient;
+
+    protected override void EstablishContext()
     {
-        using var client = new HttpClient();
-        var response = await client.GetAsync("https://api.example.com/health");
-        return response.IsSuccessStatusCode;
+        _httpClient = new HttpClient();
+    }
+
+    protected override void Because()
+    {
+        // Common setup for all load tests
+    }
+
+    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
+    public async Task When_testing_api_endpoint()
+    {
+        var response = await _httpClient.GetAsync("https://api.example.com/health");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    protected override void DestroyContext()
+    {
+        _httpClient?.Dispose();
     }
 }
 ```

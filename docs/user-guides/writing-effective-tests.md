@@ -9,29 +9,36 @@ This guide covers best practices for creating meaningful, maintainable, and reli
 Your load tests should mirror real user behavior and system usage patterns.
 
 ```csharp
-// ❌ Bad - Unrealistic uniform load
-[Load(concurrency: 1000, duration: 60000)]
-public async Task Unrealistic_Load_Test()
+[UseLoadFramework]
+public class RealisticLoadTests : Specification
 {
-    // All users hit same endpoint at exact same time
-    await _httpClient.GetAsync("/api/users/1");
-}
+    private readonly HttpClient _httpClient = new HttpClient();
+    private static readonly StringContent content = new StringContent("test", Encoding.UTF8, "application/json");
 
-// ✅ Good - Realistic varied load
-[Load(concurrency: 100, duration: 60000)]
-public async Task Realistic_User_Behavior()
-{
-    // Simulate realistic user patterns
-    var userId = Random.Shared.Next(1, 10000);
-    await _httpClient.GetAsync($"/api/users/{userId}");
-    
-    // Add think time between requests
-    await Task.Delay(Random.Shared.Next(500, 2000));
-    
-    // Occasionally perform updates (20% of requests)
-    if (Random.Shared.NextDouble() < 0.2)
+    // ❌ Bad - Unrealistic uniform load
+    [Load(order: 1, concurrency: 1000, duration: 60000, interval: 1000)]
+    public async Task Unrealistic_Load_Test()
     {
-        await _httpClient.PostAsync($"/api/users/{userId}/activity", content);
+        // All users hit same endpoint at exact same time
+        await _httpClient.GetAsync("/api/users/1");
+    }
+
+    // ✅ Good - Realistic varied load
+    [Load(order: 2, concurrency: 100, duration: 60000, interval: 1000)]
+    public async Task Realistic_User_Behavior()
+    {
+        // Simulate realistic user patterns
+        var userId = Random.Shared.Next(1, 10000);
+        await _httpClient.GetAsync($"/api/users/{userId}");
+        
+        // Add think time between requests
+        await Task.Delay(Random.Shared.Next(500, 2000));
+        
+        // Occasionally perform updates (20% of requests)
+        if (Random.Shared.NextDouble() < 0.2)
+        {
+            await _httpClient.PostAsync($"/api/users/{userId}/activity", content);
+        }
     }
 }
 ```
@@ -41,27 +48,34 @@ public async Task Realistic_User_Behavior()
 Build up load gradually to understand system behavior.
 
 ```csharp
+[UseLoadFramework]
 public class ProgressiveLoadTests : Specification
 {
     // Phase 1: Smoke test
-    [Load(concurrency: 5, duration: 30000)]
+    [Load(order: 1, concurrency: 5, duration: 30000, interval: 1000)]
     [Trait("Phase", "Smoke")]
     public async Task Phase1_Smoke_Test() { await ExecuteUserScenario(); }
     
     // Phase 2: Normal load
-    [Load(concurrency: 50, duration: 120000)]
+    [Load(order: 2, concurrency: 50, duration: 120000, interval: 2000)]
     [Trait("Phase", "Normal")]
     public async Task Phase2_Normal_Load() { await ExecuteUserScenario(); }
     
     // Phase 3: Peak load
-    [Load(concurrency: 200, duration: 300000)]
+    [Load(order: 3, concurrency: 200, duration: 300000, interval: 5000)]
     [Trait("Phase", "Peak")]
     public async Task Phase3_Peak_Load() { await ExecuteUserScenario(); }
     
     // Phase 4: Stress test
-    [Load(concurrency: 500, duration: 600000)]
+    [Load(order: 4, concurrency: 500, duration: 600000, interval: 10000)]
     [Trait("Phase", "Stress")]
     public async Task Phase4_Stress_Test() { await ExecuteUserScenario(); }
+    
+    private async Task ExecuteUserScenario()
+    {
+        // Common user scenario implementation
+        await Task.Delay(100);
+    }
 }
 ```
 
@@ -70,34 +84,39 @@ public class ProgressiveLoadTests : Specification
 Test how your system handles failures gracefully.
 
 ```csharp
-[Load(concurrency: 100, duration: 60000)]
-public async Task Should_Handle_Errors_Gracefully()
+[UseLoadFramework]
+public class ErrorHandlingLoadTests : Specification
 {
-    try
+    private readonly HttpClient _httpClient = new HttpClient();
+
+    [Load(order: 1, concurrency: 100, duration: 60000, interval: 1000)]
+    public async Task Should_Handle_Errors_Gracefully()
     {
-        var response = await _httpClient.GetAsync("/api/data");
-        
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.False(string.IsNullOrEmpty(content));
-            return; // Success case
-        }
-        
-        // Handle expected error responses
-        switch (response.StatusCode)
-        {
-            case HttpStatusCode.ServiceUnavailable:
-                // Expected under high load - system protecting itself
-                Console.WriteLine("Service temporarily unavailable - expected behavior");
-                break;
-                
-            case HttpStatusCode.TooManyRequests:
-                // Rate limiting triggered - good defensive behavior
-                Console.WriteLine("Rate limit hit - system is protecting itself");
-                break;
-                
-            default:
+            var response = await _httpClient.GetAsync("/api/data");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                Assert.False(string.IsNullOrEmpty(content));
+                return; // Success case
+            }
+            
+            // Handle expected error responses
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.ServiceUnavailable:
+                    // Expected under high load - system protecting itself
+                    Console.WriteLine("Service temporarily unavailable - expected behavior");
+                    break;
+                    
+                case HttpStatusCode.TooManyRequests:
+                    // Rate limiting triggered - good defensive behavior
+                    Console.WriteLine("Rate limit hit - system is protecting itself");
+                    break;
+                    
+                default:
                 Assert.True(false, $"Unexpected status: {response.StatusCode}");
                 break;
         }
