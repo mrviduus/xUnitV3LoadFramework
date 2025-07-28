@@ -1,4 +1,26 @@
-# Monitoring and Metrics Guide
+# Moni### Built-in Metrics
+
+The framework automatically collects comprehensive metrics for every load test:
+
+```csharp
+[UseLoadFramework]
+public class MetricsCollectionTests : Specification
+{
+    private readonly HttpClient _httpClient = new HttpClient();
+
+    [Load(order: 1, concurrency: 100, duration: 120000, interval: 5000)]
+    public async Task Should_Collect_Comprehensive_Metrics()
+    {
+        // Framework automatically tracks:
+        // - Request counts (started, success, failure)
+        // - Latency percentiles (min, max, avg, median, P95, P99)
+        // - Throughput (requests per second)
+        // - Resource utilization (worker threads, memory usage)
+        // - Queue performance (avg/max queue times)
+        
+        await _httpClient.GetAsync("/api/data");
+    }
+}s Guide
 
 Comprehensive guide to monitoring, metrics collection, and analysis in xUnitV3LoadFramework.
 
@@ -64,8 +86,11 @@ public class LoadResult
 Configure reporting intervals for real-time visibility:
 
 ```csharp
+[UseLoadFramework]
 public class MonitoredLoadTest : Specification
 {
+    private readonly HttpClient _httpClient = new HttpClient();
+
     protected override void EstablishContext()
     {
         Console.WriteLine("Starting monitored load test...");
@@ -73,7 +98,7 @@ public class MonitoredLoadTest : Specification
     }
     
     // Report progress every 2 seconds for detailed monitoring
-    [Load(concurrency: 150, duration: 180000, interval: 2000)]
+    [Load(order: 1, concurrency: 150, duration: 180000, interval: 2000)]
     public async Task Should_Report_Detailed_Progress()
     {
         var startTime = DateTime.Now;

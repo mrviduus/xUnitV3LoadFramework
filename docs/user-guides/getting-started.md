@@ -22,6 +22,7 @@ Create a new test file `MyFirstLoadTest.cs`:
 using xUnitV3LoadFramework.Attributes;
 using xUnitV3LoadFramework.Extensions;
 
+[UseLoadFramework]
 public class MyFirstLoadTest : Specification
 {
     [Load(order: 1, concurrency: 10, duration: 5000, interval: 1000)] // 10 concurrent users for 5 seconds
@@ -95,16 +96,21 @@ The `[Load]` attribute configures your test execution:
 Perfect for basic performance validation:
 
 ```csharp
-[Load(order: 1, concurrency: 20, duration: 10000, interval: 1000)]
-public async Task Should_Handle_Simple_Load()
+[UseLoadFramework]
+public class SimpleLoadTests : Specification
 {
-    var httpClient = new HttpClient();
-    var response = await httpClient.GetAsync("https://api.example.com/health");
-    
-    // Your test logic and validation here
-    if (!response.IsSuccessStatusCode)
+    private readonly HttpClient _httpClient = new HttpClient();
+
+    [Load(order: 1, concurrency: 20, duration: 10000, interval: 1000)]
+    public async Task Should_Handle_Simple_Load()
     {
-        throw new Exception($"API returned {response.StatusCode}");
+        var response = await _httpClient.GetAsync("https://api.example.com/health");
+        
+        // Your test logic and validation here
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"API returned {response.StatusCode}");
+        }
     }
 }
 ```
@@ -114,20 +120,24 @@ public async Task Should_Handle_Simple_Load()
 Test database performance under load:
 
 ```csharp
-[Load(order: 2, concurrency: 100, duration: 60000, interval: 5000)]
-public async Task Should_Handle_Database_Load()
+[UseLoadFramework]
+public class DatabaseLoadTests : Specification
 {
-    using var context = new MyDbContext();
-    
-    var user = await context.Users.FirstOrDefaultAsync(u => u.IsActive);
-    if (user == null)
+    [Load(order: 1, concurrency: 100, duration: 60000, interval: 5000)]
+    public async Task Should_Handle_Database_Load()
     {
-        throw new Exception("No active user found");
+        using var context = new MyDbContext();
+        
+        var user = await context.Users.FirstOrDefaultAsync(u => u.IsActive);
+        if (user == null)
+        {
+            throw new Exception("No active user found");
+        }
+        
+        // Simulate database update
+        user.LastAccessTime = DateTime.UtcNow;
+        await context.SaveChangesAsync();
     }
-    
-    // Simulate database update
-    user.LastAccessTime = DateTime.UtcNow;
-    await context.SaveChangesAsync();
 }
 ```
 
@@ -136,16 +146,19 @@ public async Task Should_Handle_Database_Load()
 Test system performance under sustained load:
 
 ```csharp
-[Load(order: 3, concurrency: 200, duration: 120000, interval: 10000)]
-public async Task Should_Handle_Sustained_Load()
+[UseLoadFramework]
+public class SustainedLoadTests : Specification
 {
-    // Run 200 concurrent users for 2 minutes
-    // Report progress every 10 seconds
-    
-    var service = new MyService();
-    var result = await service.ProcessRequestAsync();
-    
-    if (!result.IsSuccess)
+    [Load(order: 1, concurrency: 200, duration: 120000, interval: 10000)]
+    public async Task Should_Handle_Sustained_Load()
+    {
+        // Run 200 concurrent users for 2 minutes
+        // Report progress every 10 seconds
+        
+        var service = new MyService();
+        var result = await service.ProcessRequestAsync();
+        
+        if (!result.IsSuccess)
     {
         throw new Exception("Service request failed");
     }
@@ -186,39 +199,39 @@ public async Task Should_Survive_Stress_Test()
 The `Specification` base class provides test lifecycle hooks:
 
 ```csharp
+[UseLoadFramework]
 public class ApiLoadTests : Specification
 {
     private HttpClient _httpClient;
     private string _baseUrl;
     
-    protected override async Task Given()
+    protected override void EstablishContext()
     {
         // Setup executed once before all load test iterations
         _baseUrl = "https://api.example.com";
         _httpClient = new HttpClient();
         
         // Warm up the system
-        await _httpClient.GetAsync($"{_baseUrl}/health");
+        var warmup = _httpClient.GetAsync($"{_baseUrl}/health").Result;
     }
     
-    protected override async Task When()
+    protected override async void Because()
     {
         // This is called for each load test iteration
         var response = await _httpClient.GetAsync($"{_baseUrl}/users");
         Assert.True(response.IsSuccessStatusCode);
     }
     
-    protected override async Task Finally()
+    protected override void DestroyContext()
     {
         // Cleanup executed once after all iterations complete
         _httpClient?.Dispose();
     }
     
-    [Fact]
-    [Load(concurrency: 50, duration: 30000)]
+    [Load(order: 1, concurrency: 50, duration: 30000, interval: 1000)]
     public async Task Should_Handle_User_List_Load() 
     {
-        // The When() method will be executed under load
+        // The Because() method will be executed under load
         // No additional code needed here
     }
 }
@@ -229,10 +242,10 @@ public class ApiLoadTests : Specification
 For more control, handle setup manually:
 
 ```csharp
-public class CustomLoadTest
+[UseLoadFramework]
+public class CustomLoadTest : Specification
 {
-    [Fact]
-    [Load(concurrency: 25, duration: 15000)]
+    [Load(order: 1, concurrency: 25, duration: 15000, interval: 1000)]
     public async Task Should_Handle_Custom_Load()
     {
         // Per-iteration setup (executed by each concurrent user)
@@ -262,6 +275,7 @@ public class CustomLoadTest
 ### Setting up DI Container
 
 ```csharp
+[UseLoadFramework]
 public class DatabaseLoadTests : Specification, IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
@@ -276,8 +290,7 @@ public class DatabaseLoadTests : Specification, IDisposable
         _serviceProvider = services.BuildServiceProvider();
     }
     
-    [Fact]
-    [Load(concurrency: 100, duration: 60000)]
+    [Load(order: 1, concurrency: 100, duration: 60000, interval: 2000)]
     public async Task Should_Handle_Database_Load()
     {
         using var scope = _serviceProvider.CreateScope();

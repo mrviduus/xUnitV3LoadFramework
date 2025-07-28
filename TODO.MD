@@ -1,7 +1,9 @@
 ### TODO
 - [ ] Documentation
 - [ ] Clean test all tests should pass
-- [ ] Error handlers - [ ] Write xUnit test to simulate high-load (10k+ requests) scenario, assert >95% completion, log planned vs actual executions, and verify `LoadWorkerActor` emits tasks at correct rate under configured concurrency/interval.
+- [ ] Error handlers 
+- [ ] Write xUnit test to simulate high-load (10k+ requests) scenario, assert >95% completion, log planned vs actual executions, and verify `LoadWorkerActor` emits tasks at correct rate under configured concurrency/interval.
+- [ ] Fix all tests
 ### In progress
 - [ ] Branch policy
 - [ ] Create more unit tests

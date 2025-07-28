@@ -95,11 +95,15 @@ namespace MyTestProject
     [UseLoadFramework]
     public class LoadFrameworkTests : Specification
     {
-        public override void EstablishContext() => 
+        protected override void EstablishContext() 
+        {
             Console.WriteLine("EstablishContext: Load test setup completed");
+        }
 
-        public override void Because() => 
+        protected override void Because() 
+        {
             Console.WriteLine("Because: Load test action executed");
+        }
 
         [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
         public void ShouldExecuteWithLoadFramework()
