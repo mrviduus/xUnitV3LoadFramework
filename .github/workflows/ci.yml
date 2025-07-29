@@ -46,13 +46,15 @@ jobs:
           echo "Updated version in .csproj to: ${{ env.VERSION }}"
 
       - name: Install dependencies
-        run: dotnet restore src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj
+        run: >-
+          dotnet restore src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj
+          tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj
 
       - name: Build
-        run: dotnet build src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --configuration Release --no-restore
+        run: dotnet build tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --no-restore --verbosity normal
+        run: dotnet test tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj --no-restore --verbosity normal
 
       - name: Ensure NuGet Directory Exists
         run: mkdir -p "${{ env.NuGetDirectory }}"
