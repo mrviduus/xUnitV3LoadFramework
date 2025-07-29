@@ -1,3 +1,4 @@
+using System.Reflection;
 using Xunit.Internal;
 using Xunit.Sdk;
 using Xunit.v3;
@@ -158,32 +159,58 @@ public class LoadTestCollectionRunner :
     }
 
     private async ValueTask<RunSummary> RunSingleStandardTest(
-        LoadTestCollectionRunnerContext ctxt, 
+        LoadTestCollectionRunnerContext ctxt,
         StandardTestCase testCase,
         object testClassInstance)
     {
         var testMethod = (LoadTestMethod)testCase.TestMethod;
         var method = testMethod.Method;
 
-        try
-        {
-            // Execute the test method
-            var result = method.Invoke(testClassInstance, null);
+        var summary = new RunSummary();
 
-            // Handle async methods
-            if (result is Task task)
+        // Support [Theory]-style data driven tests
+        var dataAttributes = method.GetCustomAttributes(typeof(DataAttribute), false)
+            .Cast<DataAttribute>()
+            .ToArray();
+
+        if (dataAttributes.Length > 0)
+        {
+            foreach (var dataAttribute in dataAttributes)
             {
-                await task;
+                foreach (var dataRow in dataAttribute.GetData(method))
+                {
+                    summary.Total++;
+                    try
+                    {
+                        var result = method.Invoke(testClassInstance, dataRow);
+                        if (result is Task task)
+                            await task;
+                    }
+                    catch (Exception)
+                    {
+                        summary.Failed++;
+                    }
+                }
             }
 
-            // Return success - RunSummary uses Total with no Failed/Skipped to indicate success
-            return new RunSummary { Total = 1 };
+            return summary;
+        }
+
+        // No data attributes - treat as standard [Fact]
+        try
+        {
+            var result = method.Invoke(testClassInstance, null);
+            if (result is Task task)
+                await task;
+            summary.Total = 1;
         }
         catch (Exception)
         {
-            // Return failure - set Failed count
-            return new RunSummary { Total = 1, Failed = 1 };
+            summary.Total = 1;
+            summary.Failed = 1;
         }
+
+        return summary;
     }
 
     public async ValueTask<RunSummary> Run(
