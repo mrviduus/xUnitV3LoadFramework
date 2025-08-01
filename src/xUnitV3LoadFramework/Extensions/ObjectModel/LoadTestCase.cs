@@ -11,7 +11,7 @@ namespace xUnitV3LoadFramework.Extensions.ObjectModel;
 public class LoadTestCase : ITestCase, IXunitSerializable
 {
 	LoadTestMethod? testMethod;
-	
+
 	public int Order { get; private set; }
 	public int Concurrency { get; set; }
 	public int Duration { get; set; }
@@ -38,7 +38,7 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 
 	bool ITestCaseMetadata.Explicit =>
 		false;
-	
+
 	string? ITestCaseMetadata.SkipReason =>
 		SkipReason;
 
@@ -98,6 +98,8 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 
 	public string UniqueID =>
 		UniqueIDGenerator.ForTestCase(TestMethod.UniqueID, testMethodGenericTypes: null, testMethodArguments: null);
+
+	public int? TestMethodArity => throw new NotImplementedException();
 
 	public void Deserialize(IXunitSerializationInfo info)
 	{
