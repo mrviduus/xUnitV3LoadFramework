@@ -48,4 +48,8 @@
     <ProjectReference Include="..\..\src\xUnitV3LoadFramework\xUnitV3LoadFramework.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TestResults\" />
+  </ItemGroup>
+
 </Project>

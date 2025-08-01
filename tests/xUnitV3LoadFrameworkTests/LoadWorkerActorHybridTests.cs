@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Akka.Actor;
+using Xunit;
 using xUnitV3LoadFramework.LoadRunnerCore.Actors;
 using xUnitV3LoadFramework.LoadRunnerCore.Messages;
 using xUnitV3LoadFramework.LoadRunnerCore.Models;
