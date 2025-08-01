@@ -13,4 +13,11 @@
 - [x] Add Time start Time duration and Time End to Report
 - [x] Create build for nuget (framework should be connected when nuget was setuped)
 - [x] Create pilpline
+- [x] **xUnit v3 3.0.0 Compatibility** - Updated framework to support xUnit v3 3.0.0 breaking changes:
+  - Added CallerFilePath/CallerLineNumber support to LoadAttribute for source location information
+  - Implemented TestMethodArity property in LoadTestMethod and LoadTestCase classes
+  - Fixed source information extraction in LoadDiscoverer using reflection
+  - Updated StandardTestCase to support new source location parameters
+  - Ensured all Specification-based test classes have [UseLoadFramework] attribute
+  - All framework tests passing (30 succeeded, 4 intentional failures, 1 skipped)
 ### Issues

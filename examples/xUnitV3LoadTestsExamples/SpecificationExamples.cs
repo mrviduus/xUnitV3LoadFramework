@@ -27,14 +27,13 @@ public class When_running_standard_load_scenarios : Specification
 	[Load(order: 3, concurrency: 1, duration: 3000, interval: 1000, Skip = "testing skip")]
 	public void should_skip_scenario() =>
 		Console.WriteLine(">> This test should be skipped");
-
-
 }
 
 //=========================================================//
 // EXAMPLE 2: VERIFYING LIFECYCLE HOOK EXECUTION ORDER     //
 //=========================================================//
 
+[UseLoadFramework]
 public class When_testing_all_lifecycle_hooks : Specification
 {
 	protected override void EstablishContext() =>
@@ -55,6 +54,7 @@ public class When_testing_all_lifecycle_hooks : Specification
 // EXAMPLE 3: EXCEPTION DURING CONSTRUCTOR                 //
 //=========================================================//
 
+[UseLoadFramework]
 public class When_constructor_throws_exception : Specification
 {
 	public When_constructor_throws_exception() =>

@@ -13,8 +13,12 @@ public class StandardTestCase : LoadTestCase
 {
     private readonly FactAttribute factAttribute;
 
-    public StandardTestCase(LoadTestMethod testMethod, FactAttribute factAttribute) 
-        : base(testMethod, 0) // Use order 0 for standard tests
+    public StandardTestCase(
+        LoadTestMethod testMethod, 
+        FactAttribute factAttribute,
+        string sourceFilePath = "",
+        int sourceLineNumber = 0) 
+        : base(testMethod, 0, sourceFilePath, sourceLineNumber) // Use order 0 for standard tests
     {
         this.factAttribute = factAttribute;
         // Set standard test properties

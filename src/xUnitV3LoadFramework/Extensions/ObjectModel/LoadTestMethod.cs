@@ -55,7 +55,7 @@ public class LoadTestMethod : ITestMethod, IXunitSerializable
 	public string UniqueID =>
 		uniqueID.Value;
 
-	public int? MethodArity => throw new NotImplementedException();
+	public int? MethodArity => Method.IsGenericMethodDefinition ? Method.GetGenericArguments().Length : 0;
 
 	public void Deserialize(IXunitSerializationInfo info)
 	{

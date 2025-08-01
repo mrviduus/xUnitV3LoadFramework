@@ -17,6 +17,8 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 	public int Duration { get; set; }
 	public int Interval { get; set; }
 	public string? SkipReason { get; set; }
+	public string? SourceFilePath { get; set; }
+	public int? SourceLineNumber { get; set; }
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[Obsolete("Called by the de-serializer; should only be called by deriving classes for de-serialization purposes")]
@@ -24,16 +26,22 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 	{ }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="XunitTestCase"/> class.
+	/// Initializes a new instance of the <see cref="LoadTestCase"/> class.
 	/// </summary>
 	/// <param name="testMethod">The test method this test case belongs to.</param>
 	/// <param name="order">The value from <see cref="LoadAttribute.Order"/>.</param>
+	/// <param name="sourceFilePath">Source file path from the LoadAttribute</param>
+	/// <param name="sourceLineNumber">Source line number from the LoadAttribute</param>
 	public LoadTestCase(
 		LoadTestMethod testMethod,
-		int order)
+		int order,
+		string? sourceFilePath = null,
+		int? sourceLineNumber = null)
 	{
 		this.testMethod = Guard.ArgumentNotNull(testMethod);
 		Order = order;
+		SourceFilePath = sourceFilePath;
+		SourceLineNumber = sourceLineNumber;
 	}
 
 	bool ITestCaseMetadata.Explicit =>
@@ -43,10 +51,10 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 		SkipReason;
 
 	string? ITestCaseMetadata.SourceFilePath =>
-		null;
+		SourceFilePath;
 
 	int? ITestCaseMetadata.SourceLineNumber =>
-		null;
+		SourceLineNumber;
 
 	public string TestCaseDisplayName =>
 		$"{TestClass.DisplayName}, it {TestMethod.DisplayName}";
@@ -99,7 +107,7 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 	public string UniqueID =>
 		UniqueIDGenerator.ForTestCase(TestMethod.UniqueID, testMethodGenericTypes: null, testMethodArguments: null);
 
-	public int? TestMethodArity => throw new NotImplementedException();
+	public int? TestMethodArity => TestMethod.Method.IsGenericMethodDefinition ? TestMethod.Method.GetGenericArguments().Length : 0;
 
 	public void Deserialize(IXunitSerializationInfo info)
 	{
@@ -109,6 +117,8 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 		Duration = info.GetValue<int>("duration");
 		Interval = info.GetValue<int>("interval");
 		SkipReason = info.GetValue<string?>("skipReason");
+		SourceFilePath = info.GetValue<string?>("sourceFilePath");
+		SourceLineNumber = info.GetValue<int?>("sourceLineNumber");
 	}
 
 	public void Serialize(IXunitSerializationInfo info)
@@ -119,5 +129,7 @@ public class LoadTestCase : ITestCase, IXunitSerializable
 		info.AddValue("duration", Duration);
 		info.AddValue("interval", Interval);
 		info.AddValue("skipReason", SkipReason);
+		info.AddValue("sourceFilePath", SourceFilePath);
+		info.AddValue("sourceLineNumber", SourceLineNumber);
 	}
 }

@@ -1,4 +1,5 @@
 // Import xUnit framework for test attribute inheritance and integration
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace xUnitV3LoadFramework.Attributes;
@@ -18,7 +19,15 @@ public class LoadAttribute : FactAttribute
 	/// <param name="concurrency">Number of concurrent executions to run simultaneously</param>
 	/// <param name="duration">Total duration for the load test in milliseconds</param>
 	/// <param name="interval">Time interval between batches in milliseconds</param>
-	public LoadAttribute(int order, int concurrency, int duration, int interval)
+	/// <param name="sourceFilePath">Source file path (automatically provided by compiler)</param>
+	/// <param name="sourceLineNumber">Source line number (automatically provided by compiler)</param>
+	public LoadAttribute(
+		int order, 
+		int concurrency, 
+		int duration, 
+		int interval,
+		[CallerFilePath] string sourceFilePath = "",
+		[CallerLineNumber] int sourceLineNumber = 0) : base(sourceFilePath, sourceLineNumber)
 	{
 		// Set the execution order for test sequencing
 		Order = order;
