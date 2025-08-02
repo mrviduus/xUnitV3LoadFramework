@@ -1,5 +1,6 @@
 using System.Reflection;
 using xUnitV3LoadFramework.Attributes;
+using xUnitV3LoadFramework.Extensions;
 using xUnitV3LoadFramework.Extensions.Framework;
 using xUnitV3LoadFramework.Extensions.ObjectModel;
 
@@ -82,7 +83,7 @@ public class UseLoadFrameworkAttributeTests
 /// Test class that uses the load framework
 /// </summary>
 [UseLoadFramework]
-public class TestLoadFrameworkClass
+public class TestLoadFrameworkClass : Specification
 {
 	[Load(order: 1, concurrency: 1, duration: 10000, interval: 500)]
 	public void LoadTest()
