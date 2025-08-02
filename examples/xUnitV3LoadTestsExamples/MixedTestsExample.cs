@@ -32,40 +32,6 @@ public class StandardXUnitTests
 }
 
 /// <summary>
-/// Load test class - marked with UseLoadFramework attribute
-/// These tests will run using the LoadTestFramework
-/// </summary>
-[UseLoadFramework]
-public class LoadFrameworkTests : Specification
-{
-	private string? _testData;
-
-	protected override void EstablishContext()
-	{
-		_testData = "Test data initialized";
-		Console.WriteLine("EstablishContext: Load test setup completed");
-	}
-
-	protected override void Because()
-	{
-		Console.WriteLine("Because: Load test action executed");
-	}
-
-	[Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
-	public void LoadTest_ShouldExecuteWithLoadFramework()
-	{
-		Assert.NotNull(_testData);
-		Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
-	}
-
-	[Load(order: 2, concurrency: 3, duration: 1500, interval: 300)]
-	public void AnotherLoadTest_ShouldExecuteWithLowerLoad()
-	{
-		Console.WriteLine($"Another load test executed at {DateTime.Now:HH:mm:ss.fff}");
-	}
-}
-
-/// <summary>
 /// Another standard test class to verify framework selection
 /// </summary>
 public class AnotherStandardTestClass
@@ -75,5 +41,58 @@ public class AnotherStandardTestClass
 	{
 		Assert.True(true);
 		Console.WriteLine("Another standard test executed");
+	}
+}
+
+/// <summary>
+/// Stress test class using the new V2 pattern
+/// Demonstrates modern stress testing with full xUnit v3 compatibility
+/// </summary>
+[UseStressFramework]
+public class StressTestsExample : IDisposable
+{
+	private readonly string _testData;
+
+	// Standard xUnit constructor for setup
+	public StressTestsExample()
+	{
+		_testData = "Test data initialized in constructor";
+		Console.WriteLine("Setup completed in constructor");
+	}
+
+	[Stress(order: 1, concurrency: 5, duration: 2000, interval: 500)]
+	public async Task StressTest_ShouldHandleConcurrentLoad()
+	{
+		// Direct test implementation - no separate setup methods needed
+		Assert.NotNull(_testData);
+		
+		// Simulate async work
+		await Task.Delay(Random.Shared.Next(10, 50));
+		
+		Console.WriteLine($"Stress test executed at {DateTime.Now:HH:mm:ss.fff}");
+	}
+
+	[Stress(order: 2, concurrency: 3, duration: 1500, interval: 300)]
+	public async Task StressTest_WithComplexLogic()
+	{
+		// More complex test logic directly in the method
+		var startTime = DateTime.UtcNow;
+		
+		// Simulate database operations
+		for (int i = 0; i < 10; i++)
+		{
+			await Task.Delay(Random.Shared.Next(5, 20));
+		}
+		
+		var duration = DateTime.UtcNow - startTime;
+		Assert.True(duration.TotalMilliseconds >= 50);
+		
+		Console.WriteLine($"Complex stress test - Duration: {duration.TotalMilliseconds:F1}ms");
+	}
+
+	// Standard xUnit disposal pattern
+	public void Dispose()
+	{
+		Console.WriteLine("Cleanup completed in Dispose");
 	}
 }

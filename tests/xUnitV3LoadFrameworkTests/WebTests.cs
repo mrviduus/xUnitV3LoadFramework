@@ -4,26 +4,26 @@ using xUnitV3LoadFramework.Extensions;
 
 namespace xUnitV3LoadTests;
 
-[UseLoadFramework]
-public class WebTests : Specification
+[UseStressFramework]
+public class WebTests : IDisposable
 {
 	private HttpClient? _httpClient;
 
-	protected override void EstablishContext()
+	public WebTests()
 	{
-		// Create the TestSetup and initialize HttpClient in EstablishContext
+		// Create the TestSetup and initialize HttpClient in constructor
 		var setup = new TestSetup();
 		setup.InitializeAsync().GetAwaiter().GetResult();
 		
 		_httpClient = setup.Host.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
 	}
 
-	protected override void DestroyContext()
+	public void Dispose()
 	{
 		_httpClient?.Dispose();
 	}
 
-	[Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
+	[Stress(order: 1, concurrency: 2, duration: 5000, interval: 500)]
 	public async Task TestGoogleIsWorking()
 	{
 		// This will show you:

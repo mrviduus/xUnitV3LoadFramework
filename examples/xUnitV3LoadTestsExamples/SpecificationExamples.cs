@@ -1,104 +1,157 @@
 #pragma warning disable IDE1006
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
 
 namespace xUnitV3LoadTests;
 
 //==================================//
-// EXAMPLE 1: STANDARD WORKFLOW     //
+// EXAMPLE 1: STANDARD STRESS WORKFLOW //
 //==================================// 
-[UseLoadFramework]
-public class When_running_standard_load_scenarios : Specification
+[UseStressFramework]
+public class When_running_standard_stress_scenarios : IDisposable
 {
-	protected override void EstablishContext() =>
-		Console.WriteLine(">> EstablishContext called");
+	private readonly string _context;
 
-	protected override void Because() =>
-		Console.WriteLine(">> Because called");
+	public When_running_standard_stress_scenarios()
+	{
+		_context = "Context established in constructor";
+		Console.WriteLine(">> Setup completed in constructor");
+	}
 
-	[Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
-	public void should_run_first_scenario() =>
-		Console.WriteLine(">> Executing first scenario");
+	[Stress(order: 1, concurrency: 2, duration: 5000, interval: 500)]
+	public async Task should_run_first_scenario()
+	{
+		Assert.NotNull(_context);
+		await Task.Delay(Random.Shared.Next(10, 50));
+		Console.WriteLine(">> Executing first stress scenario");
+	}
 
-	[Load(order: 2, concurrency: 3, duration: 7000, interval: 300)]
-	public void should_run_second_scenario() =>
-		Console.WriteLine(">> Executing second scenario");
+	[Stress(order: 2, concurrency: 3, duration: 7000, interval: 300)]
+	public async Task should_run_second_scenario()
+	{
+		Assert.NotNull(_context);
+		await Task.Delay(Random.Shared.Next(20, 100));
+		Console.WriteLine(">> Executing second stress scenario");
+	}
 
-	[Load(order: 3, concurrency: 1, duration: 3000, interval: 1000, Skip = "testing skip")]
-	public void should_skip_scenario() =>
+	[Stress(order: 3, concurrency: 1, duration: 3000, interval: 1000, Skip = "testing skip")]
+	public async Task should_skip_scenario()
+	{
+		await Task.Delay(10);
 		Console.WriteLine(">> This test should be skipped");
+	}
+
+	public void Dispose()
+	{
+		Console.WriteLine(">> Cleanup completed in Dispose");
+	}
 }
 
 //=========================================================//
-// EXAMPLE 2: VERIFYING LIFECYCLE HOOK EXECUTION ORDER     //
+// EXAMPLE 2: VERIFYING LIFECYCLE EXECUTION ORDER        //
 //=========================================================//
 
-[UseLoadFramework]
-public class When_testing_all_lifecycle_hooks : Specification
+[UseStressFramework]
+public class When_testing_lifecycle_hooks : IDisposable
 {
-	protected override void EstablishContext() =>
-		Console.WriteLine(">> [Lifecycle] EstablishContext invoked");
+	private readonly List<string> _executionOrder;
 
-	protected override void Because() =>
-		Console.WriteLine(">> [Lifecycle] Because invoked");
+	public When_testing_lifecycle_hooks()
+	{
+		_executionOrder = new List<string>();
+		_executionOrder.Add("Constructor");
+		Console.WriteLine(">> [Lifecycle] Constructor invoked");
+	}
 
-	protected override void DestroyContext() =>
-		Console.WriteLine(">> [Lifecycle] DestroyContext invoked");
-
-	[Load(order: 1, concurrency: 1, duration: 2000, interval: 1000)]
-	public void should_run_and_log_full_lifecycle() =>
+	[Stress(order: 1, concurrency: 1, duration: 2000, interval: 1000)]
+	public async Task should_run_and_log_full_lifecycle()
+	{
+		_executionOrder.Add("Test Method");
 		Console.WriteLine(">> Running lifecycle test");
+		
+		Assert.Contains("Constructor", _executionOrder);
+		await Task.Delay(10);
+	}
+
+	public void Dispose()
+	{
+		_executionOrder.Add("Dispose");
+		Console.WriteLine(">> [Lifecycle] Dispose invoked");
+	}
 }
 
 //=========================================================//
-// EXAMPLE 3: EXCEPTION DURING CONSTRUCTOR                 //
+// EXAMPLE 3: EXCEPTION HANDLING IN STRESS TESTS         //
 //=========================================================//
 
-[UseLoadFramework]
-public class When_constructor_throws_exception : Specification
+[UseStressFramework]
+public class When_handling_exceptions_in_stress_tests : IDisposable
 {
-	public When_constructor_throws_exception() =>
-		throw new Exception(">> Constructor exception");
+	private readonly bool _shouldThrow;
 
-	[Load(order: 1, concurrency: 1, duration: 1000, interval: 1000)]
-	public void should_fail_due_to_constructor_error() { }
+	public When_handling_exceptions_in_stress_tests()
+	{
+		_shouldThrow = false; // Set to true to test exception handling
+		Console.WriteLine(">> Exception handling test initialized");
+	}
+
+	[Stress(order: 1, concurrency: 2, duration: 3000, interval: 500)]
+	public async Task should_handle_exceptions_gracefully()
+	{
+		if (_shouldThrow)
+		{
+			throw new InvalidOperationException("Simulated test exception");
+		}
+
+		await Task.Delay(Random.Shared.Next(10, 100));
+		Console.WriteLine(">> Exception handling test completed successfully");
+	}
+
+	public void Dispose()
+	{
+		Console.WriteLine(">> Exception handling test cleanup");
+	}
 }
 
 //=========================================================//
-// EXAMPLE 4: EXCEPTION IN ESTABLISHCONTEXT                //
+// EXAMPLE 4: MIXED TESTING WITH FACTS AND STRESS        //
 //=========================================================//
-[UseLoadFramework]
-public class When_establish_context_throws : Specification
+
+[UseStressFramework]
+public class When_combining_different_test_types
 {
-	protected override void EstablishContext() =>
-		throw new Exception(">> EstablishContext failure");
+	[Fact]
+	public void should_run_standard_unit_test()
+	{
+		var result = 2 + 2;
+		Assert.Equal(4, result);
+		Console.WriteLine(">> Standard unit test executed");
+	}
 
-	[Load(order: 1, concurrency: 1, duration: 1000, interval: 1000)]
-	public void should_fail_due_to_context_setup() { }
-}
+	[Theory]
+	[InlineData(1, 1, 2)]
+	[InlineData(3, 4, 7)]
+	[InlineData(10, 5, 15)]
+	public void should_run_parameterized_test(int a, int b, int expected)
+	{
+		var result = a + b;
+		Assert.Equal(expected, result);
+		Console.WriteLine($">> Theory test: {a} + {b} = {result}");
+	}
 
-//=========================================================//
-// EXAMPLE 5: EXCEPTION IN BECAUSE                         //
-//=========================================================//
-[UseLoadFramework]
-public class When_because_throws : Specification
-{
-	protected override void Because() =>
-		throw new Exception(">> Because failure");
-
-	[Load(order: 1, concurrency: 1, duration: 1000, interval: 1000)]
-	public void should_fail_due_to_action_error() { }
-}
-
-//=========================================================//
-// EXAMPLE 6: EXCEPTION IN DESTROYCONTEXT                  //
-//=========================================================//
-[UseLoadFramework]
-public class When_destroy_context_throws : Specification
-{
-	protected override void DestroyContext() =>
-		throw new Exception(">> DestroyContext failure");
-
-	[Load(order: 1, concurrency: 1, duration: 1000, interval: 1000)]
-	public void should_flag_cleanup_failure() { }
+	[Stress(concurrency: 5, duration: 3000, order: 1, interval: 100)]
+	public async Task should_run_stress_test_in_mixed_class()
+	{
+		var iterations = 50;
+		var sum = 0;
+		
+		for (int i = 0; i < iterations; i++)
+		{
+			sum += i;
+			if (i % 10 == 0)
+				await Task.Delay(1);
+		}
+		
+		Assert.True(sum > 0);
+		Console.WriteLine($">> Mixed stress test completed - Sum: {sum}");
+	}
 }

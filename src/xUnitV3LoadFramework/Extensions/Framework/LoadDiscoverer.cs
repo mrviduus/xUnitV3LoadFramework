@@ -20,15 +20,20 @@ public class LoadDiscoverer(LoadTestAssembly testAssembly) :
 		ITestFrameworkDiscoveryOptions discoveryOptions,
 		Func<LoadTestCase, ValueTask<bool>> discoveryCallback)
 	{
+		// Check for both StressAttribute (preferred) and LoadAttribute (backward compatibility)
+		var stressAttribute = testMethod.Method.GetCustomAttributes<StressAttribute>().FirstOrDefault();
 		var loadAttribute = testMethod.Method.GetCustomAttributes<LoadAttribute>().FirstOrDefault();
-		if (loadAttribute is null)
+		
+		// Use StressAttribute if present, otherwise fall back to LoadAttribute
+		var attribute = stressAttribute ?? loadAttribute;
+		if (attribute is null)
 			return true;
 
-		var order = loadAttribute.Order;
-		var concurrency = loadAttribute.Concurrency;
-		var duration = loadAttribute.Duration;
-		var interval = loadAttribute.Interval;
-		var skipReason = loadAttribute.Skip;
+		var order = attribute.Order;
+		var concurrency = attribute.Concurrency;
+		var duration = attribute.Duration;
+		var interval = attribute.Interval;
+		var skipReason = attribute.Skip;
 
 		// For xUnit v3, source location information should be automatically provided via CallerFilePath/CallerLineNumber
 		// These are set in the LoadAttribute constructor and will be available through the FactAttribute base class
@@ -42,9 +47,9 @@ public class LoadDiscoverer(LoadTestAssembly testAssembly) :
 			var sourceLineNumberProp = typeof(FactAttribute).GetProperty("SourceLineNumber");
 			
 			if (sourceFilePathProp != null)
-				sourceFilePath = sourceFilePathProp.GetValue(loadAttribute) as string;
+				sourceFilePath = sourceFilePathProp.GetValue(attribute) as string;
 			if (sourceLineNumberProp != null)
-				sourceLineNumber = sourceLineNumberProp.GetValue(loadAttribute) as int?;
+				sourceLineNumber = sourceLineNumberProp.GetValue(attribute) as int?;
 		}
 		catch
 		{
@@ -68,16 +73,16 @@ public class LoadDiscoverer(LoadTestAssembly testAssembly) :
 		ITestFrameworkDiscoveryOptions discoveryOptions,
 		Func<ITestCase, ValueTask<bool>> discoveryCallback)
 	{
-		// Check if the class should use load framework
+		// Check if the class should use stress/load framework (handle both new and deprecated attributes)
+		var useStressFramework = testClass.Class.GetCustomAttributes<UseStressFrameworkAttribute>().Any();
 		var useLoadFramework = testClass.Class.GetCustomAttributes<UseLoadFrameworkAttribute>().Any();
 		
-		if (useLoadFramework)
+		var useFramework = useStressFramework || useLoadFramework;
+		
+		if (useFramework)
 		{
-			// For load framework classes, only process classes that inherit from Specification
-			if (!typeof(Specification).IsAssignableFrom(testClass.Class))
-				return true;
-
-			// Process methods looking for [Load] attributes
+			// V2: No longer require Specification inheritance - support plain classes
+			// Process methods looking for [Stress] or [Load] attributes
 			foreach (var method in testClass.Methods)
 			{
 				var testMethod = new LoadTestMethod(testClass, method);

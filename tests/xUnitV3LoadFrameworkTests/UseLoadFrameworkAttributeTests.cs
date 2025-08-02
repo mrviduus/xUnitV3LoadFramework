@@ -7,16 +7,16 @@ using xUnitV3LoadFramework.Extensions.ObjectModel;
 namespace xUnitV3LoadFrameworkTests;
 
 /// <summary>
-/// Tests for the UseLoadFrameworkAttribute functionality and mixed test scenarios
+/// Tests for the UseStressFrameworkAttribute functionality and mixed test scenarios
 /// </summary>
-public class UseLoadFrameworkAttributeTests
+public class UseStressFrameworkAttributeTests
 {
 	[Fact]
-	public void UseLoadFrameworkAttribute_ShouldHaveCorrectTargets()
+	public void UseStressFrameworkAttribute_ShouldHaveCorrectTargets()
 	{
 		// Arrange
-		var attribute = new UseLoadFrameworkAttribute();
-		var attributeUsage = typeof(UseLoadFrameworkAttribute)
+		var attribute = new UseStressFrameworkAttribute();
+		var attributeUsage = typeof(UseStressFrameworkAttribute)
 			.GetCustomAttribute<AttributeUsageAttribute>();
 
 		// Assert
@@ -27,45 +27,45 @@ public class UseLoadFrameworkAttributeTests
 	}
 
 	[Fact]
-	public void UseLoadFrameworkAttribute_ShouldBeApplicableToTestClasses()
+	public void UseStressFrameworkAttribute_ShouldBeApplicableToTestClasses()
 	{
 		// Arrange
-		var testClassType = typeof(TestLoadFrameworkClass);
+		var testClassType = typeof(TestStressFrameworkClass);
 
 		// Act
-		var hasAttribute = testClassType.GetCustomAttribute<UseLoadFrameworkAttribute>() != null;
+		var hasAttribute = testClassType.GetCustomAttribute<UseStressFrameworkAttribute>() != null;
 
 		// Assert
 		Assert.True(hasAttribute);
 	}
 
 	[Fact]
-	public void StandardTestClass_ShouldNotHaveUseLoadFrameworkAttribute()
+	public void StandardTestClass_ShouldNotHaveUseStressFrameworkAttribute()
 	{
 		// Arrange
 		var testClassType = typeof(TestStandardClass);
 
 		// Act
-		var hasAttribute = testClassType.GetCustomAttribute<UseLoadFrameworkAttribute>() != null;
+		var hasAttribute = testClassType.GetCustomAttribute<UseStressFrameworkAttribute>() != null;
 
 		// Assert
 		Assert.False(hasAttribute);
 	}
 
 	[Fact]
-	public void LoadDiscoverer_ShouldCreateStandardTestCaseForNonLoadFrameworkClass()
+	public void LoadDiscoverer_ShouldCreateStandardTestCaseForNonStressFrameworkClass()
 	{
 		// This test would require more complex setup of the xUnit discovery infrastructure
 		// For now, we verify that our test classes are structured correctly
 		var standardClass = typeof(TestStandardClass);
-		var loadClass = typeof(TestLoadFrameworkClass);
+		var stressClass = typeof(TestStressFrameworkClass);
 
 		Assert.NotNull(standardClass);
-		Assert.NotNull(loadClass);
+		Assert.NotNull(stressClass);
 
 		// Verify the attribute presence
-		Assert.False(standardClass.GetCustomAttribute<UseLoadFrameworkAttribute>() != null);
-		Assert.True(loadClass.GetCustomAttribute<UseLoadFrameworkAttribute>() != null);
+		Assert.False(standardClass.GetCustomAttribute<UseStressFrameworkAttribute>() != null);
+		Assert.True(stressClass.GetCustomAttribute<UseStressFrameworkAttribute>() != null);
 	}
 
 	[Fact]
@@ -80,15 +80,21 @@ public class UseLoadFrameworkAttributeTests
 }
 
 /// <summary>
-/// Test class that uses the load framework
+/// Test class that uses the stress framework
 /// </summary>
-[UseLoadFramework]
-public class TestLoadFrameworkClass : Specification
+[UseStressFramework]
+public class TestStressFrameworkClass : IDisposable
 {
-	[Load(order: 1, concurrency: 1, duration: 10000, interval: 500)]
-	public void LoadTest()
+	[Stress(order: 1, concurrency: 1, duration: 10000, interval: 500)]
+	public async Task StressTest()
 	{
-		Console.WriteLine("Load test executed in TestLoadFrameworkClass");
+		await Task.Delay(10);
+		Console.WriteLine("Stress test executed in TestStressFrameworkClass");
+	}
+
+	public void Dispose()
+	{
+		// Cleanup if needed
 	}
 }
 

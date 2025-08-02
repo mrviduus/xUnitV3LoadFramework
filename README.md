@@ -30,9 +30,21 @@
 - **Message-driven Processing**: Asynchronous message passing for high throughput
 - **Fault Tolerance**: Supervisor hierarchies for robust error handling
 
----
+## 🔥 What's New in v2
 
-## 📊 Performance Highlights
+### 🎯 Major Improvements
+- **No More Specification Pattern**: Write stress tests like regular xUnit tests
+- **Enhanced xUnit Compatibility**: Mix `[Fact]`, `[Theory]`, and `[Stress]` in the same class
+- **Better Attribute Naming**: `LoadAttribute` → `StressAttribute` for clearer semantics
+- **Standard Lifecycle**: Use constructor/`IDisposable`/`IAsyncDisposable` instead of custom methods
+- **Async First**: Full support for `async Task` test methods
+
+### � Migration Support
+- **Backward Compatibility**: v1 attributes still work (with deprecation warnings)
+- **Gradual Migration**: Migrate one test class at a time
+- **Migration Guide**: Comprehensive guide with examples and patterns
+
+---
 
 - **High Throughput**: Tested up to 500,000 requests with sustained performance
 - **Low Latency**: Sub-millisecond overhead for test execution framework
@@ -77,9 +89,66 @@ dotnet test
 
 ## 📝 Usage Examples
 
-### Basic Load Test Example
+### Basic Stress Test Example (v2 Approach)
 
-Here's a clear example demonstrating how to define and execute load tests using the `Specification` base class and the `[Load]` attribute:
+Here's the new v2 approach demonstrating stress tests without the Specification pattern:
+
+```csharp
+using xUnitV3LoadFramework.Attributes;
+using System;
+
+namespace xUnitStressDemo;
+
+[UseStressFramework]
+public class ApiStressTests : IAsyncDisposable
+{
+    private readonly HttpClient _httpClient;
+
+    public ApiStressTests()
+    {
+        // Setup in constructor (replaces EstablishContext)
+        _httpClient = new HttpClient();
+        Console.WriteLine(">> Setup phase");
+    }
+
+    [Fact]
+    public void Quick_Unit_Test()
+    {
+        // Standard xUnit test - runs immediately
+        Assert.True(true);
+        Console.WriteLine(">> Standard unit test");
+    }
+
+    [Stress(order: 1, concurrency: 2, duration: 5000, interval: 500)]
+    public async Task Should_Handle_Light_Stress()
+    {
+        // Stress test with actor system and performance monitoring
+        Console.WriteLine(">> Running Stress Test 1");
+        var response = await _httpClient.GetAsync("https://httpbin.org/get");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    [Stress(order: 2, concurrency: 3, duration: 7000, interval: 300)]
+    public async Task Should_Handle_Heavy_Stress()
+    {
+        // Higher concurrency stress test
+        Console.WriteLine(">> Running Stress Test 2");
+        var response = await _httpClient.GetAsync("https://httpbin.org/delay/1");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Cleanup (replaces DestroyContext)
+        _httpClient?.Dispose();
+        Console.WriteLine(">> Cleanup phase");
+    }
+}
+```
+
+### Legacy Load Test Example (v1 Compatibility)
+
+The v1 approach still works but is deprecated:
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
@@ -88,8 +157,8 @@ using System;
 
 namespace xUnitLoadDemo;
 
-[UseLoadFramework]
-public class ExampleLoadSpecification : Specification
+[UseLoadFramework] // Deprecated - use UseStressFramework
+public class ExampleLoadSpecification : Specification // Deprecated pattern
 {
     protected override void EstablishContext()
     {
@@ -101,7 +170,7 @@ public class ExampleLoadSpecification : Specification
         Console.WriteLine(">> Action phase");
     }
 
-    [Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
+    [Load(order: 1, concurrency: 2, duration: 5000, interval: 500)] // Deprecated - use Stress
     public void should_run_load_scenario_1()
     {
         Console.WriteLine(">> Running Load 1");
@@ -115,42 +184,36 @@ public class ExampleLoadSpecification : Specification
 }
 ```
 
-### API Load Testing Example
+### API Stress Testing Example
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
 
-[UseLoadFramework]
-public class ApiLoadTests : Specification
+[UseStressFramework]
+public class ApiStressTests : IAsyncDisposable
 {
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
 
-    protected override void EstablishContext()
+    public ApiStressTests()
     {
         _httpClient = new HttpClient();
     }
 
-    protected override void Because()
-    {
-        // Common setup for all load tests
-    }
-
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task When_testing_api_endpoint()
+    [Stress(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
+    public async Task Should_Handle_High_Concurrency()
     {
         var response = await _httpClient.GetAsync("https://api.example.com/health");
         Assert.True(response.IsSuccessStatusCode);
     }
 
-    protected override void DestroyContext()
+    public async ValueTask DisposeAsync()
     {
         _httpClient?.Dispose();
     }
 }
 ```
 
-Each `[Load]` attribute defines:
+Each `[Stress]` attribute defines:
 
 - `order`: the test execution order  
 - `concurrency`: number of parallel executions  
