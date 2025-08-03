@@ -482,5 +482,20 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
 # VS Code settings folder
 .vscode/
+
+# Additional cleanup entries for .NET projects
+TestResults/
+*.trx
+*.coverage
+*.cobertura.xml
+*.sarif
+
+# JetBrains Rider
+.idea/
+
+# Build artifacts that may be missed
+artifacts/
+nupkgs/
