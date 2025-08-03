@@ -8,7 +8,7 @@ The `LoadFactAttribute` is the cornerstone of the xUnitV3LoadFramework, enabling
 [LoadFact(order: 1, concurrency: 2, duration: 5000, interval: 500)]
 public async Task MyLoadTest()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         // Your test logic here
         return true;
@@ -103,7 +103,7 @@ public async Task SecondTest() { /* ... */ }
 [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task LoadTest_UserAPI()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         var response = await httpClient.GetAsync("/api/users");
         response.EnsureSuccessStatusCode();
@@ -122,7 +122,7 @@ public async Task LoadTest_UserAPI()
 [LoadFact(order: 1, concurrency: 3, duration: 5000, interval: 400)]
 public async Task LoadTest_DatabaseOperations()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         using var context = GetService<MyDbContext>();
         var user = await context.Users.FirstOrDefaultAsync();
@@ -139,7 +139,7 @@ public async Task LoadTest_DatabaseOperations()
 [LoadFact(order: 1, concurrency: 4, duration: 8000, interval: 300)]
 public async Task LoadTest_ExternalService()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         var response = await httpClient.GetAsync("https://api.external-service.com/data");
         response.EnsureSuccessStatusCode();
@@ -207,7 +207,7 @@ public async Task LoadTest_ExternalService()
 [LoadFact(order: 1, concurrency: 2, duration: 2000, interval: 500)]
 public async Task DebugLoadTest()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         Console.WriteLine($"Executing at {DateTime.Now:HH:mm:ss.fff}");
         // Your test logic

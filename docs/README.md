@@ -23,7 +23,7 @@ Welcome to the comprehensive documentation for xUnitV3LoadFramework - a powerful
 
 ### 📚 API Reference
 - [LoadFactAttribute](api-reference/loadfact-attribute.md) - LoadFact attribute reference
-- [LoadTestHelper](api-reference/loadtest-helper.md) - Helper methods and utilities
+- [LoadTestRunner](api-reference/loadtest-runner.md) - Test runner methods and utilities
 - [Load Results](api-reference/load-results.md) - Understanding test results
 
 ### 🔧 Advanced Topics
@@ -62,7 +62,7 @@ Welcome to the comprehensive documentation for xUnitV3LoadFramework - a powerful
 [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task LoadTest_API_Endpoint()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         var response = await httpClient.GetAsync("/api/users");
         response.EnsureSuccessStatusCode();

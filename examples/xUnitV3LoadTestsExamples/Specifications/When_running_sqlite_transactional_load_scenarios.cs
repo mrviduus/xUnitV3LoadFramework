@@ -37,7 +37,7 @@ public class When_running_sqlite_transactional_load_scenarios : IDisposable
 		_connection?.Dispose();
 	}
 
-	[Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
+	[LoadFact(order: 1, concurrency: 2, duration: 5000, interval: 500)]
 	[AutoRollback]
 	public void should_insert_user_and_rollback()
 	{
@@ -51,7 +51,7 @@ public class When_running_sqlite_transactional_load_scenarios : IDisposable
 		Console.WriteLine(">> User1 added, transaction will rollback automatically");
 	}
 
-	[Load(order: 2, concurrency: 3, duration: 6000, interval: 700)]
+	[LoadFact(order: 2, concurrency: 3, duration: 6000, interval: 700)]
 	[AutoRollback(IsolationLevel = System.Transactions.IsolationLevel.Serializable, TimeoutInMS = 3000)]
 	public void should_insert_user_with_custom_transaction_settings()
 	{

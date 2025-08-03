@@ -18,7 +18,7 @@ public class LoadFactUsageExamples : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 1, concurrency: 2, duration: 5000, interval: 500)]
     public async Task Example_Basic_HTTP_Load_Test()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://www.google.com", TestContext.Current.CancellationToken);
@@ -37,7 +37,7 @@ public class LoadFactUsageExamples : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 2, concurrency: 3, duration: 3000, interval: 200)]
     public async Task Example_JSON_API_Load_Test()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://jsonplaceholder.typicode.com/posts/1", TestContext.Current.CancellationToken);
@@ -59,7 +59,7 @@ public class LoadFactUsageExamples : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 3, concurrency: 4, duration: 2500, interval: 300)]
     public async Task Example_Delayed_Service_Load_Test()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/delay/1", TestContext.Current.CancellationToken);

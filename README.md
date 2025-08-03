@@ -36,10 +36,9 @@ public class APILoadTests : TestSetup
     [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
     public async Task LoadTest_UserAPI()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
-            var httpClient = GetService<IHttpClientFactory>().CreateClient();
-            var response = await httpClient.GetAsync("/api/users");
+            var response = await httpClient.GetAsync("https://api.example.com/data");
             response.EnsureSuccessStatusCode();
             return true;
         });
@@ -129,7 +128,7 @@ The heart of the framework - transform any method into a load test:
 [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task LoadTest_CreateUser()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         var user = new { Name = "Test User", Email = "test@example.com" };
         var response = await httpClient.PostAsJsonAsync("/api/users", user);
@@ -146,7 +145,7 @@ public async Task LoadTest_CreateUser()
 [LoadFact(order: 1, concurrency: 3, duration: 5000, interval: 300)]
 public async Task LoadTest_DatabaseQueries()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         using var context = GetService<MyDbContext>();
         var users = await context.Users.Take(10).ToListAsync();
@@ -173,7 +172,7 @@ public class MixedTests : TestSetup
     [LoadFact(order: 1, concurrency: 4, duration: 2000, interval: 250)]
     public async Task LoadTest_CalculatorPerformance()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(() =>
+        var result = await LoadTestRunner.ExecuteAsync(() =>
         {
             var calculator = new Calculator();
             var result = calculator.ComplexCalculation(1000);
@@ -194,7 +193,86 @@ public class MixedTests : TestSetup
 }
 ```
 
-## 🏗️ Architecture
+## � Enhanced LoadTestRunner API
+
+### Traditional Approach with LoadFact Attribute
+```csharp
+[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+public async Task Should_Handle_HTTP_Load()
+{
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
+    {
+        var response = await httpClient.GetAsync("/api/users");
+        response.EnsureSuccessStatusCode();
+        return true;
+    });
+    
+    Assert.True(result.Success > 0);
+}
+```
+
+### Simplified API (No Return Value Needed)
+```csharp
+[LoadFact(order: 2, concurrency: 3, duration: 2000, interval: 300)]
+public async Task Should_Handle_Simple_Load()
+{
+    var result = await LoadTestRunner.RunAsync(async () =>
+    {
+        var response = await httpClient.GetAsync("/api/health");
+        response.EnsureSuccessStatusCode();
+        // Success is implicit if no exception is thrown
+    });
+    
+    Assert.True(result.Success > 0);
+}
+```
+
+### Fluent API for Dynamic Configuration
+```csharp
+[Fact]
+public async Task Should_Use_Fluent_API()
+{
+    var result = await LoadTestRunner.Create()
+        .WithConcurrency(10)
+        .WithDuration(5000)
+        .WithInterval(100)
+        .WithName("Custom_API_Test")
+        .RunAsync(async () =>
+        {
+            var response = await httpClient.PostAsJsonAsync("/api/orders", 
+                new { ProductId = 1, Quantity = 2 });
+            response.EnsureSuccessStatusCode();
+        });
+        
+    Assert.True(result.RequestsPerSecond >= 5);
+    Console.WriteLine($"Test '{result.Name}' achieved {result.RequestsPerSecond:F2} req/sec");
+}
+```
+
+### Parameterized Load Testing
+```csharp
+[Theory]
+[InlineData("Light", 3, 2000)]
+[InlineData("Heavy", 15, 6000)]
+public async Task Should_Handle_Variable_Load(string level, int concurrency, int duration)
+{
+    var result = await LoadTestRunner.Create()
+        .WithName($"API_Load_Test_{level}")
+        .WithConcurrency(concurrency)
+        .WithDuration(duration)
+        .WithInterval(200)
+        .RunAsync(async () =>
+        {
+            var response = await httpClient.GetAsync("/api/data");
+            response.EnsureSuccessStatusCode();
+        });
+        
+    var expectedRps = level == "Heavy" ? 20 : 5;
+    Assert.True(result.RequestsPerSecond >= expectedRps);
+}
+```
+
+## �🏗️ Architecture
 
 ### Actor-Based Engine
 Built on **Akka.NET** for high-performance, concurrent execution:
@@ -207,7 +285,7 @@ Built on **Akka.NET** for high-performance, concurrent execution:
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  LoadFact       │───▶│  LoadTestHelper  │───▶│  LoadRunner     │
+│  LoadFact       │───▶│  LoadTestRunner  │───▶│  LoadRunner     │
 │  Attribute      │    │                  │    │                 │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                                          │

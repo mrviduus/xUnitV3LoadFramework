@@ -7,19 +7,19 @@ using System.Reflection;
 namespace xUnitV3LoadFramework.Tests.Unit;
 
 /// <summary>
-/// Unit tests for LoadTestHelper functionality.
-/// Tests the helper methods for executing load tests and parameter validation.
+/// Unit tests for LoadTestRunner functionality.
+/// Tests the runner methods for executing load tests and parameter validation.
 /// </summary>
-public class LoadTestHelperTests
+public class LoadTestRunnerTests
 {
     [Fact]
-    public async Task ExecuteLoadTestAsync_Should_Return_LoadResult_With_Success_Metrics()
+    public async Task ExecuteAsync_Should_Return_LoadResult_With_Success_Metrics()
     {
         // Arrange
         bool testActionCalled = false;
         
         // Act - Use a simple test action that we can verify
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             testActionCalled = true;
             await Task.Delay(10); // Small delay to simulate work
@@ -35,10 +35,10 @@ public class LoadTestHelperTests
     }
 
     [Fact]
-    public async Task ExecuteLoadTestAsync_Should_Handle_Exceptions_Gracefully()
+    public async Task ExecuteAsync_Should_Handle_Exceptions_Gracefully()
     {
         // Arrange & Act
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             await Task.Delay(1);
             throw new InvalidOperationException("Test exception");
@@ -54,13 +54,13 @@ public class LoadTestHelperTests
     }
 
     [Fact]
-    public async Task ExecuteLoadTestAsync_Synchronous_Should_Work_Correctly()
+    public async Task ExecuteAsync_Synchronous_Should_Work_Correctly()
     {
         // Arrange
         bool testActionCalled = false;
         
         // Act
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(() =>
+        var result = await LoadTestRunner.ExecuteAsync(() =>
         {
             testActionCalled = true;
             return true;
@@ -73,13 +73,13 @@ public class LoadTestHelperTests
     }
 
     [Fact]
-    public async Task ExecuteLoadTestAsync_Action_Without_Return_Should_Work()
+    public async Task ExecuteAsync_Action_Without_Return_Should_Work()
     {
         // Arrange
         bool testActionCalled = false;
         
         // Act
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             testActionCalled = true;
             await Task.Delay(1);
@@ -95,8 +95,8 @@ public class LoadTestHelperTests
     public void GetCallingTestMethod_Should_Be_Private_And_Not_Accessible()
     {
         // Arrange & Act
-        var helperType = typeof(LoadTestHelper);
-        var privateMethod = helperType.GetMethod("GetCallingTestMethod", BindingFlags.NonPublic | BindingFlags.Static);
+        var runnerType = typeof(LoadTestRunner);
+        var privateMethod = runnerType.GetMethod("GetCallingTestMethod", BindingFlags.NonPublic | BindingFlags.Static);
 
         // Assert
         Assert.NotNull(privateMethod);

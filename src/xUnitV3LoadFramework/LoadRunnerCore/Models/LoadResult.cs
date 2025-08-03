@@ -13,6 +13,17 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Models
 		public required string ScenarioName { get; set; }
 		
 		/// <summary>
+		/// Gets or sets the descriptive name for this load test result.
+		/// Provides human-readable identification for fluent API usage and reporting.
+		/// Alias for ScenarioName for fluent API compatibility.
+		/// </summary>
+		public string Name 
+		{ 
+			get => ScenarioName; 
+			set => ScenarioName = value; 
+		}
+		
+		/// <summary>
 		/// Gets or sets the total number of operations attempted during the load test.
 		/// Represents the sum of successful and failed operations.
 		/// </summary>

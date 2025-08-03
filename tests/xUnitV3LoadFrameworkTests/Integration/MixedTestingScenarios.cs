@@ -34,7 +34,7 @@ public class MixedTestingScenarios : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 1, concurrency: 3, duration: 2000, interval: 200)]
     public async Task LoadFact_Should_Execute_Concurrent_HTTP_Requests()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
@@ -82,7 +82,7 @@ public class MixedTestingScenarios : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 2, concurrency: 2, duration: 1500, interval: 400)]
     public async Task LoadFact_Should_Execute_Sequential_JSON_Processing()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://jsonplaceholder.typicode.com/posts/1", TestContext.Current.CancellationToken);

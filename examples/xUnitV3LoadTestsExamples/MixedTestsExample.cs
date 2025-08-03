@@ -68,8 +68,8 @@ public class MixedTestsExample : IDisposable
 	[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 100)]
 	public async Task Should_Handle_Concurrent_HTTP_Requests()
 	{
-		// Use LoadTestHelper to properly execute this as a load test
-		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+		// Use LoadTestRunner to properly execute this as a load test
+		var result = await LoadTestRunner.ExecuteAsync(async () =>
 		{
 			// This lambda will be executed 5 times concurrently for 3 seconds
 			var response = await _httpClient.GetAsync("https://httpbin.org/delay/1");
@@ -95,8 +95,8 @@ public class MixedTestsExample : IDisposable
 	[LoadFact(order: 2, concurrency: 3, duration: 2000, interval: 200)]
 	public async Task Should_Process_JSON_Data_Under_Load()
 	{
-		// Use LoadTestHelper to properly execute this as a load test
-		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+		// Use LoadTestRunner to properly execute this as a load test
+		var result = await LoadTestRunner.ExecuteAsync(async () =>
 		{
 			// This lambda will be executed 3 times concurrently for 2 seconds
 			var response = await _httpClient.GetAsync("https://jsonplaceholder.typicode.com/posts/1");
@@ -129,8 +129,8 @@ public class MixedTestsExample : IDisposable
 	[LoadFact(order: 3, concurrency: 2, duration: 1500, interval: 300)]
 	public async Task Should_Handle_Error_Conditions_Under_Load()
 	{
-		// Use LoadTestHelper to properly execute this as a load test
-		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+		// Use LoadTestRunner to properly execute this as a load test
+		var result = await LoadTestRunner.ExecuteAsync(async () =>
 		{
 			try
 			{
@@ -178,7 +178,7 @@ public class MixedTestsExample : IDisposable
 		var executionTimes = new List<double>();
 		var requestCount = 0;
 
-		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+		var result = await LoadTestRunner.ExecuteAsync(async () =>
 		{
 			var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 			

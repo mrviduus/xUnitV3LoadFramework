@@ -64,7 +64,7 @@ namespace xUnitV3LoadFramework.Attributes
 [LoadFact(order: 1, concurrency: 100, duration: 60000, interval: 5000)]
 public async Task My_Load_Test()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         // Test implementation
         return true;
@@ -77,7 +77,7 @@ public async Task My_Load_Test()
 public async Task Skipped_Load_Test()
 {
     // This test will be skipped by xUnit
-    await LoadTestHelper.ExecuteLoadTestAsync(async () => true);
+    await LoadTestRunner.ExecuteAsync(async () => true);
 }
 ```
 
@@ -85,14 +85,14 @@ public async Task Skipped_Load_Test()
 
 ## 🔧 Helper Classes
 
-### LoadTestHelper
+### LoadTestRunner
 
 Provides methods for executing load tests within xUnit test methods.
 
 ```csharp
 namespace xUnitV3LoadFramework.Extensions
 {
-    public static class LoadTestHelper
+    public static class LoadTestRunner
     {
         // Execute with automatic attribute detection
         public static Task<LoadTestResult> ExecuteLoadTestAsync<T>(
@@ -130,7 +130,7 @@ namespace xUnitV3LoadFramework.Extensions
 public async Task Should_Handle_Concurrent_Requests()
 {
     // Automatic configuration from attribute
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         var response = await httpClient.GetAsync("https://api.example.com");
         return response.IsSuccessStatusCode;
@@ -144,7 +144,7 @@ public async Task Should_Handle_Concurrent_Requests()
 [LoadFact(concurrency: 5, duration: 2000)]
 public async Task Should_Handle_Custom_Configuration()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(
+    var result = await LoadTestRunner.ExecuteAsync(
         testAction: async () => {
             // Test logic
             return true;
@@ -207,7 +207,7 @@ namespace YourTests
         [LoadFact(concurrency: 5, duration: 2000)]
         public async Task Should_Handle_Basic_Load()
         {
-            var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+            var result = await LoadTestRunner.ExecuteAsync(async () =>
             {
                 // Test logic
                 return true;

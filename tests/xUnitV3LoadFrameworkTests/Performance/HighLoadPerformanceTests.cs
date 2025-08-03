@@ -18,7 +18,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 1, concurrency: 10, duration: 5000, interval: 100)]
     public async Task HighConcurrency_Should_Handle_10_Concurrent_Requests()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
@@ -42,7 +42,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 2, concurrency: 5, duration: 3000, interval: 50)]
     public async Task StressTest_Should_Handle_Rapid_Fire_Requests()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
@@ -65,7 +65,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 3, concurrency: 3, duration: 8000, interval: 200)]
     public async Task EnduranceTest_Should_Maintain_Performance_Over_Time()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/delay/0.1", TestContext.Current.CancellationToken);
@@ -89,7 +89,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 4, concurrency: 8, duration: 4000, interval: 150)]
     public async Task MemoryPressureTest_Should_Manage_Resources_Efficiently()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             

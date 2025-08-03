@@ -55,7 +55,7 @@ public class MyMixedTests : TestSetup
     public async Task ShouldHandleHighLoad()
     {
         // Load test - runs with actor-based load framework
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
@@ -96,7 +96,7 @@ public class MyLoadTests : TestSetup
     [LoadFact(order: 1, concurrency: 5, duration: 2000, interval: 500)]
     public async Task ShouldHandleHighLoad()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
@@ -124,17 +124,17 @@ public class MyLoadTests : TestSetup
 
 ### LoadTestHelper Methods
 
-The framework provides several overloads for `LoadTestHelper.ExecuteLoadTestAsync`:
+The framework provides several overloads for `LoadTestRunner.ExecuteAsync`:
 
 ```csharp
 // Basic execution - automatically detects LoadFact attribute
-var result = await LoadTestHelper.ExecuteLoadTestAsync(async () => {
+var result = await LoadTestRunner.ExecuteAsync(async () => {
     // Your load test logic
     return true;
 });
 
 // With custom configuration
-var result = await LoadTestHelper.ExecuteLoadTestAsync(
+var result = await LoadTestRunner.ExecuteAsync(
     testAction: async () => { /* test logic */ return true; },
     concurrency: 10,
     duration: TimeSpan.FromSeconds(30),
@@ -159,7 +159,7 @@ public class ApiTests : TestSetup
     [LoadFact(concurrency: 3, duration: 1000)]
     public async Task ShouldHandleMultipleRequests()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             // Load test logic
             return true;
@@ -185,7 +185,7 @@ public class ApiLoadTests : TestSetup
     [LoadFact(concurrency: 3, duration: 1000)]
     public async Task ShouldHandleMultipleRequests() 
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             // Load test logic
             return true;
@@ -234,7 +234,7 @@ namespace MyTestProject
         [LoadFact(order: 1, concurrency: 3, duration: 2000, interval: 500)]
         public async Task ShouldHandleMultipleApiCalls()
         {
-            var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+            var result = await LoadTestRunner.ExecuteAsync(async () =>
             {
                 var httpClient = GetService<IHttpClientFactory>().CreateClient();
                 var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
@@ -250,7 +250,7 @@ namespace MyTestProject
         [LoadFact(order: 2, concurrency: 2, duration: 1500, interval: 300)]
         public async Task ShouldHandleLowerLoadScenario()
         {
-            var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+            var result = await LoadTestRunner.ExecuteAsync(async () =>
             {
                 // Simulate some work
                 await Task.Delay(50, TestContext.Current.CancellationToken);
@@ -293,7 +293,7 @@ namespace MyTestProject
 [LoadFact(concurrency: 10, duration: 5000, interval: 100)]
 public async Task HighIntensityLoadTest()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(
+    var result = await LoadTestRunner.ExecuteAsync(
         testAction: async () => {
             // Custom test logic
             return await PerformComplexOperation();
@@ -313,7 +313,7 @@ public async Task HighIntensityLoadTest()
 [LoadFact(concurrency: 5, duration: 3000)]
 public async Task ShouldHandlePartialFailures()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         // Test logic that might occasionally fail
         var random = new Random();
@@ -341,7 +341,7 @@ If you previously used custom test frameworks or Specification classes:
 
 1. **Remove custom framework dependencies** - standard xUnit is now sufficient
 2. **Convert to LoadFact** - replace custom attributes with `[LoadFact]`
-3. **Use LoadTestHelper** - call `LoadTestHelper.ExecuteLoadTestAsync()` within test methods
+3. **Use LoadTestHelper** - call `LoadTestRunner.ExecuteAsync()` within test methods
 4. **Inherit from TestSetup** - for dependency injection and test context access
 
 ### From Standard xUnit Only

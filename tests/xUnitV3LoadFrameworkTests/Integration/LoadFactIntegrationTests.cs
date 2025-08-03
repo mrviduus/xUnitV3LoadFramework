@@ -21,7 +21,7 @@ public class LoadFactIntegrationTests : xUnitV3LoadTests.TestSetup
     public async Task LoadFact_Should_Execute_HTTP_Requests_Under_Load()
     {
         // Arrange & Act
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
@@ -45,7 +45,7 @@ public class LoadFactIntegrationTests : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 2, concurrency: 5, duration: 2000, interval: 200)]
     public async Task LoadFact_Should_Handle_Higher_Concurrency()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/delay/0.1", TestContext.Current.CancellationToken);
@@ -63,7 +63,7 @@ public class LoadFactIntegrationTests : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 3, concurrency: 2, duration: 1500, interval: 300)]
     public async Task LoadFact_Should_Handle_Failures_Gracefully()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/status/404", TestContext.Current.CancellationToken);
@@ -84,7 +84,7 @@ public class LoadFactIntegrationTests : xUnitV3LoadTests.TestSetup
     [LoadFact(order: 4, concurrency: 3, duration: 2500, interval: 400)]
     public async Task LoadFact_Should_Process_JSON_Data_Under_Load()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://jsonplaceholder.typicode.com/posts/1", TestContext.Current.CancellationToken);

@@ -12,9 +12,9 @@ The xUnitV3LoadFramework has evolved to use a simpler `LoadFactAttribute` approa
 - Complex framework configuration requirements
 - `[Load]` attribute (replaced with `[LoadFact]`)
 
-### New Approach: LoadFact + LoadTestHelper
+### New Approach: LoadFact + LoadTestRunner
 - **`[LoadFact]` attribute** that inherits from xUnit's `[Fact]` 
-- **`LoadTestHelper.ExecuteLoadTestAsync()`** for running load tests
+- **`LoadTestRunner.ExecuteAsync()`** for running load tests
 - **Standard xUnit v3 compatibility** with no custom framework needed
 - **Mixed testing** - combine `[Fact]`, `[Theory]`, and `[LoadFact]` in same class
 
@@ -67,8 +67,8 @@ public class MyLoadTests : TestSetup // Optional for dependency injection
     [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 500)]
     public async Task Should_Handle_Load()
     {
-        // Load test using LoadTestHelper
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        // Load test using LoadTestRunner
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var httpClient = GetService<IHttpClientFactory>().CreateClient();
             var response = await httpClient.GetAsync("https://httpbin.org/get", TestContext.Current.CancellationToken);
@@ -97,7 +97,7 @@ public class MyLoadTests : TestSetup // Optional for dependency injection
 | Attribute | `[Load]` | `[LoadFact]` |
 | Base Class | Any class | Optional `TestSetup` for DI |
 | Framework Config | `[assembly: TestFramework]` | None needed |
-| Test Method | Sync methods | Async methods with LoadTestHelper |
+| Test Method | Sync methods | Async methods with LoadTestRunner |
 | Execution | Custom framework | Standard xUnit + load helper |
 
 ## Examples
@@ -109,7 +109,7 @@ public class SimpleLoadTest
     [LoadFact(order: 1, concurrency: 10, duration: 5000, interval: 1000)]
     public async Task Should_Handle_Simple_Load()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             // Your load test logic here
             await Task.Delay(100); // Simulate work
@@ -137,7 +137,7 @@ public class MixedTests : TestSetup
     [LoadFact(order: 1, concurrency: 50, duration: 30000, interval: 2000)]
     public async Task Should_Handle_API_Load()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var client = GetService<IHttpClientFactory>().CreateClient();
             var response = await client.GetAsync("https://api.example.com/data", TestContext.Current.CancellationToken);
@@ -157,7 +157,7 @@ public class DatabaseLoadTest : TestSetup
     [LoadFact(order: 1, concurrency: 20, duration: 10000, interval: 500)]
     public async Task Should_Handle_Database_Operations()
     {
-        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             var context = GetService<MyDbContext>();
             var user = new User { Name = $"User_{Guid.NewGuid()}" };
@@ -180,7 +180,7 @@ public class DatabaseLoadTest : TestSetup
 
 1. **Remove Assembly Configuration**: Delete `[assembly: TestFramework]` declarations
 2. **Update Attributes**: Change `[Load]` to `[LoadFact]` 
-3. **Add LoadTestHelper**: Wrap test logic in `LoadTestHelper.ExecuteLoadTestAsync()`
+3. **Add LoadTestHelper**: Wrap test logic in `LoadTestRunner.ExecuteAsync()`
 4. **Make Methods Async**: LoadFact methods should return `Task` and use async/await
 5. **Use TestSetup**: Inherit from `TestSetup` for dependency injection support
 
@@ -213,7 +213,7 @@ public void MyLoadTest()
 [LoadFact(concurrency: 5, duration: 2000)]
 public async Task MyLoadTest()
 {
-    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
         // Async test logic
         return true;
@@ -228,7 +228,7 @@ public async Task MyLoadTest()
 If you encounter issues during migration:
 1. Check that you've removed all `[assembly: TestFramework]` declarations
 2. Ensure all `[Load]` attributes are changed to `[LoadFact]`
-3. Verify test methods use `LoadTestHelper.ExecuteLoadTestAsync()`
+3. Verify test methods use `LoadTestRunner.ExecuteAsync()`
 4. Make sure test methods are async and return `Task`
 5. Review the examples in this guide
 6. Look at the working test files like `WebTests.cs` in the project
