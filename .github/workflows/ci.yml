@@ -1,69 +1,113 @@
-name: publish
+name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - 'main'
+    branches: [ main, develop, v2-* ]
   pull_request:
-    branches:
-      - '*'
+    branches: [ main, develop ]
+  workflow_dispatch:
 
 env:
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace }}/nuget
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 defaults:
   run:
-    shell: bash  # For sed and conditional logic
+    shell: bash
 
 jobs:
-  publish_nuget_package:
-    runs-on: ubuntu-latest
-
+  build-and-test:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
-      - name: Extract version
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/v}"
-          else
-            VERSION="1.0.0.${{ github.run_number }}"
-          fi
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Version set to: $VERSION"
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
 
-      - name: Update .csproj with Version
-        run: |
-          sed -i 's|<Version>.*</Version>|<Version>${{ env.VERSION }}</Version>|' src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj
-          echo "Updated version in .csproj to: ${{ env.VERSION }}"
+    - name: Restore dependencies
+      run: dotnet restore --verbosity normal
 
-      - name: Install dependencies
-        run: dotnet restore src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj
+    - name: Build solution
+      run: dotnet build --no-restore --configuration Release --verbosity normal
 
-      - name: Build
-        run: dotnet build src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --configuration Release --no-restore
+    - name: Run unit tests
+      run: dotnet test tests/xUnitV3LoadFrameworkTests --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
-      - name: Run tests
-        run: dotnet test src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --no-restore --verbosity normal
+    - name: Run example tests (allow failures)
+      run: dotnet test examples/xUnitV3LoadTestsExamples --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory ./TestResults || true
 
-      - name: Ensure NuGet Directory Exists
-        run: mkdir -p "${{ env.NuGetDirectory }}"
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.os }}
+        path: TestResults/*.trx
 
-      - name: Pack xUnitV3LoadFramework
-        run: dotnet pack src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --configuration Release --output "${{ env.NuGetDirectory }}"
+  package:
+    name: Create NuGet Package
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/v2-')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Setup NuGet CLI
-        uses: NuGet/setup-nuget@v1
-        with:
-          nuget-version: 'latest'
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
-      - name: Publish to NuGet
-        run: dotnet nuget push "${{ env.NuGetDirectory }}/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+    - name: Extract version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          VERSION="${GITHUB_REF#refs/tags/v}"
+        else
+          VERSION="1.0.0.${{ github.run_number }}"
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Version set to: $VERSION"
+
+    - name: Update .csproj with Version
+      run: |
+        sed -i 's|<Version>.*</Version>|<Version>${{ env.VERSION }}</Version>|' src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj
+        echo "Updated version in .csproj to: ${{ env.VERSION }}"
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Create NuGet package
+      run: dotnet pack src/xUnitV3LoadFramework --no-build --configuration Release --output ./artifacts
+
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages
+        path: ./artifacts/*.nupkg
