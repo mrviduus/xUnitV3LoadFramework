@@ -1,250 +1,292 @@
-# 🚀 xUnitV3LoadFramework
+# xUnitV3LoadFramework 🚀
 
-[![NuGet](https://img.shields.io/nuget/v/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
-[![Downloads](https://img.shields.io/nuget/dt/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
+A powerful, enterprise-grade load testing framework that seamlessly integrates with xUnit v3, enabling declarative load testing through simple attributes while providing comprehensive performance metrics and reporting.
 
-**xUnitV3LoadFramework** is a robust and user-friendly load testing framework built to seamlessly integrate with **xUnit** and powered by **Akka.NET actors**. It allows developers to efficiently define, execute, and analyze parallel load test scenarios, making load testing a natural part of your automated testing workflow.
+[![.NET 9](https://img.shields.io/badge/.NET-9.0-purple)](https://dotnet.microsoft.com/download/dotnet/9.0)
+[![xUnit v3](https://img.shields.io/badge/xUnit-v3.0-blue)](https://xunit.net/)
+[![Akka.NET](https://img.shields.io/badge/Akka.NET-1.5-red)](https://getakka.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
 
----
+## ✨ Features
 
-## 🌟 Features
+🎯 **Declarative Load Testing** - Transform any test method into a comprehensive load test with a single attribute  
+⚡ **High Performance** - Built on Akka.NET actor system for maximum scalability and throughput  
+📊 **Rich Metrics** - Comprehensive performance reporting with latency percentiles, throughput, and resource utilization  
+🔄 **Mixed Testing** - Seamlessly combine load tests with unit tests, integration tests, and theory tests  
+🛠️ **Developer Friendly** - Minimal learning curve with familiar xUnit patterns and conventions  
+🏗️ **Production Ready** - Battle-tested architecture suitable for enterprise environments  
 
-### Hybrid Execution Model
-- **Channel-based Workers**: Fixed worker pools with pre-allocated channels for consistent performance
-- **Task-based Workers**: Dynamic task creation for flexible workload handling
-- **Automatic Optimization**: Framework automatically selects optimal worker counts based on system resources
+## 🚀 Quick Start
 
-### Comprehensive Metrics
-- **Latency Percentiles**: P50, P95, P99 latency measurements
-- **Throughput Analysis**: Requests per second with real-time monitoring
-- **Resource Utilization**: Memory usage, worker thread tracking, GC pressure
-- **Queue Time Tracking**: Average and maximum queue times
-
-### xUnit v3 Integration
-- **Native Test Framework**: Seamless integration with xUnit v3 test discovery and execution
-- **Attribute-based Configuration**: Simple `[Load]` attributes for test configuration
-- **Test Result Integration**: Load test results integrated with xUnit test results
-
-### Actor-based Architecture
-- **Akka.NET Foundation**: Built on proven actor model for reliability and scalability
-- **Message-driven Processing**: Asynchronous message passing for high throughput
-- **Fault Tolerance**: Supervisor hierarchies for robust error handling
-
----
-
-## 📊 Performance Highlights
-
-- **High Throughput**: Tested up to 500,000 requests with sustained performance
-- **Low Latency**: Sub-millisecond overhead for test execution framework
-- **Resource Efficient**: Optimized memory usage and GC pressure management
-- **Scalable**: Automatic scaling based on available system resources
-
----
-
-## 🔧 System Requirements
-
-- .NET 8.0+
-- xUnit v3 (preview)
-- Akka.NET 1.5.41+
-- Minimum 4GB RAM for high-load scenarios
-- Multi-core CPU recommended for optimal performance
-
----
-
-## ⚡ Installation
-
-Install via NuGet package manager:
+### Installation
 
 ```bash
 dotnet add package xUnitV3LoadFramework
 ```
 
----
-
-## 🚦 Quick Start
-
-### Defining a Load Test
-Use the `Load` attribute (inheriting from `FactAttribute`) to configure concurrency level, duration, interval, and execution order.
-
-### Running Your Load Test
-Execute your tests using the standard xUnit command:
-
-```bash
-dotnet test
-```
-
----
-
-## 📝 Usage Examples
-
-### Basic Load Test Example
-
-Here's a clear example demonstrating how to define and execute load tests using standard xUnit patterns with the `[Load]` attribute:
+### Your First Load Test
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
-using Xunit;
+using xUnitV3LoadFramework.Extensions;
 
-namespace xUnitLoadDemo;
-
-public class ExampleLoadTests : IDisposable
+public class APILoadTests : TestSetup
 {
-    private readonly string _testData;
-
-    public ExampleLoadTests()
+    [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+    public async Task LoadTest_UserAPI()
     {
-        // Constructor for setup - runs once per test class
-        _testData = "Test data initialized";
-        Console.WriteLine(">> Setup phase");
-    }
-
-    public void Dispose()
-    {
-        // Cleanup - runs once per test class
-        Console.WriteLine(">> Cleanup phase");
-    }
-
-    [Fact]
-    public void Should_Initialize_Test_Data()
-    {
-        // Standard xUnit test
-        Assert.NotNull(_testData);
-        Console.WriteLine(">> Standard xUnit test completed");
-    }
-
-    [Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
-    public void Should_Run_Load_Scenario_1()
-    {
-        Assert.NotNull(_testData);
-        Console.WriteLine(">> Running Load 1");
-    }
-
-    [Load(order: 2, concurrency: 3, duration: 7000, interval: 300)]
-    public void Should_Run_Load_Scenario_2()
-    {
-        Assert.NotNull(_testData);
-        Console.WriteLine(">> Running Load 2");
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            var httpClient = GetService<IHttpClientFactory>().CreateClient();
+            var response = await httpClient.GetAsync("/api/users");
+            response.EnsureSuccessStatusCode();
+            return true;
+        });
+        
+        Assert.True(result.Success > 0, "Load test should succeed");
+        Assert.True(result.RequestsPerSecond >= 10, "Should achieve 10+ req/sec");
     }
 }
 ```
 
-### API Load Testing Example
+### Comprehensive Results
 
-```csharp
-using xUnitV3LoadFramework.Attributes;
-using Xunit;
-
-public class ApiLoadTests : IDisposable
-{
-    private readonly HttpClient _httpClient;
-
-    public ApiLoadTests()
-    {
-        // Standard xUnit constructor pattern
-        _httpClient = new HttpClient();
-    }
-
-    public void Dispose()
-    {
-        // Standard xUnit cleanup pattern
-        _httpClient?.Dispose();
-    }
-
-    [Fact]
-    public async Task Should_Connect_To_API_Successfully()
-    {
-        // Standard functional test
-        var response = await _httpClient.GetAsync("https://api.example.com/health");
-        Assert.True(response.IsSuccessStatusCode);
-    }
-
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task Should_Handle_API_Load()
-    {
-        // Load test - executed concurrently
-        var response = await _httpClient.GetAsync("https://api.example.com/health");
-        Assert.True(response.IsSuccessStatusCode);
-    }
-}
 ```
+🚀 ===============================================
+📊 LOAD TEST RESULTS: APILoadTests.LoadTest_UserAPI
+🚀 ===============================================
+⚙️  Test Configuration:
+   🔢 Order: 1
+   ⚡ Concurrency: 5 parallel executions
+   ⏱️  Duration: 3000ms (3.0s)
+   🔄 Interval: 200ms between batches
 
-Each `[Load]` attribute defines:
+📈 Execution Summary:
+   🎯 Total Executions: 75
+   ✅ Successful: 73
+   ❌ Failed: 2
+   📊 Success Rate: 97.33%
+   ⏰ Total Time: 3.12s
+   🔥 Requests/Second: 24.04
 
-- `order`: the test execution order  
-- `concurrency`: number of parallel executions  
-- `duration`: how long to run (in milliseconds)  
-- `interval`: delay between each wave of execution (in milliseconds)
+⚡ Performance Metrics:
+   📏 Average Latency: 156.23ms
+   📊 Median Latency: 145.67ms
+   ⬇️  Min Latency: 89.12ms
+   ⬆️  Max Latency: 289.45ms
+   📈 95th Percentile: 234.56ms
+   📊 99th Percentile: 267.89ms
 
-Run your tests using:
-
-```bash
-dotnet test
+💻 Resource Utilization:
+   🧵 Worker Threads: 8
+   📊 Worker Utilization: 87.50%
+   💾 Peak Memory: 45.67 MB
+   📦 Batches Completed: 15
+🚀 ===============================================
 ```
-
----
 
 ## 📖 Documentation
 
-### Getting Started
-- [Quick Start Guide](docs/user-guides/getting-started.md)
-- [Load Attribute Configuration](docs/user-guides/load-attribute-configuration.md)
-- [Writing Effective Tests](docs/user-guides/writing-effective-tests.md)
+### 🎯 Quick Navigation
 
-### Architecture & Design
-- [Actor System Overview](docs/architecture/actor-system-overview.md)
-- [Hybrid Load Worker Design](docs/architecture/hybrid-load-worker.md)
+| What you want to do | Documentation |
+|---------------------|---------------|
+| **Get started quickly** | [Quick Start Guide](docs/user-guides/getting-started.md) |
+| **Learn LoadFact parameters** | [LoadFact Attribute Guide](docs/user-guides/loadfact-attribute-guide.md) |
+| **See real examples** | [Usage Examples](docs/examples/basic-examples.md) |
+| **Understand the architecture** | [Architecture Overview](docs/architecture/actor-system-overview.md) |
+| **Troubleshoot issues** | [Troubleshooting Guide](docs/advanced/troubleshooting.md) |
 
-### User Guides
-- [Performance Optimization](docs/user-guides/performance-optimization.md)
-- [Monitoring & Metrics](docs/user-guides/monitoring-metrics.md)
+### 📚 Complete Documentation
+- **[Documentation Hub](docs/README.md)** - Complete documentation index
+- **[User Guides](docs/user-guides/)** - Step-by-step guides and best practices
+- **[API Reference](docs/api-reference/)** - Detailed API documentation
+- **[Architecture](docs/architecture/)** - Framework internals and design
+- **[Examples](docs/examples/)** - Real-world usage examples
 
-### API Reference
-- [Load Attributes](docs/api-reference/README.md)
-- [Core Classes](docs/api-reference/README.md)
-- [Actors](docs/api-reference/README.md)
-- [Messages](docs/api-reference/README.md)
-- [Models](docs/api-reference/README.md)
+## 🎯 LoadFact Attribute
 
-### Best Practices
-- [Load Test Design](docs/best-practices/load-test-design.md)
-- [Resource Management](docs/best-practices/resource-management.md)
-- [Troubleshooting](docs/best-practices/troubleshooting.md)
+The heart of the framework - transform any method into a load test:
 
-### Advanced Topics
-- [Migration from xUnit v2](docs/advanced/migration-guide.md)
-- [Custom Extensions](docs/advanced/custom-extensions.md)
-- [Performance Tuning](docs/advanced/performance-tuning.md)
-- [CI/CD Integration](docs/advanced/cicd-integration.md)
+```csharp
+[LoadFact(order: 1, concurrency: 10, duration: 5000, interval: 100)]
+```
 
-### Examples & Scenarios
-- [Database Load Testing](docs/examples/database-load-testing.md)
-- [API Load Testing](docs/examples/api-load-testing.md)
-- [Transactional Scenarios](docs/examples/transactional-scenarios.md)
-- [Real-world Examples](docs/examples/real-world-examples.md)
+### Parameters Explained
 
-For comprehensive documentation, visit the [docs folder](docs/).
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| **order** | Execution sequence (1 runs before 2) | `order: 1` |
+| **concurrency** | Parallel operations per batch | `concurrency: 10` |
+| **duration** | Total test time in milliseconds | `duration: 5000` (5 seconds) |
+| **interval** | Time between batches in milliseconds | `interval: 100` (0.1 seconds) |
 
-Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/examples/)
+## 💡 Usage Examples
 
----
+### HTTP API Load Testing
+```csharp
+[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+public async Task LoadTest_CreateUser()
+{
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    {
+        var user = new { Name = "Test User", Email = "test@example.com" };
+        var response = await httpClient.PostAsJsonAsync("/api/users", user);
+        response.EnsureSuccessStatusCode();
+        return true;
+    });
+    
+    Assert.True(result.Success >= result.Total * 0.95, "95% success rate expected");
+}
+```
+
+### Database Load Testing
+```csharp
+[LoadFact(order: 1, concurrency: 3, duration: 5000, interval: 300)]
+public async Task LoadTest_DatabaseQueries()
+{
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    {
+        using var context = GetService<MyDbContext>();
+        var users = await context.Users.Take(10).ToListAsync();
+        return users.Count > 0;
+    });
+    
+    Assert.True(result.AverageLatency <= 200, "Database queries should be fast");
+}
+```
+
+### Mixed Testing (Load + Unit Tests)
+```csharp
+public class MixedTests : TestSetup
+{
+    // Regular unit test
+    [Fact]
+    public void UnitTest_ValidateBusinessLogic()
+    {
+        var calculator = new Calculator();
+        Assert.Equal(4, calculator.Add(2, 2));
+    }
+    
+    // Load test
+    [LoadFact(order: 1, concurrency: 4, duration: 2000, interval: 250)]
+    public async Task LoadTest_CalculatorPerformance()
+    {
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(() =>
+        {
+            var calculator = new Calculator();
+            var result = calculator.ComplexCalculation(1000);
+            return result > 0;
+        });
+        
+        Assert.True(result.Success > 0);
+    }
+    
+    // Theory test with parameters
+    [Theory]
+    [InlineData(1, 2, 3)]
+    [InlineData(5, 5, 10)]
+    public void Theory_Addition(int a, int b, int expected)
+    {
+        Assert.Equal(expected, a + b);
+    }
+}
+```
+
+## 🏗️ Architecture
+
+### Actor-Based Engine
+Built on **Akka.NET** for high-performance, concurrent execution:
+
+- **LoadWorkerActor**: Manages concurrent test execution
+- **ResultCollectorActor**: Aggregates metrics and results
+- **Hybrid Mode**: Optimizes between task-based and actor-based execution
+
+### Framework Components
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  LoadFact       │───▶│  LoadTestHelper  │───▶│  LoadRunner     │
+│  Attribute      │    │                  │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                                         │
+                                                         ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  Test Results   │◀───│  Result          │◀───│  Akka.NET       │
+│  & Metrics      │    │  Collector       │    │  Actor System   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+## 📊 Performance Metrics
+
+Every load test provides comprehensive metrics:
+
+### Execution Metrics
+- **Total/Success/Failure counts**
+- **Success rate percentage**
+- **Execution time and throughput**
+
+### Latency Analysis
+- **Average, Median, Min, Max latency**
+- **95th and 99th percentile latency**
+- **Latency distribution analysis**
+
+### Resource Utilization
+- **Worker thread usage**
+- **Memory consumption**
+- **Batch execution efficiency**
+
+## 🛠️ Requirements
+
+- **.NET 9.0** or higher
+- **xUnit v3.0** test framework
+- **C# 12.0** language features
+
+## 📦 NuGet Package
+
+```xml
+<PackageReference Include="xUnitV3LoadFramework" Version="1.0.0-alpha.1" />
+```
 
 ## 🤝 Contributing
 
-Your contributions and feedback are always welcome!
-- Submit issues or suggestions via [GitHub Issues](https://github.com/mrviduus/xUnitV3LoadFramework/issues).
-- Open pull requests following our [Contributing Guidelines](CONTRIBUTING.md).
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
----
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/mrviduus/xUnitV3LoadFramework.git
 
-## 📜 License
+# Restore dependencies
+dotnet restore
+
+# Build the project
+dotnet build
+
+# Run tests
+dotnet test
+```
+
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
 
+## 🙏 Acknowledgments
+
+- **[xUnit.net](https://xunit.net/)** - The foundation for .NET testing
+- **[Akka.NET](https://getakka.net/)** - The actor framework powering our load engine
+- **[.NET Community](https://dotnet.microsoft.com/community)** - For continuous inspiration and support
+
+## 📞 Support & Community
+
+- 🐛 **Issues**: [GitHub Issues](https://github.com/mrviduus/xUnitV3LoadFramework/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/mrviduus/xUnitV3LoadFramework/discussions)
+- 📧 **Email**: [mrviduus@gmail.com](mailto:mrviduus@gmail.com)
+- 💼 **LinkedIn**: [Vasyl Vdovychenko](https://www.linkedin.com/in/vasyl-vdovychenko)
+
 ---
 
-## 📫 Contact
+**⭐ If this project helps you, please consider giving it a star!**
 
-For questions, suggestions, or feedback, please open an issue or contact directly:
-
-- **Vasyl Vdovychenko**  
-  [LinkedIn](https://www.linkedin.com/in/vasyl-vdovychenko) | [Email](mailto:mrviduus@gmail.com)
+*Built with ❤️ by [Vasyl Vdovychenko](https://github.com/mrviduus) and the .NET community.*

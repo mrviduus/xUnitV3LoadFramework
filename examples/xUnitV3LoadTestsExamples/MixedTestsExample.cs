@@ -147,36 +147,3 @@ public class StandardXUnitTests
 		Console.WriteLine($"Standard [Theory] test executed: {a} + {b} = {result}");
 	}
 }
-
-/// <summary>
-/// Load-only test class - only uses [Load] attributes
-/// These tests run with the LoadTestFramework for performance testing
-/// </summary>
-public class LoadOnlyTests : IDisposable
-{
-	private string? _testData;
-
-	public LoadOnlyTests()
-	{
-		_testData = "Test data initialized";
-		Console.WriteLine("Constructor: Load test setup completed");
-	}
-
-	public void Dispose()
-	{
-		Console.WriteLine("Dispose: Load test cleanup completed");
-	}
-
-	[Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
-	public void LoadTest_ShouldExecuteWithLoadFramework()
-	{
-		Assert.NotNull(_testData);
-		Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
-	}
-
-	[Load(order: 2, concurrency: 3, duration: 1500, interval: 300)]
-	public void AnotherLoadTest_ShouldExecuteWithLowerLoad()
-	{
-		Console.WriteLine($"Another load test executed at {DateTime.Now:HH:mm:ss.fff}");
-	}
-}

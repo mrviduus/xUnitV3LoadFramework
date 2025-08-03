@@ -5,8 +5,10 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>LoadTestRunnerConsole</RootNamespace>
+        <RootNamespace>xUnitV3LoadFramework.Console</RootNamespace>
+        <AssemblyName>xUnitV3LoadFramework.Console</AssemblyName>
         <LangVersion>12</LangVersion>
+        <Description>Console application for testing and demonstrating xUnitV3LoadFramework capabilities</Description>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,127 +1,84 @@
 # xUnitV3LoadFramework Documentation
 
-A high-performance load testing framework built on xUnit v3 and Akka.NET, featuring hybrid channel-based and task-based execution models.
+Welcome to the comprehensive documentation for xUnitV3LoadFramework - a powerful load testing framework that seamlessly integrates with xUnit v3.
 
-## 📚 Documentation Index
+## 📚 Documentation Structure
 
-### Getting Started
-- [Quick Start Guide](user-guides/quickstart.md)
-- [Installation](user-guides/installation.md)
-- [Basic Usage](user-guides/basic-usage.md)
+### 🚀 Getting Started
+- [Quick Start Guide](user-guides/getting-started.md) - Get up and running in minutes
+- [Installation](user-guides/installation.md) - Installation and setup instructions
+- [First Load Test](user-guides/first-load-test.md) - Create your first load test
 
-### Architecture & Design
-- [Framework Architecture](architecture/framework-architecture.md)
-- [Hybrid Load Worker Design](architecture/hybrid-load-worker.md)
-- [Actor System Overview](architecture/actor-system.md)
-- [Message Flow](architecture/message-flow.md)
+### 📖 User Guides
+- [LoadFact Attribute Guide](user-guides/loadfact-attribute-guide.md) - Complete LoadFact usage guide
+- [Mixed Testing Support](user-guides/mixed-testing-support.md) - Combining load tests with unit tests
+- [Performance Optimization](user-guides/performance-optimization.md) - Tips for optimal performance
+- [Monitoring & Metrics](user-guides/monitoring-metrics.md) - Understanding test metrics
+- [Writing Effective Tests](user-guides/writing-effective-tests.md) - Best practices and patterns
 
-### User Guides
-- [Load Attribute Configuration](guides/load-attribute.md)
-- [Writing Load Tests](guides/writing-load-tests.md)
-- [Performance Optimization](guides/performance-optimization.md)
-- [Monitoring & Metrics](guides/monitoring-metrics.md)
+### 🏗️ Architecture
+- [Actor System Overview](architecture/actor-system-overview.md) - Understanding the Akka.NET foundation
+- [Hybrid Load Worker](architecture/hybrid-load-worker.md) - Load execution engine details
+- [Framework Components](architecture/framework-components.md) - Core component overview
 
-### API Reference
-- [Load Attributes](api/load-attributes.md)
-- [Core Classes](api/core-classes.md)
-- [Actors](api/actors.md)
-- [Messages](api/messages.md)
-- [Models](api/models.md)
+### 📚 API Reference
+- [LoadFactAttribute](api-reference/loadfact-attribute.md) - LoadFact attribute reference
+- [LoadTestHelper](api-reference/loadtest-helper.md) - Helper methods and utilities
+- [Load Results](api-reference/load-results.md) - Understanding test results
 
-### Best Practices
-- [Load Test Design](best-practices/load-test-design.md)
-- [Resource Management](best-practices/resource-management.md)
-- [Troubleshooting](best-practices/troubleshooting.md)
+### 🔧 Advanced Topics
+- [Custom Extensions](advanced/custom-extensions.md) - Extending the framework
+- [CI/CD Integration](advanced/cicd-integration.md) - Continuous integration setup
+- [Troubleshooting](advanced/troubleshooting.md) - Common issues and solutions
+- [Migration Guide](advanced/migration-guide.md) - Migrating from other frameworks
 
-### Advanced Topics
-- [Migration from xUnit v2](advanced/migration-guide.md)
-- [Custom Extensions](advanced/custom-extensions.md)
-- [Performance Tuning](advanced/performance-tuning.md)
-- [CI/CD Integration](advanced/cicd-integration.md)
+### 💡 Examples
+- [Basic Examples](examples/basic-examples.md) - Simple load test examples
+- [Real-world Scenarios](examples/real-world-scenarios.md) - Production-ready examples
+- [Performance Testing](examples/performance-testing.md) - Advanced performance scenarios
 
-### Examples & Scenarios
-- [Database Load Testing](examples/database-load-testing.md)
-- [API Load Testing](examples/api-load-testing.md)
-- [Transactional Scenarios](examples/transactional-scenarios.md)
-- [Real-world Examples](examples/real-world-examples.md)
+## 🎯 Quick Navigation
 
-## 🚀 Key Features
+| What you want to do | Where to go |
+|---------------------|-------------|
+| Create your first load test | [Quick Start Guide](user-guides/getting-started.md) |
+| Understand LoadFact parameters | [LoadFact Attribute Guide](user-guides/loadfact-attribute-guide.md) |
+| See real examples | [Basic Examples](examples/basic-examples.md) |
+| Troubleshoot issues | [Troubleshooting](advanced/troubleshooting.md) |
+| Understand the architecture | [Actor System Overview](architecture/actor-system-overview.md) |
 
-### Hybrid Execution Model
-- **Channel-based Workers**: Fixed worker pools with pre-allocated channels for consistent performance
-- **Task-based Workers**: Dynamic task creation for flexible workload handling
-- **Automatic Optimization**: Framework automatically selects optimal worker counts based on system resources
+## 📊 Framework Features
 
-### Comprehensive Metrics
-- **Latency Percentiles**: P50, P95, P99 latency measurements
-- **Throughput Analysis**: Requests per second with real-time monitoring
-- **Resource Utilization**: Memory usage, worker thread tracking, GC pressure
-- **Queue Time Tracking**: Average and maximum queue times
+✅ **Seamless xUnit Integration** - Works with existing xUnit v3 test projects  
+✅ **Declarative Load Testing** - Simple attribute-based configuration  
+✅ **Mixed Testing Support** - Combine load tests with unit and integration tests  
+✅ **Rich Metrics** - Comprehensive performance and latency reporting  
+✅ **Actor-based Engine** - Powered by Akka.NET for scalability  
+✅ **Production Ready** - Battle-tested for enterprise scenarios  
 
-### xUnit v3 Integration
-- **Native Test Framework**: Seamless integration with xUnit v3 test discovery and execution
-- **Attribute-based Configuration**: Simple `[Load]` attributes for test configuration
-- **Test Result Integration**: Load test results integrated with xUnit test results
-
-### Actor-based Architecture
-- **Akka.NET Foundation**: Built on proven actor model for reliability and scalability
-- **Message-driven Processing**: Asynchronous message passing for high throughput
-- **Fault Tolerance**: Supervisor hierarchies for robust error handling
-
-## 📊 Performance Highlights
-
-- **High Throughput**: Tested up to 500,000 requests with sustained performance
-- **Low Latency**: Sub-millisecond overhead for test execution framework
-- **Resource Efficient**: Optimized memory usage and GC pressure management
-- **Scalable**: Automatic scaling based on available system resources
-
-## 🔧 System Requirements
-
-- .NET 8.0+
-- xUnit v3 (preview)
-- Akka.NET 1.5.41+
-- Minimum 4GB RAM for high-load scenarios
-- Multi-core CPU recommended for optimal performance
-
-## 💡 Quick Example
+## 🚀 Example Usage
 
 ```csharp
-public class ApiLoadTests : IDisposable
+[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+public async Task LoadTest_API_Endpoint()
 {
-    private readonly HttpClient _client;
-
-    public ApiLoadTests()
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
     {
-        _client = new HttpClient();
-    }
-
-    public void Dispose()
-    {
-        _client?.Dispose();
-    }
-
-    [Fact]
-    public async Task Should_Connect_To_API()
-    {
-        // Standard functional test
-        var response = await _client.GetAsync("https://api.example.com/health");
-        Assert.True(response.IsSuccessStatusCode);
-    }
-
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task Should_Handle_API_Load()
-    {
-        // Load test - executed concurrently
-        var response = await _client.GetAsync("https://api.example.com/health");
-        Assert.True(response.IsSuccessStatusCode);
-    }
+        var response = await httpClient.GetAsync("/api/users");
+        response.EnsureSuccessStatusCode();
+        return true;
+    });
+    
+    Assert.True(result.Success > 0);
 }
 ```
 
-## 🤝 Contributing
+## 📞 Support
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+- **Issues**: [GitHub Issues](https://github.com/mrviduus/xUnitV3LoadFramework/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mrviduus/xUnitV3LoadFramework/discussions)
+- **Email**: [mrviduus@gmail.com](mailto:mrviduus@gmail.com)
 
-## 📄 License
+---
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+*For the latest updates and releases, visit our [GitHub repository](https://github.com/mrviduus/xUnitV3LoadFramework).*
