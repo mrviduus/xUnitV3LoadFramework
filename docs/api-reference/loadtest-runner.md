@@ -319,13 +319,13 @@ public async Task LoadTest_API()
 ### Pattern 2: Database Load Testing
 ```csharp
 [Load(order: 1, concurrency: 3, duration: 5000, interval: 300)]
-public async Task LoadTest_Database()
+public async Task LoadTest_HttpService()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
-        using var context = GetService<DbContext>();
-        var users = await context.Users.Take(10).ToListAsync();
-        return users.Count > 0;
+        using var httpClient = new HttpClient();
+        var response = await httpClient.GetAsync("https://api.example.com/users");
+        return response.IsSuccessStatusCode;
     });
     
     Assert.True(result.Success >= result.Total * 0.95, "95% success rate expected");

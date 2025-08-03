@@ -138,16 +138,16 @@ public async Task LoadTest_CreateUser()
 ### Database Load Testing
 ```csharp
 [Load(order: 1, concurrency: 3, duration: 5000, interval: 300)]
-public async Task LoadTest_DatabaseQueries()
+public async Task LoadTest_HttpRequests()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
     {
-        using var context = GetService<MyDbContext>();
-        var users = await context.Users.Take(10).ToListAsync();
-        return users.Count > 0;
+        using var httpClient = new HttpClient();
+        var response = await httpClient.GetAsync("https://api.example.com/data");
+        return response.IsSuccessStatusCode;
     });
     
-    Assert.True(result.AverageLatency <= 200, "Database queries should be fast");
+    Assert.True(result.AverageLatency <= 200, "HTTP requests should be fast");
 }
 ```
 

@@ -55,7 +55,9 @@ jobs:
       run: dotnet test tests/xUnitV3LoadFrameworkTests --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
     - name: Run example tests (allow failures)
-      run: dotnet test examples/xUnitV3LoadTestsExamples --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory ./TestResults || true
+      run: |
+        dotnet test examples/xUnitV3LoadTestsExamples --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage" --results-directory ./TestResults || echo "Example tests failed, but continuing..."
+      continue-on-error: true
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
