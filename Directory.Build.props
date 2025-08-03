@@ -21,8 +21,8 @@
     <PropertyGroup>
         <Authors>Vasyl Vdovychenko</Authors>
         <Company>Vasyl Vdovychenko</Company>
-        <PackageProjectUrl>https://github.com/mrviduus/xUnitLoadRunner</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/mrviduus/xUnitLoadRunner.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/mrviduus/xUnitV3LoadFramework</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/mrviduus/xUnitV3LoadFramework.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>
