@@ -21,43 +21,43 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        dotnet-version: ['9.0.x']
+        dotnet-version: ['8.0.x']
     
     runs-on: ${{ matrix.os }}
     
     steps:
-    - name: 🛡️ Harden Runner
+    - name: Harden Runner
       uses: step-security/harden-runner@v2
       with:
         egress-policy: audit
 
-    - name: 📦 Checkout
+    - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0 # For GitVersion and SourceLink
 
-    - name: 🔧 Setup .NET
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
         dotnet-quality: 'ga'
 
-    - name: 📋 Display .NET Info
+    - name: Display .NET Info
       run: dotnet --info
 
-    - name: 🗂️ Restore Dependencies
+    - name: Restore Dependencies
       run: dotnet restore --verbosity minimal
       working-directory: ./
 
-    - name: 🔨 Build Solution
+    - name: Build Solution
       run: dotnet build --no-restore --configuration Release --verbosity minimal
       working-directory: ./
 
-    - name: 🧪 Run Unit Tests
+    - name: Run Unit Tests
       run: dotnet test --no-build --configuration Release --verbosity minimal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
       working-directory: ./
 
-    - name: 📊 Upload Test Results
+    - name: Upload Test Results
       uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -67,7 +67,7 @@ jobs:
           **/TestResults/**/*.xml
           **/coverage*.xml
 
-    - name: 📈 Publish Test Results
+    - name: Publish Test Results
       uses: dorny/test-reporter@v1
       if: always() && matrix.os == 'ubuntu-latest'
       with:
@@ -81,28 +81,28 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     
     steps:
-    - name: 🛡️ Harden Runner
+    - name: Harden Runner
       uses: step-security/harden-runner@v2
       with:
         egress-policy: audit
 
-    - name: 📦 Checkout
+    - name: Checkout
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: 🔧 Setup .NET
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '8.0.x'
 
-    - name: 🗂️ Restore Dependencies
+    - name: Restore Dependencies
       run: dotnet restore --verbosity minimal
 
-    - name: 📦 Create NuGet Package
+    - name: Create NuGet Package
       run: dotnet pack src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj --configuration Release --no-restore --output ./artifacts
 
-    - name: 📤 Upload Package Artifacts
+    - name: Upload Package Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: nuget-packages
@@ -114,23 +114,23 @@ jobs:
       security-events: write
     
     steps:
-    - name: 🛡️ Harden Runner
+    - name: Harden Runner
       uses: step-security/harden-runner@v2
       with:
         egress-policy: audit
 
-    - name: 📦 Checkout
+    - name: Checkout
       uses: actions/checkout@v4
 
-    - name: 🔧 Setup .NET
+    - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '8.0.x'
 
-    - name: 🗂️ Restore Dependencies
+    - name: Restore Dependencies
       run: dotnet restore --verbosity minimal
 
-    - name: 🔍 Run Security Scan
+    - name: Run Security Scan
       run: |
         dotnet list package --vulnerable --include-transitive || true
         dotnet list package --deprecated || true
