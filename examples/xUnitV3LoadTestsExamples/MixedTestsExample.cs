@@ -4,7 +4,7 @@ using xUnitV3LoadFramework.Extensions;
 namespace xUnitV3LoadTests;
 
 /// <summary>
-/// Standard xUnit test class - no UseLoadFramework attribute
+/// Standard xUnit test class - regular xUnit tests without [Load] attributes
 /// These tests should use standard xUnit framework behavior
 /// </summary>
 public class StandardXUnitTests
@@ -32,10 +32,9 @@ public class StandardXUnitTests
 }
 
 /// <summary>
-/// Load test class - marked with UseLoadFramework attribute
-/// These tests will run using the LoadTestFramework
+/// Load test class - these tests will run using the LoadTestFramework
+/// Any method with [Load] attribute will be executed as a load test
 /// </summary>
-[UseLoadFramework]
 public class LoadFrameworkTests : Specification
 {
 	private string? _testData;

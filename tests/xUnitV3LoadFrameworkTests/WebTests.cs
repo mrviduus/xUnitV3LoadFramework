@@ -4,7 +4,6 @@ using xUnitV3LoadFramework.Extensions;
 
 namespace xUnitV3LoadTests;
 
-[UseLoadFramework]
 public class WebTests : Specification
 {
 	private HttpClient? _httpClient;

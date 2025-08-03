@@ -18,6 +18,6 @@
   - Implemented TestMethodArity property in LoadTestMethod and LoadTestCase classes
   - Fixed source information extraction in LoadDiscoverer using reflection
   - Updated StandardTestCase to support new source location parameters
-  - Ensured all Specification-based test classes have [UseLoadFramework] attribute
+  - Removed UseLoadFramework attribute requirement - tests with [Load] attribute automatically use load framework
   - All framework tests passing (30 succeeded, 4 intentional failures, 1 skipped)
 ### Issues

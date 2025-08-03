@@ -7,7 +7,6 @@ using xUnitV3LoadTests.Data;
 using xUnitV3LoadTests.Entities;
 
 namespace xUnitV3LoadTests.Specifications;
-[UseLoadFramework]
 public class When_running_sqlite_transactional_load_scenarios : Specification
 {
 	private DbContextOptions<MyDbContext> _options = null!;

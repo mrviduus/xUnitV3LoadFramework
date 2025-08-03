@@ -1,12 +1,15 @@
-# UseLoadFramework Attribute - Mixed Testing Support
+# Mixed Testing Support - Load Tests and Standard xUnit Tests
 
-The `UseLoadFrameworkAttribute` enables you to run both standard xUnit tests and LoadFramework load tests within the same project, providing maximum flexibility for your testing needs.
+The xUnitV3LoadFramework now supports seamless integration of both standard xUnit tests and load tests within the same project without requiring any special attributes.
 
 ## Overview
 
-By default, when you configure the LoadTestFramework at the assembly level using `[assembly: TestFramework("xUnitV3LoadFramework.Extensions.Framework.LoadTestFrameworkStartup", "xUnitV3LoadFramework")]`, ALL test classes in that assembly are processed by the load testing framework.
+The framework automatically detects which tests should be executed as load tests based on the presence of the `[Load]` attribute on test methods. This means you can:
 
-The `UseLoadFrameworkAttribute` allows you to selectively choose which test classes should use the load testing capabilities, while other classes can run as standard xUnit tests.
+- Run standard xUnit tests (Facts, Theories) normally
+- Run load tests with the `[Load]` attribute using the actor-based load framework
+- Mix both types of tests in the same test class
+- No longer need the `UseLoadFrameworkAttribute` or special configuration
 
 ## Usage
 
@@ -22,26 +25,41 @@ global using xUnitV3LoadFramework.Attributes;
 [assembly: TestFramework("xUnitV3LoadFramework.Extensions.Framework.LoadTestFrameworkStartup", "xUnitV3LoadFramework")]
 ```
 
-2. **Mark load test classes** with `[UseLoadFramework]`:
+2. **Create mixed test classes** with both standard and load tests:
 
 ```csharp
-// This class will use the LoadTestFramework
-[UseLoadFramework]
-public class MyLoadTests : Specification
+// This class contains both standard xUnit tests and load tests
+public class MyMixedTests : Specification
 {
+    [Fact]
+    public void ShouldExecuteAsStandardTest()
+    {
+        // Standard xUnit test - runs normally
+        Assert.True(true);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void ShouldWorkWithTheories(int value)
+    {
+        // Theory test - runs normally
+        Assert.True(value > 0);
+    }
+
     [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
     public void ShouldHandleHighLoad()
     {
-        // Load test implementation
+        // Load test - runs with actor-based load framework
         System.Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
     }
 }
 ```
 
-3. **Standard test classes** run without the attribute:
+3. **Or use separate classes** if you prefer:
 
 ```csharp
-// This class will run as standard xUnit tests
+// Standard xUnit test class
 public class MyStandardTests
 {
     [Fact]
@@ -57,6 +75,17 @@ public class MyStandardTests
     public void ShouldWorkWithTheories(int value)
     {
         Assert.True(value > 0);
+    }
+}
+
+// Load test class  
+public class MyLoadTests : Specification
+{
+    [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
+    public void ShouldHandleHighLoad()
+    {
+        // Load test - runs with actor-based framework
+        System.Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
     }
 }
 ```
@@ -92,7 +121,6 @@ namespace MyTestProject
     }
 
     // Load tests - run with load testing framework using actors and concurrency
-    [UseLoadFramework]
     public class LoadFrameworkTests : Specification
     {
         protected override void EstablishContext() 
@@ -130,20 +158,24 @@ namespace MyTestProject
 
 ## Technical Details
 
+## How It Works
+
 ### Test Discovery
 
-- **Standard Test Classes**: Discovered and executed using standard xUnit test discovery and execution pipeline
-- **Load Test Classes**: Discovered using the LoadTestFramework's custom discoverer and executed with the actor-based load testing system
+The framework automatically analyzes each test method:
+- **Methods with `[Load]` attribute**: Discovered and executed using the LoadTestFramework's actor-based load testing system
+- **Methods with standard xUnit attributes**: Discovered and executed using standard xUnit test discovery and execution pipeline
 
 ### Test Execution
 
-- **Standard Tests**: Execute immediately using normal xUnit execution patterns
-- **Load Tests**: Execute using the LoadTestFramework's actor system with specified concurrency, duration, and interval settings
+- **Standard Tests (`[Fact]`, `[Theory]`)**: Execute immediately using normal xUnit execution patterns
+- **Load Tests (`[Load]`)**: Execute using the LoadTestFramework's actor system with specified concurrency, duration, and interval settings
 
 ### Class Requirements
 
-- **Standard Test Classes**: No base class requirement, standard xUnit test class
-- **Load Test Classes**: Must inherit from `Specification` class and use `[Load]` attributes
+- **No special requirements**: Any test class can contain both standard tests and load tests
+- **Load Test Classes**: If inheriting from `Specification`, you get access to lifecycle hooks (EstablishContext, Because, DestroyContext)
+- **Mixed Classes**: Can contain both `[Fact]`/`[Theory]` methods and `[Load]` methods
 
 ## Error Handling
 
@@ -154,23 +186,24 @@ The framework properly handles:
 
 ## Migration Guide
 
-### From Assembly-Level Only
-If you currently use assembly-level configuration where all tests are load tests:
+### From Previous UseLoadFramework Approach
+If you currently use `[UseLoadFramework]` attribute:
 
-1. Add `[UseLoadFramework]` to classes that should remain as load tests
-2. Remove the attribute from classes that should become standard tests
-3. Standard test classes can remove the `Specification` base class inheritance
+1. Remove all `[UseLoadFramework]` attributes from test classes
+2. Your existing `[Load]` methods will continue to work as load tests
+3. You can now add standard `[Fact]` and `[Theory]` methods to the same classes
 
 ### From Standard xUnit Only
 If you have existing standard xUnit tests and want to add load testing:
 
-1. Configure the assembly for LoadTestFramework
-2. Keep existing test classes as-is (they'll run as standard tests)
-3. Add new test classes with `[UseLoadFramework]` and inherit from `Specification`
+1. Configure the assembly for LoadTestFramework in GlobalUsings.cs
+2. Keep existing test classes as-is (they'll continue to run as standard tests)
+3. Add `[Load]` attributes to any methods you want to convert to load tests
+4. Optionally inherit from `Specification` for lifecycle hooks
 
 ## Best Practices
 
-1. **Use descriptive class names** to distinguish between standard and load test classes
-2. **Group related tests** in the same class type (all standard or all load)
+1. **Use descriptive method names** to distinguish between standard and load test methods
+2. **Consider separation** - while you can mix test types, separate classes might be clearer for complex scenarios
 3. **Document the testing strategy** in your project to help other developers understand when to use each approach
 4. **Run load tests separately** in CI/CD pipelines if they take significantly longer than standard tests

@@ -88,7 +88,6 @@ using System;
 
 namespace xUnitLoadDemo;
 
-[UseLoadFramework]
 public class ExampleLoadSpecification : Specification
 {
     protected override void EstablishContext()
@@ -121,7 +120,6 @@ public class ExampleLoadSpecification : Specification
 using xUnitV3LoadFramework.Attributes;
 using xUnitV3LoadFramework.Extensions;
 
-[UseLoadFramework]
 public class ApiLoadTests : Specification
 {
     private HttpClient _httpClient;

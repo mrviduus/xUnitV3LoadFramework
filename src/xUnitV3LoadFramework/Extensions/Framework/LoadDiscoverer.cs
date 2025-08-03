@@ -68,47 +68,31 @@ public class LoadDiscoverer(LoadTestAssembly testAssembly) :
 		ITestFrameworkDiscoveryOptions discoveryOptions,
 		Func<ITestCase, ValueTask<bool>> discoveryCallback)
 	{
-		// Check if the class should use load framework
-		var useLoadFramework = testClass.Class.GetCustomAttributes<UseLoadFrameworkAttribute>().Any();
-		
-		if (useLoadFramework)
+		// Process all methods looking for [Load] attributes or standard xUnit attributes
+		foreach (var method in testClass.Methods)
 		{
-			// For load framework classes, only process classes that inherit from Specification
-			if (!typeof(Specification).IsAssignableFrom(testClass.Class))
-				return true;
+			var testMethod = new LoadTestMethod(testClass, method);
 
-			// Process methods looking for [Load] attributes
-			foreach (var method in testClass.Methods)
+			try
 			{
-				var testMethod = new LoadTestMethod(testClass, method);
-
-				try
+				// Check if method has [Load] attribute first
+				var loadAttribute = testMethod.Method.GetCustomAttributes<LoadAttribute>().FirstOrDefault();
+				if (loadAttribute is not null)
 				{
+					// Process as load test
 					if (!await FindTestsForMethod(testMethod, discoveryOptions, discoveryCallback))
 						return false;
 				}
-				catch (Exception ex)
+				else
 				{
-					TestContext.Current.SendDiagnosticMessage("Exception during discovery of test class {0}:{1}{2}", testClass.Class.FullName, Environment.NewLine, ex);
-				}
-			}
-		}
-		else
-		{
-			// For classes without [UseLoadFramework], discover standard xUnit tests
-			foreach (var method in testClass.Methods)
-			{
-				var testMethod = new LoadTestMethod(testClass, method);
-
-				try
-				{
+					// Process as standard xUnit test
 					if (!await FindStandardTestsForMethod(testMethod, discoveryOptions, discoveryCallback))
 						return false;
 				}
-				catch (Exception ex)
-				{
-					TestContext.Current.SendDiagnosticMessage("Exception during discovery of test class {0}:{1}{2}", testClass.Class.FullName, Environment.NewLine, ex);
-				}
+			}
+			catch (Exception ex)
+			{
+				TestContext.Current.SendDiagnosticMessage("Exception during discovery of test class {0}:{1}{2}", testClass.Class.FullName, Environment.NewLine, ex);
 			}
 		}
 		

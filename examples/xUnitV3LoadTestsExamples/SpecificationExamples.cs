@@ -7,7 +7,6 @@ namespace xUnitV3LoadTests;
 //==================================//
 // EXAMPLE 1: STANDARD WORKFLOW     //
 //==================================// 
-[UseLoadFramework]
 public class When_running_standard_load_scenarios : Specification
 {
 	protected override void EstablishContext() =>
@@ -33,7 +32,6 @@ public class When_running_standard_load_scenarios : Specification
 // EXAMPLE 2: VERIFYING LIFECYCLE HOOK EXECUTION ORDER     //
 //=========================================================//
 
-[UseLoadFramework]
 public class When_testing_all_lifecycle_hooks : Specification
 {
 	protected override void EstablishContext() =>
@@ -54,7 +52,6 @@ public class When_testing_all_lifecycle_hooks : Specification
 // EXAMPLE 3: EXCEPTION DURING CONSTRUCTOR                 //
 //=========================================================//
 
-[UseLoadFramework]
 public class When_constructor_throws_exception : Specification
 {
 	public When_constructor_throws_exception() =>
@@ -67,7 +64,6 @@ public class When_constructor_throws_exception : Specification
 //=========================================================//
 // EXAMPLE 4: EXCEPTION IN ESTABLISHCONTEXT                //
 //=========================================================//
-[UseLoadFramework]
 public class When_establish_context_throws : Specification
 {
 	protected override void EstablishContext() =>
@@ -80,7 +76,6 @@ public class When_establish_context_throws : Specification
 //=========================================================//
 // EXAMPLE 5: EXCEPTION IN BECAUSE                         //
 //=========================================================//
-[UseLoadFramework]
 public class When_because_throws : Specification
 {
 	protected override void Because() =>
@@ -93,7 +88,6 @@ public class When_because_throws : Specification
 //=========================================================//
 // EXAMPLE 6: EXCEPTION IN DESTROYCONTEXT                  //
 //=========================================================//
-[UseLoadFramework]
 public class When_destroy_context_throws : Specification
 {
 	protected override void DestroyContext() =>
