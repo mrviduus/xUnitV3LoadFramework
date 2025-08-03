@@ -184,7 +184,7 @@ This shows you exactly what your tests are doing, like a diary of your test!
 ## Need help?
 
 - � **Found a bug?**: [Tell us here](https://github.com/mrviduus/xUnitV3LoadFramework/issues)
-- 💬 **Questions?**: [Ask here](https://github.com/mrviduus/xUnitV3LoadFramework/discussions)
+xUnitV3LoadFramework/discussions)
 - 📧 **Email**: [mrviduus@gmail.com](mailto:mrviduus@gmail.com)
 
 ---
