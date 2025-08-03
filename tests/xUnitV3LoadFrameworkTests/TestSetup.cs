@@ -40,4 +40,14 @@ public class TestSetup : IAsyncLifetime
 		await Host.StopAsync();
 		Host.Dispose();
 	}
+
+	/// <summary>
+	/// Gets a service from the DI container
+	/// </summary>
+	/// <typeparam name="T">The service type to retrieve</typeparam>
+	/// <returns>The service instance</returns>
+	public T GetService<T>() where T : notnull
+	{
+		return Host.Services.GetRequiredService<T>();
+	}
 }

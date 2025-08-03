@@ -6,9 +6,11 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>xUnitV3LoadTests</RootNamespace>
 	  <LangVersion>12</LangVersion>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
 	  <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
 	  <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+    <!-- Temporarily disable xUnit analyzers during transition -->
+    <NoWarn>$(NoWarn);xUnit1051;xUnit2013;CS8618</NoWarn>
     <!--
     To enable the Microsoft Testing Platform 'dotnet test' experience, add property:
       <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
