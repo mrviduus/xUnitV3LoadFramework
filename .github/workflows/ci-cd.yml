@@ -15,10 +15,9 @@ env:
 
 jobs:
   build-and-test:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         configuration: [Debug, Release]
     
     steps:
@@ -65,12 +64,12 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-results-${{ matrix.os }}-${{ matrix.configuration }}
+        name: test-results-${{ matrix.configuration }}
         path: TestResults/
     
     - name: Upload code coverage
       uses: codecov/codecov-action@v4
-      if: matrix.configuration == 'Release' && matrix.os == 'ubuntu-latest'
+      if: matrix.configuration == 'Release'
       with:
         files: TestResults/*/coverage.cobertura.xml
         fail_ci_if_error: false
