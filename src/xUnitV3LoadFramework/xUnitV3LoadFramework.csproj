@@ -6,13 +6,15 @@
     <Nullable>enable</Nullable>
     <PackageId>xUnitV3LoadFramework</PackageId>
     <Authors>Vasyl Vdovychenko</Authors>
-    <Description>xUnitLoadRunner is a powerful load testing framework designed to seamlessly integrate with xUnit. By leveraging Akka.NET actors, it enables developers to define and execute load test scenarios in parallel while collecting detailed test results and performance reports.
+    <Description>A powerful load testing framework for .NET applications that seamlessly integrates with xUnit v3. Features actor-based architecture using Akka.NET, fluent API for test configuration, comprehensive performance metrics, and production-ready error handling. Perfect for testing APIs, databases, and web applications under load.
     </Description>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
     <IsPackable>true</IsPackable>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>1.0.0-alpha.1</Version>
+    <Version>2.0.0</Version>
+    <PackageTags>xunit;load-testing;performance;akka;dotnet;testing;framework;xunit-v3</PackageTags>
+    <PackageReleaseNotes>Version 2.0.0: Full xUnit v3 compatibility, fluent API, enhanced performance metrics, and production-ready features. See CHANGELOG.md for complete details.</PackageReleaseNotes>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
     <LangVersion>12</LangVersion>
   </PropertyGroup>
@@ -20,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Akka" />
     <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -34,12 +37,6 @@
   <ItemGroup>
     <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="" />
     <!-- <None Include="build/**/*.props" Pack="true" PackagePath="build" /> -->
-    <Compile Remove="ObjectModel\**" />
-    <Compile Remove="Runners\**" />
-    <EmbeddedResource Remove="ObjectModel\**" />
-    <EmbeddedResource Remove="Runners\**" />
-    <None Remove="ObjectModel\**" />
-    <None Remove="Runners\**" />
     <None Update="favicon_64x64.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

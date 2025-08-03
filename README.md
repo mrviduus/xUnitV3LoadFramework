@@ -1,232 +1,190 @@
-# 🚀 xUnitV3LoadFramework
+# xUnitV3LoadFramework 
 
-[![NuGet](https://img.shields.io/nuget/v/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
-[![Downloads](https://img.shields.io/nuget/dt/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
+**Make your tests super fast! 🚀**
 
-**xUnitV3LoadFramework** is a robust and user-friendly load testing framework built to seamlessly integrate with **xUnit** and powered by **Akka.NET actors**. It allows developers to efficiently define, execute, and analyze parallel load test scenarios, making load testing a natural part of your automated testing workflow.
+Think of this like having many people test your website at the same time to see if it can handle lots of visitors - just like when everyone tries to buy concert tickets at once!
 
----
+[![.NET 8](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/download/dotnet/8.0)
+[![xUnit v3](https://img.shields.io/badge/xUnit-v3.0-blue)](https://xunit.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-## 🌟 Features
+## What does it do?
 
-### Hybrid Execution Model
-- **Channel-based Workers**: Fixed worker pools with pre-allocated channels for consistent performance
-- **Task-based Workers**: Dynamic task creation for flexible workload handling
-- **Automatic Optimization**: Framework automatically selects optimal worker counts based on system resources
+* **Easy to use** - Just add one line to your test and it becomes a speed test! 
+* **Many tests at once** - Like having 100 people click your button at the same time
+* **Shows you numbers** - Tells you how fast your app is and if anything breaks
+* **Works with xUnit** - Uses the tests you already know how to write
 
-### Comprehensive Metrics
-- **Latency Percentiles**: P50, P95, P99 latency measurements
-- **Throughput Analysis**: Requests per second with real-time monitoring
-- **Resource Utilization**: Memory usage, worker thread tracking, GC pressure
-- **Queue Time Tracking**: Average and maximum queue times
+## Quick Start
 
-### xUnit v3 Integration
-- **Native Test Framework**: Seamless integration with xUnit v3 test discovery and execution
-- **Attribute-based Configuration**: Simple `[Load]` attributes for test configuration
-- **Test Result Integration**: Load test results integrated with xUnit test results
-
-### Actor-based Architecture
-- **Akka.NET Foundation**: Built on proven actor model for reliability and scalability
-- **Message-driven Processing**: Asynchronous message passing for high throughput
-- **Fault Tolerance**: Supervisor hierarchies for robust error handling
-
----
-
-## 📊 Performance Highlights
-
-- **High Throughput**: Tested up to 500,000 requests with sustained performance
-- **Low Latency**: Sub-millisecond overhead for test execution framework
-- **Resource Efficient**: Optimized memory usage and GC pressure management
-- **Scalable**: Automatic scaling based on available system resources
-
----
-
-## 🔧 System Requirements
-
-- .NET 8.0+
-- xUnit v3 (preview)
-- Akka.NET 1.5.41+
-- Minimum 4GB RAM for high-load scenarios
-- Multi-core CPU recommended for optimal performance
-
----
-
-## ⚡ Installation
-
-Install via NuGet package manager:
-
+### 1. Install it
 ```bash
 dotnet add package xUnitV3LoadFramework
 ```
 
----
+### 2. Write a simple test
 
-## 🚦 Quick Start
-
-### Defining a Load Test
-Use the `Load` attribute (inheriting from `FactAttribute`) to configure concurrency level, duration, interval, and execution order.
-
-### Running Your Load Test
-Execute your tests using the standard xUnit command:
-
-```bash
-dotnet test
-```
-
----
-
-## 📝 Usage Examples
-
-### Basic Load Test Example
-
-Here's a clear example demonstrating how to define and execute load tests using the `Specification` base class and the `[Load]` attribute:
-
+**Method 1: Using an attribute (like a sticker on your test)**
 ```csharp
 using xUnitV3LoadFramework.Attributes;
 using xUnitV3LoadFramework.Extensions;
-using System;
 
-namespace xUnitLoadDemo;
-
-[UseLoadFramework]
-public class ExampleLoadSpecification : Specification
+public class MyTests
 {
-    protected override void EstablishContext()
-    {
-        Console.WriteLine(">> Setup phase");
-    }
+    private readonly HttpClient _httpClient = new HttpClient();
 
-    protected override void Because()
+    [Load(order: 1, concurrency: 5, duration: 3000, interval: 500)] // 5 people testing for 3 seconds
+    public async Task Test_My_Website()
     {
-        Console.WriteLine(">> Action phase");
-    }
-
-    [Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
-    public void should_run_load_scenario_1()
-    {
-        Console.WriteLine(">> Running Load 1");
-    }
-
-    [Load(order: 2, concurrency: 3, duration: 7000, interval: 300)]
-    public void should_run_load_scenario_2()
-    {
-        Console.WriteLine(">> Running Load 2");
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
+        {
+            var response = await _httpClient.GetAsync("https://api.example.com/data");
+            response.EnsureSuccessStatusCode();
+            return true; // Return true for success
+        });
+        
+        Assert.True(result.Success > 0, "Should have successful executions");
     }
 }
 ```
 
-### API Load Testing Example
-
+**Method 2: Using fluent API (like building with blocks)**
 ```csharp
-using xUnitV3LoadFramework.Attributes;
 using xUnitV3LoadFramework.Extensions;
 
-[UseLoadFramework]
-public class ApiLoadTests : Specification
+public class MyFluentTests
 {
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient = new HttpClient();
 
-    protected override void EstablishContext()
+    [Fact]
+    public async Task Test_With_Fluent_API()
     {
-        _httpClient = new HttpClient();
+        var result = await LoadTestRunner.Create()
+            .WithName("My_Cool_Test")
+            .WithConcurrency(10)        // 10 people
+            .WithDuration(5000)         // for 5 seconds  
+            .WithInterval(200)          // pause 200ms between batches
+            .RunAsync(async () =>
+            {
+                var response = await _httpClient.GetAsync("https://api.example.com");
+                response.EnsureSuccessStatusCode();
+                // No need to return anything - success is assumed if no exception
+            });
+
+        Assert.True(result.Success > 0, "Should have successful executions");
+        Console.WriteLine($"Success rate: {result.Success}/{result.Total}");
     }
+}
+```
 
-    protected override void Because()
-    {
-        // Common setup for all load tests
-    }
+### 3. See the results
+```
+✅ Test Results:
+   Total tests: 50
+   Successful: 48
+   Failed: 2
+   Speed: 16 tests per second
+   Time taken: 3.2 seconds
+```
 
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task When_testing_api_endpoint()
+## 🤔 Which method should I use?
+
+**Use Method 1 (Load attribute)** when:
+- You want the framework to automatically discover and run your load tests
+- You need tests to run in a specific order
+- You prefer attribute-based configuration
+
+**Use Method 2 (Fluent API)** when:
+- You want more control over when and how the load test runs
+- You prefer explicit configuration in your test code
+- You want to mix regular xUnit tests with load tests in the same class
+
+### 💡 More Examples
+
+**Mixed testing (both regular and load tests):**
+```csharp
+public class MixedTests
+{
+    private readonly HttpClient _httpClient = new HttpClient();
+
+    [Fact] // Regular xUnit test
+    public async Task Regular_Test()
     {
-        var response = await _httpClient.GetAsync("https://api.example.com/health");
+        var response = await _httpClient.GetAsync("https://api.example.com");
         Assert.True(response.IsSuccessStatusCode);
     }
 
-    protected override void DestroyContext()
+    [Fact] // Load test using fluent API
+    public async Task Load_Test_Using_Fluent_API()
     {
-        _httpClient?.Dispose();
+        var result = await LoadTestRunner.Create()
+            .WithConcurrency(5)
+            .WithDuration(2000)
+            .RunAsync(async () =>
+            {
+                var response = await _httpClient.GetAsync("https://api.example.com");
+                response.EnsureSuccessStatusCode();
+            });
+
+        Assert.True(result.Success > 0);
     }
 }
 ```
 
-Each `[Load]` attribute defines:
+**Advanced load testing with explicit success/failure:**
+```csharp
+[Fact]
+public async Task Advanced_Load_Test_With_Custom_Success_Logic()
+{
+    var result = await LoadTestRunner.Create()
+        .WithName("Advanced_API_Test")
+        .WithConcurrency(10)
+        .WithDuration(5000)
+        .WithInterval(100)
+        .RunAsync(async () =>
+        {
+            var response = await _httpClient.GetAsync("https://api.example.com/data");
+            
+            if (!response.IsSuccessStatusCode) 
+                return false;
+                
+            var content = await response.Content.ReadAsStringAsync();
+            return !string.IsNullOrEmpty(content); // Custom success logic
+        });
 
-- `order`: the test execution order  
-- `concurrency`: number of parallel executions  
-- `duration`: how long to run (in milliseconds)  
-- `interval`: delay between each wave of execution (in milliseconds)
-
-Run your tests using:
-
-```bash
-dotnet test
+    Assert.True(result.Success > result.Total * 0.8, "Should have 80%+ success rate");
+    Console.WriteLine($"Achieved {result.RequestsPerSecond:F2} requests per second");
+}
 ```
 
----
+## Want to see what's happening? Use logs! 📝
 
-## 📖 Documentation
+Add this to see detailed logs with xUnit.OTel:
+```csharp
+// Add to your test project
+services.AddOTelDiagnostics();
+```
 
-### Getting Started
-- [Quick Start Guide](docs/user-guides/getting-started.md)
-- [Load Attribute Configuration](docs/user-guides/load-attribute-configuration.md)
-- [Writing Effective Tests](docs/user-guides/writing-effective-tests.md)
+This shows you exactly what your tests are doing, like a diary of your test!
 
-### Architecture & Design
-- [Actor System Overview](docs/architecture/actor-system-overview.md)
-- [Hybrid Load Worker Design](docs/architecture/hybrid-load-worker.md)
+## What the numbers mean
 
-### User Guides
-- [Performance Optimization](docs/user-guides/performance-optimization.md)
-- [Monitoring & Metrics](docs/user-guides/monitoring-metrics.md)
+- **concurrency**: How many people test at the same time (like 5 friends)
+- **duration**: How long the test runs (like counting to 3000)
+- **Success/Failed**: How many tests worked vs broke
+- **Speed**: How fast your app can handle requests
 
-### API Reference
-- [Load Attributes](docs/api-reference/README.md)
-- [Core Classes](docs/api-reference/README.md)
-- [Actors](docs/api-reference/README.md)
-- [Messages](docs/api-reference/README.md)
-- [Models](docs/api-reference/README.md)
+## Requirements
 
-### Best Practices
-- [Load Test Design](docs/best-practices/load-test-design.md)
-- [Resource Management](docs/best-practices/resource-management.md)
-- [Troubleshooting](docs/best-practices/troubleshooting.md)
+- **.NET 8.0** or newer
+- **xUnit v3** for testing
 
-### Advanced Topics
-- [Migration from xUnit v2](docs/advanced/migration-guide.md)
-- [Custom Extensions](docs/advanced/custom-extensions.md)
-- [Performance Tuning](docs/advanced/performance-tuning.md)
-- [CI/CD Integration](docs/advanced/cicd-integration.md)
+## Need help?
 
-### Examples & Scenarios
-- [Database Load Testing](docs/examples/database-load-testing.md)
-- [API Load Testing](docs/examples/api-load-testing.md)
-- [Transactional Scenarios](docs/examples/transactional-scenarios.md)
-- [Real-world Examples](docs/examples/real-world-examples.md)
-
-For comprehensive documentation, visit the [docs folder](docs/).
-
-Examples: [examples](https://github.com/mrviduus/xUnitV3LoadFramework/tree/main/examples/)
+- � **Found a bug?**: [Tell us here](https://github.com/mrviduus/xUnitV3LoadFramework/issues)
+- 💬 **Questions?**: [Ask here](https://github.com/mrviduus/xUnitV3LoadFramework/discussions)
+- 📧 **Email**: [mrviduus@gmail.com](mailto:mrviduus@gmail.com)
 
 ---
 
-## 🤝 Contributing
-
-Your contributions and feedback are always welcome!
-- Submit issues or suggestions via [GitHub Issues](https://github.com/mrviduus/xUnitV3LoadFramework/issues).
-- Open pull requests following our [Contributing Guidelines](CONTRIBUTING.md).
-
----
-
-## 📜 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## 📫 Contact
-
-For questions, suggestions, or feedback, please open an issue or contact directly:
-
-- **Vasyl Vdovychenko**  
-  [LinkedIn](https://www.linkedin.com/in/vasyl-vdovychenko) | [Email](mailto:mrviduus@gmail.com)
+**Made with ❤️ by [Vasyl](https://github.com/mrviduus) to help make apps faster!**

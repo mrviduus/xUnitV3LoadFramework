@@ -2,7 +2,7 @@
 
 The Hybrid Load Worker represents a breakthrough in load testing performance, combining the predictability of fixed worker pools with the efficiency of channel-based communication.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The Hybrid Load Worker (`LoadWorkerActorHybrid`) implements a channel-based execution model that provides:
 
@@ -11,7 +11,7 @@ The Hybrid Load Worker (`LoadWorkerActorHybrid`) implements a channel-based exec
 - **Resource Optimization**: Intelligent worker count calculation based on system resources
 - **Comprehensive Metrics**: Real-time tracking of all performance indicators
 
-## 📊 Performance Comparison
+## Performance Comparison
 
 | Aspect | Traditional Task-based | Hybrid Channel-based |
 |--------|----------------------|-------------------|
@@ -21,7 +21,7 @@ The Hybrid Load Worker (`LoadWorkerActorHybrid`) implements a channel-based exec
 | Throughput Consistency | Variable | Stable |
 | Resource Predictability | Low | High |
 
-## 🔧 Core Components
+##  Core Components
 
 ### 1. Worker Pool Management
 
@@ -86,7 +86,7 @@ public class LoadResult
 }
 ```
 
-## 🚀 Execution Flow
+##  Execution Flow
 
 ### Phase 1: Initialization
 
@@ -185,7 +185,7 @@ The hybrid approach minimizes memory allocation by:
 3. **Object Pooling**: Reuse of timing and result objects where possible
 4. **Bounded Growth**: Channel capacity limits prevent unbounded memory growth
 
-## 📈 Performance Characteristics
+##  Performance Characteristics
 
 ### Throughput Profile
 
@@ -208,7 +208,7 @@ Latency measurements show:
 - **Memory Stable**: Bounded memory usage regardless of test duration
 - **GC Friendly**: Low garbage collection pressure
 
-## 🔧 Configuration Options
+##  Configuration Options
 
 ### Worker Pool Sizing
 
@@ -224,7 +224,7 @@ Default capacity is `concurrency * 2` but can be customized for specific scenari
 - **Memory-constrained**: Decrease capacity to limit memory usage
 - **Latency-sensitive**: Use smaller capacity for lower queue times
 
-## 🎯 Use Cases
+##  Use Cases
 
 ### Ideal Scenarios
 
@@ -239,7 +239,7 @@ Default capacity is `concurrency * 2` but can be customized for specific scenari
 2. **Short Bursts**: Very brief test scenarios (< 1 second)
 3. **Dynamic Scaling**: Requirements for runtime worker adjustment
 
-## 📊 Metrics Deep Dive
+## Metrics Deep Dive
 
 ### Worker Utilization Calculation
 
@@ -274,7 +274,7 @@ Queue times help identify bottlenecks:
 2. **Under-sized Channels**: Too small capacity causes unnecessary blocking
 3. **Ignoring Metrics**: Not monitoring worker utilization leads to suboptimal performance
 
-## 🚀 Future Enhancements
+##  Future Enhancements
 
 ### Planned Improvements
 

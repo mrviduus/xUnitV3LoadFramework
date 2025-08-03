@@ -1,107 +1,68 @@
 # xUnitV3LoadFramework Documentation
 
-A high-performance load testing framework built on xUnit v3 and Akka.NET, featuring hybrid channel-based and task-based execution models.
+Technical documentation for xUnitV3LoadFramework - a high-performance load testing framework for .NET applications.
 
-## 📚 Documentation Index
+##  Documentation Structure
 
-### Getting Started
-- [Quick Start Guide](user-guides/quickstart.md)
-- [Installation](user-guides/installation.md)
-- [Basic Usage](user-guides/basic-usage.md)
+###  Architecture
+- [Actor System Overview](architecture/actor-system-overview.md) - Understanding the Akka.NET foundation
+- [Hybrid Load Worker](architecture/hybrid-load-worker.md) - Load execution engine details
 
-### Architecture & Design
-- [Framework Architecture](architecture/framework-architecture.md)
-- [Hybrid Load Worker Design](architecture/hybrid-load-worker.md)
-- [Actor System Overview](architecture/actor-system.md)
-- [Message Flow](architecture/message-flow.md)
+##  Framework Overview
 
-### User Guides
-- [Load Attribute Configuration](guides/load-attribute.md)
-- [Writing Load Tests](guides/writing-load-tests.md)
-- [Performance Optimization](guides/performance-optimization.md)
-- [Monitoring & Metrics](guides/monitoring-metrics.md)
+ **Actor-based Engine** - Powered by Akka.NET for scalability  
+ **Declarative Testing** - Attribute-based load test configuration  
+ **Comprehensive Metrics** - Performance and latency reporting  
+ **Production Ready** - Enterprise-grade architecture  
 
-### API Reference
-- [Load Attributes](api/load-attributes.md)
-- [Core Classes](api/core-classes.md)
-- [Actors](api/actors.md)
-- [Messages](api/messages.md)
-- [Models](api/models.md)
+##  Basic Usage
 
-### Best Practices
-- [Load Test Design](best-practices/load-test-design.md)
-- [Resource Management](best-practices/resource-management.md)
-- [Troubleshooting](best-practices/troubleshooting.md)
-
-### Advanced Topics
-- [Migration from xUnit v2](advanced/migration-guide.md)
-- [Custom Extensions](advanced/custom-extensions.md)
-- [Performance Tuning](advanced/performance-tuning.md)
-- [CI/CD Integration](advanced/cicd-integration.md)
-
-### Examples & Scenarios
-- [Database Load Testing](examples/database-load-testing.md)
-- [API Load Testing](examples/api-load-testing.md)
-- [Transactional Scenarios](examples/transactional-scenarios.md)
-- [Real-world Examples](examples/real-world-examples.md)
-
-## 🚀 Key Features
-
-### Hybrid Execution Model
-- **Channel-based Workers**: Fixed worker pools with pre-allocated channels for consistent performance
-- **Task-based Workers**: Dynamic task creation for flexible workload handling
-- **Automatic Optimization**: Framework automatically selects optimal worker counts based on system resources
-
-### Comprehensive Metrics
-- **Latency Percentiles**: P50, P95, P99 latency measurements
-- **Throughput Analysis**: Requests per second with real-time monitoring
-- **Resource Utilization**: Memory usage, worker thread tracking, GC pressure
-- **Queue Time Tracking**: Average and maximum queue times
-
-### xUnit v3 Integration
-- **Native Test Framework**: Seamless integration with xUnit v3 test discovery and execution
-- **Attribute-based Configuration**: Simple `[Load]` attributes for test configuration
-- **Test Result Integration**: Load test results integrated with xUnit test results
-
-### Actor-based Architecture
-- **Akka.NET Foundation**: Built on proven actor model for reliability and scalability
-- **Message-driven Processing**: Asynchronous message passing for high throughput
-- **Fault Tolerance**: Supervisor hierarchies for robust error handling
-
-## 📊 Performance Highlights
-
-- **High Throughput**: Tested up to 500,000 requests with sustained performance
-- **Low Latency**: Sub-millisecond overhead for test execution framework
-- **Resource Efficient**: Optimized memory usage and GC pressure management
-- **Scalable**: Automatic scaling based on available system resources
-
-## 🔧 System Requirements
-
-- .NET 8.0+
-- xUnit v3 (preview)
-- Akka.NET 1.5.41+
-- Minimum 4GB RAM for high-load scenarios
-- Multi-core CPU recommended for optimal performance
-
-## 💡 Quick Example
-
+### Traditional Approach (with Load attribute)
 ```csharp
-public class ApiLoadTests : Specification
+public class MyLoadTests
 {
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task<bool> When_testing_api_endpoint()
+    private readonly HttpClient httpClient = new HttpClient();
+
+    [Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+    public async Task LoadTest_API_Endpoint()
     {
-        using var client = new HttpClient();
-        var response = await client.GetAsync("https://api.example.com/health");
-        return response.IsSuccessStatusCode;
+        var result = await LoadTestRunner.ExecuteAsync(async () =>
+        {
+            var response = await httpClient.GetAsync("/api/users");
+            response.EnsureSuccessStatusCode();
+            return true;
+        });
+        
+        Assert.True(result.Success > 0);
     }
 }
 ```
 
-## 🤝 Contributing
+### Fluent API Approach (no Load attribute needed)
+```csharp
+public class MyFluentTests
+{
+    private readonly HttpClient httpClient = new HttpClient();
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+    [Fact]
+    public async Task LoadTest_With_Fluent_API()
+    {
+        var result = await LoadTestRunner.Create()
+            .WithConcurrency(5)
+            .WithDuration(3000)
+            .WithInterval(200)
+            .WithName("API_Endpoint_Test")
+            .RunAsync(async () =>
+            {
+                var response = await httpClient.GetAsync("/api/users");
+                response.EnsureSuccessStatusCode();
+            });
+        
+        Assert.True(result.Success > 0);
+    }
+}
+```
 
-## 📄 License
+---
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+*For technical specifications and API details, visit our [GitHub repository](https://github.com/mrviduus/xUnitV3LoadFramework).*

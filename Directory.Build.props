@@ -2,7 +2,7 @@
     <PropertyGroup>
         <_ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true' or '$(GITHUB_ACTIONS)' == 'true' or '$(GITLAB_CI)' == 'true'">True</_ContinuousIntegrationBuild>
 
-        <LangVersion>10</LangVersion>
+        <LangVersion>12</LangVersion>
         <TreatWarningsAsErrors Condition="'$(Configuration)' != 'Debug'">true</TreatWarningsAsErrors>
         <Deterministic>true</Deterministic>
         <Features>strict</Features>
@@ -21,8 +21,8 @@
     <PropertyGroup>
         <Authors>Vasyl Vdovychenko</Authors>
         <Company>Vasyl Vdovychenko</Company>
-        <PackageProjectUrl>https://github.com/mrviduus/xUnitLoadRunner</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/mrviduus/xUnitLoadRunner.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/mrviduus/xUnitV3LoadFramework</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/mrviduus/xUnitV3LoadFramework.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
     </PropertyGroup>

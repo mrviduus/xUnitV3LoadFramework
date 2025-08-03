@@ -1,5 +1,2 @@
-using xUnitV3LoadFramework.Extensions.Framework;
-
-[assembly: TestFramework(typeof(LoadTestFramework))]
-//[assembly: Trace]
+// Global using statements for the examples project
 [assembly: CaptureConsole]
