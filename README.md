@@ -4,6 +4,8 @@
 
 Think of this like having many people test your website at the same time to see if it can handle lots of visitors - just like when everyone tries to buy concert tickets at once!
 
+[![NuGet](https://img.shields.io/nuget/v/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
+[![Downloads](https://img.shields.io/nuget/dt/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![xUnit v3](https://img.shields.io/badge/xUnit-v3.0-blue)](https://xunit.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
