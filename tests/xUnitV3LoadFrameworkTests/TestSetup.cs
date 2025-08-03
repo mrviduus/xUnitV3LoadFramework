@@ -1,5 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using xUnit.OTel.Diagnostics;
 
 // Trace everything!
@@ -16,8 +20,12 @@ public class TestSetup : IAsyncLifetime
 		Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
 			.ConfigureServices(services =>
 			{
-				// Add the magic tracking ✨
-				services.AddOTelDiagnostics();
+
+				services.AddOTelDiagnostics(
+					configureMeterProviderBuilder: m => m.AddOtlpExporter(),
+					configureTracerProviderBuilder: t => t.AddOtlpExporter(),
+					configureLoggingBuilder: options => options.AddOpenTelemetry(o => o.AddOtlpExporter())
+					);
 				// Add ability to make web calls
 				services.AddHttpClient();
 			})
