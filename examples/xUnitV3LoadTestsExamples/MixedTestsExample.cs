@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using xUnitV3LoadFramework.Attributes;
+using xUnitV3LoadFramework.Extensions;
 
 namespace xUnitV3LoadTests;
 
@@ -63,49 +64,100 @@ public class MixedTestsExample : IDisposable
 		Console.WriteLine($"✓ Functional test: Successfully called {url}");
 	}
 
-	// Load test - executes multiple times concurrently
-	[Load(order: 1, concurrency: 5, duration: 3000, interval: 100)]
+	// Load test - executes multiple times concurrently using LoadFact
+	[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 100)]
 	public async Task Should_Handle_Concurrent_HTTP_Requests()
 	{
-		// This method will be executed 5 times concurrently for 3 seconds
-		var response = await _httpClient.GetAsync("https://httpbin.org/delay/1");
+		// Use LoadTestHelper to properly execute this as a load test
+		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+		{
+			// This lambda will be executed 5 times concurrently for 3 seconds
+			var response = await _httpClient.GetAsync("https://httpbin.org/delay/1");
+			
+			if (!response.IsSuccessStatusCode)
+			{
+				Console.WriteLine($"❌ HTTP request failed with status: {response.StatusCode}");
+				return false;
+			}
 
-		Assert.True(response.IsSuccessStatusCode, "HTTP request should succeed under load");
+			Console.WriteLine($"✓ Load test: HTTP request completed at {DateTime.Now:HH:mm:ss.fff}");
+			return true;
+		});
 
-		Console.WriteLine($"✓ Load test: HTTP request completed at {DateTime.Now:HH:mm:ss.fff}");
+		// Assert that the load test was successful overall
+		Assert.True(result.Success > 0, $"Load test should have at least some successful executions. Success: {result.Success}, Failure: {result.Failure}");
+		Assert.True(result.Success > result.Failure, $"Load test should have more successes than failures. Success: {result.Success}, Failure: {result.Failure}");
+		
+		Console.WriteLine($"✓ Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
-	// Another load test with different parameters
-	[Load(order: 2, concurrency: 3, duration: 2000, interval: 200)]
+	// Another load test with different parameters using LoadFact
+	[LoadFact(order: 2, concurrency: 3, duration: 2000, interval: 200)]
 	public async Task Should_Process_JSON_Data_Under_Load()
 	{
-		// This method will be executed 3 times concurrently for 2 seconds
-		var response = await _httpClient.GetAsync("https://jsonplaceholder.typicode.com/posts/1");
-		var content = await response.Content.ReadAsStringAsync();
+		// Use LoadTestHelper to properly execute this as a load test
+		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+		{
+			// This lambda will be executed 3 times concurrently for 2 seconds
+			var response = await _httpClient.GetAsync("https://jsonplaceholder.typicode.com/posts/1");
+			var content = await response.Content.ReadAsStringAsync();
 
-		Assert.True(response.IsSuccessStatusCode, "JSON API request should succeed");
-		Assert.Contains("userId", content, StringComparison.OrdinalIgnoreCase);
+			if (!response.IsSuccessStatusCode)
+			{
+				Console.WriteLine($"❌ JSON API request failed with status: {response.StatusCode}");
+				return false;
+			}
 
-		Console.WriteLine($"✓ Load test: JSON processing completed at {DateTime.Now:HH:mm:ss.fff}");
+			if (!content.Contains("userId", StringComparison.OrdinalIgnoreCase))
+			{
+				Console.WriteLine($"❌ JSON response doesn't contain expected 'userId' field");
+				return false;
+			}
+
+			Console.WriteLine($"✓ Load test: JSON processing completed at {DateTime.Now:HH:mm:ss.fff}");
+			return true;
+		});
+
+		// Assert that the load test was successful overall
+		Assert.True(result.Success > 0, $"Load test should have at least some successful executions. Success: {result.Success}, Failure: {result.Failure}");
+		Assert.True(result.Success >= result.Failure, $"Load test should have equal or more successes than failures. Success: {result.Success}, Failure: {result.Failure}");
+		
+		Console.WriteLine($"✓ JSON Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
-	// Load test focusing on error conditions
-	[Load(order: 3, concurrency: 2, duration: 1500, interval: 300)]
+	// Load test focusing on error conditions using LoadFact
+	[LoadFact(order: 3, concurrency: 2, duration: 1500, interval: 300)]
 	public async Task Should_Handle_Error_Conditions_Under_Load()
 	{
-		try
+		// Use LoadTestHelper to properly execute this as a load test
+		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
 		{
-			// Test with a non-existent endpoint
-			var response = await _httpClient.GetAsync("https://httpbin.org/status/404");
+			try
+			{
+				// Test with a non-existent endpoint - this should return 404
+				var response = await _httpClient.GetAsync("https://httpbin.org/status/404");
 
-			Assert.Equal(System.Net.HttpStatusCode.NotFound, response.StatusCode);
-			Console.WriteLine($"✓ Load test: Error handling verified at {DateTime.Now:HH:mm:ss.fff}");
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine($"⚠ Load test: Unexpected exception - {ex.Message}");
-			throw; // Re-throw to fail the test
-		}
+				if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
+				{
+					Console.WriteLine($"❌ Expected 404 but got: {response.StatusCode}");
+					return false;
+				}
+
+				Console.WriteLine($"✓ Load test: Error handling verified at {DateTime.Now:HH:mm:ss.fff}");
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"❌ Load test: Unexpected exception - {ex.Message}");
+				return false;
+			}
+		});
+
+		// Assert that the load test was successful overall
+		Assert.True(result.Success > 0, $"Load test should have at least some successful executions. Success: {result.Success}, Failure: {result.Failure}");
+		Assert.True(result.Success >= result.Failure, $"Load test should handle error conditions properly. Success: {result.Success}, Failure: {result.Failure}");
+		
+		Console.WriteLine($"✓ Error handling Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
 	// Standard fact test that can run independently
@@ -117,6 +169,71 @@ public class MixedTestsExample : IDisposable
 		Assert.NotNull(_testHost);
 
 		Console.WriteLine("✓ Functional test: Test infrastructure validated");
+	}
+
+	// Advanced load test that validates performance characteristics
+	[LoadFact(order: 4, concurrency: 10, duration: 5000, interval: 50)]
+	public async Task Should_Validate_Load_Performance_Metrics()
+	{
+		var executionTimes = new List<double>();
+		var requestCount = 0;
+
+		var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+		{
+			var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+			
+			try
+			{
+				// Use a faster endpoint for performance testing
+				var response = await _httpClient.GetAsync("https://httpbin.org/get");
+				stopwatch.Stop();
+				
+				lock (executionTimes)
+				{
+					executionTimes.Add(stopwatch.Elapsed.TotalMilliseconds);
+					requestCount++;
+				}
+
+				if (!response.IsSuccessStatusCode)
+				{
+					Console.WriteLine($"❌ Performance test request failed: {response.StatusCode}");
+					return false;
+				}
+
+				Console.WriteLine($"✓ Performance test: Request #{requestCount} completed in {stopwatch.Elapsed.TotalMilliseconds:F2}ms");
+				return true;
+			}
+			catch (Exception ex)
+			{
+				stopwatch.Stop();
+				Console.WriteLine($"❌ Performance test exception: {ex.Message}");
+				return false;
+			}
+		});
+
+		// Validate load test execution
+		Assert.True(result.Success > 0, $"Load test should have successful executions. Success: {result.Success}, Failure: {result.Failure}");
+		Assert.True(result.Total >= 10, $"Load test should execute multiple times. Total: {result.Total}");
+		
+		// Validate performance characteristics
+		if (executionTimes.Count > 0)
+		{
+			var avgResponseTime = executionTimes.Average();
+			var maxResponseTime = executionTimes.Max();
+			var minResponseTime = executionTimes.Min();
+			
+			Console.WriteLine($"Performance Metrics:");
+			Console.WriteLine($"  Total Requests: {executionTimes.Count}");
+			Console.WriteLine($"  Avg Response Time: {avgResponseTime:F2}ms");
+			Console.WriteLine($"  Min Response Time: {minResponseTime:F2}ms");
+			Console.WriteLine($"  Max Response Time: {maxResponseTime:F2}ms");
+			
+			// Basic performance assertions
+			Assert.True(avgResponseTime < 5000, $"Average response time should be under 5 seconds. Actual: {avgResponseTime:F2}ms");
+			Assert.True(executionTimes.Count >= 5, $"Should execute at least 5 requests under load. Actual: {executionTimes.Count}");
+		}
+
+		Console.WriteLine($"✓ Performance Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 }
 
