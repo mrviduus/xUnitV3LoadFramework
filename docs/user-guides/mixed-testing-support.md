@@ -1,56 +1,47 @@
 # Mixed Testing Support - Load Tests and Standard xUnit Tests
 
-The xUnitV3LoadFramework now supports seamless integration of both standard xUnit tests and load tests within the same project without requiring any special attributes.
+The xUnitV3LoadFramework now provides seamless integration of both standard xUnit tests and load tests within the same project using the `[LoadFact]` attribute approach.
 
 ## Overview
 
-The framework automatically detects which tests should be executed as load tests based on the presence of the `[Load]` attribute on test methods. This means you can:
+The framework provides a `LoadFactAttribute` that inherits from xUnit's `FactAttribute`, enabling you to:
 
-- Run standard xUnit tests (Facts, Theories) normally
-- Run load tests with the `[Load]` attribute using the actor-based load framework
+- Run standard xUnit tests (`[Fact]`, `[Theory]`) normally
+- Run load tests with the `[LoadFact]` attribute using the actor-based load framework
 - Mix both types of tests in the same test class
-- No longer need the `UseLoadFrameworkAttribute` or special configuration
+- Use standard xUnit v3 discovery and execution without custom test frameworks
 
 ## Usage
 
 ### Basic Configuration
 
-1. **Configure the assembly** to use the LoadTestFramework in your `GlobalUsings.cs`:
+1. **Standard xUnit setup** - No special framework configuration needed in `GlobalUsings.cs`:
 
 ```csharp
 global using Xunit;
-global using xUnitV3LoadFramework;
 global using xUnitV3LoadFramework.Attributes;
+global using xUnitV3LoadFramework.Extensions;
 
-[assembly: TestFramework("xUnitV3LoadFramework.Extensions.Framework.LoadTestFrameworkStartup", "xUnitV3LoadFramework")]
+// No special TestFramework declaration needed - uses standard xUnit v3
 ```
 
 2. **Create mixed test classes** with both standard and load tests:
 
 ```csharp
 // This class contains both standard xUnit tests and load tests
-public class MyMixedTests : IDisposable
+public class MyMixedTests : TestSetup
 {
-    private readonly string _testData;
-    
-    public MyMixedTests()
-    {
-        _testData = "Initialized";
-    }
-    
-    public void Dispose()
-    {
-        // Cleanup if needed
-    }
-
     [Fact]
     public void ShouldExecuteAsStandardTest()
     {
         // Standard xUnit test - runs normally
-        Assert.True(true);
+        var httpClient = GetService<IHttpClientFactory>().CreateClient();
+        Assert.NotNull(httpClient);
+    }
         Assert.NotNull(_testData);
     }
 
+    [Theory]
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
@@ -60,11 +51,19 @@ public class MyMixedTests : IDisposable
         Assert.True(value > 0);
     }
 
-    [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
-    public void ShouldHandleHighLoad()
+    [LoadFact(order: 1, concurrency: 5, duration: 2000, interval: 500)]
+    public async Task ShouldHandleHighLoad()
     {
         // Load test - runs with actor-based load framework
-        System.Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            var httpClient = GetService<IHttpClientFactory>().CreateClient();
+            var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
+            response.EnsureSuccessStatusCode();
+            return true;
+        });
+        
+        Assert.True(result.Success > 0, "Load test should have successful executions");
     }
 }
 ```
@@ -92,26 +91,107 @@ public class MyStandardTests
 }
 
 // Load test class  
-public class MyLoadTests : IDisposable
+public class MyLoadTests : TestSetup
 {
-    private string? _testData;
-    
-    public MyLoadTests()
+    [LoadFact(order: 1, concurrency: 5, duration: 2000, interval: 500)]
+    public async Task ShouldHandleHighLoad()
     {
-        _testData = "Load test initialized";
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            var httpClient = GetService<IHttpClientFactory>().CreateClient();
+            var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
+            response.EnsureSuccessStatusCode();
+            return true;
+        });
+        
+        Assert.True(result.Success > 0, "Load test should have successful executions");
     }
-    
-    public void Dispose()
-    {
-        // Cleanup if needed
-    }
+}
+```
 
-    [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
-    public void ShouldHandleHighLoad()
+## Configuration Options
+
+### LoadFact Attribute Parameters
+
+```csharp
+[LoadFact(
+    order: 1,           // Execution order (optional)
+    concurrency: 5,     // Number of concurrent executions
+    duration: 2000,     // Duration in milliseconds
+    interval: 500       // Interval between executions in milliseconds
+)]
+```
+
+### LoadTestHelper Methods
+
+The framework provides several overloads for `LoadTestHelper.ExecuteLoadTestAsync`:
+
+```csharp
+// Basic execution - automatically detects LoadFact attribute
+var result = await LoadTestHelper.ExecuteLoadTestAsync(async () => {
+    // Your load test logic
+    return true;
+});
+
+// With custom configuration
+var result = await LoadTestHelper.ExecuteLoadTestAsync(
+    testAction: async () => { /* test logic */ return true; },
+    concurrency: 10,
+    duration: TimeSpan.FromSeconds(30),
+    interval: TimeSpan.FromMilliseconds(100)
+);
+```
+
+## Test Organization Patterns
+
+### Option 1: Mixed Classes
+Combine standard tests and load tests in the same class:
+
+```csharp
+public class ApiTests : TestSetup
+{
+    [Fact]
+    public void ShouldValidateConfiguration()
     {
-        // Load test - runs with actor-based framework
-        Assert.NotNull(_testData);
-        System.Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
+        // Standard unit test
+    }
+    
+    [LoadFact(concurrency: 3, duration: 1000)]
+    public async Task ShouldHandleMultipleRequests()
+    {
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            // Load test logic
+            return true;
+        });
+        
+        Assert.True(result.Success > 0);
+    }
+}
+```
+
+### Option 2: Separate Classes
+Keep different test types in separate classes:
+
+```csharp
+public class ApiUnitTests
+{
+    [Fact]
+    public void ShouldValidateConfiguration() { }
+}
+
+public class ApiLoadTests : TestSetup  
+{
+    [LoadFact(concurrency: 3, duration: 1000)]
+    public async Task ShouldHandleMultipleRequests() 
+    {
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            // Load test logic
+            return true;
+        });
+        
+        Assert.True(result.Success > 0);
     }
 }
 ```
@@ -120,59 +200,65 @@ public class MyLoadTests : IDisposable
 
 ```csharp
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Xunit;
-using xUnitV3LoadFramework;
 using xUnitV3LoadFramework.Attributes;
+using xUnitV3LoadFramework.Extensions;
 
 namespace MyTestProject
 {
     // Standard xUnit tests - run immediately with normal xUnit behavior
-    public class StandardXUnitTests  
+    public class StandardApiTests  
     {
         [Fact]
-        public void StandardTest_ShouldPass()
+        public void ShouldValidateConfiguration()
         {
             Console.WriteLine("Standard [Fact] test executed via xUnit");
             Assert.True(true);
         }
 
         [Theory]
-        [InlineData("test1")]
-        [InlineData("test2")]
-        public void StandardTheory_ShouldAcceptParameters(string input)
+        [InlineData("user1")]
+        [InlineData("user2")]
+        public void ShouldAcceptDifferentUsers(string userId)
         {
-            Console.WriteLine($"Standard [Theory] test executed with: {input}");
-            Assert.NotNull(input);
+            Console.WriteLine($"Standard [Theory] test executed with: {userId}");
+            Assert.NotNull(userId);
         }
     }
 
-    // Load tests - run with load testing framework using actors and concurrency
-    public class LoadFrameworkTests : IDisposable
+    // Load tests - using LoadFact attribute with LoadTestHelper
+    public class LoadApiTests : TestSetup
     {
-        private string? _loadTestData;
-        
-        public LoadFrameworkTests()
+        [LoadFact(order: 1, concurrency: 3, duration: 2000, interval: 500)]
+        public async Task ShouldHandleMultipleApiCalls()
         {
-            _loadTestData = "Load test data initialized";
-            Console.WriteLine("Constructor: Load test setup completed");
-        }
-        
-        public void Dispose()
-        {
-            Console.WriteLine("Dispose: Load test cleanup completed");
-        }
-
-        [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
-        public void ShouldExecuteWithLoadFramework()
-        {
-            Assert.NotNull(_loadTestData);
-            Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
+            var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+            {
+                var httpClient = GetService<IHttpClientFactory>().CreateClient();
+                var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
+                response.EnsureSuccessStatusCode();
+                Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
+                return true;
+            });
+            
+            Assert.True(result.Success > 0, "Load test should have successful executions");
+            Assert.True(result.Total >= result.Success, "Total executions should be >= successful ones");
         }
 
-        [Load(order: 2, concurrency: 3, duration: 1500, interval: 300)]
-        public void ShouldExecuteWithLowerLoad()
+        [LoadFact(order: 2, concurrency: 2, duration: 1500, interval: 300)]
+        public async Task ShouldHandleLowerLoadScenario()
         {
-            Console.WriteLine($"Another load test executed at {DateTime.Now:HH:mm:ss.fff}");
+            var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+            {
+                // Simulate some work
+                await Task.Delay(50, TestContext.Current.CancellationToken);
+                Console.WriteLine($"Low load test executed at {DateTime.Now:HH:mm:ss.fff}");
+                return true;
+            });
+            
+            Assert.True(result.Success > 0);
         }
     }
 }
@@ -181,61 +267,97 @@ namespace MyTestProject
 ## Key Benefits
 
 1. **Flexibility**: Mix standard unit tests with load tests in the same project
-2. **Selective Usage**: Choose which classes need load testing capabilities
-3. **Performance**: Standard tests run immediately without load framework overhead
-4. **Compatibility**: Full compatibility with existing xUnit tooling and features
+2. **Standard Compatibility**: Full compatibility with existing xUnit tooling and features  
+3. **Selective Usage**: Choose which tests need load testing capabilities
+4. **Performance**: Standard tests run immediately without load framework overhead
 5. **Migration**: Easy migration path for projects that want to add load testing
-
-## Technical Details
 
 ## How It Works
 
-### Test Discovery
+### Test Discovery and Execution
 
-The framework automatically analyzes each test method:
-- **Methods with `[Load]` attribute**: Discovered and executed using the LoadTestFramework's actor-based load testing system
-- **Methods with standard xUnit attributes**: Discovered and executed using standard xUnit test discovery and execution pipeline
-
-### Test Execution
-
-- **Standard Tests (`[Fact]`, `[Theory]`)**: Execute immediately using normal xUnit execution patterns
-- **Load Tests (`[Load]`)**: Execute using the LoadTestFramework's actor system with specified concurrency, duration, and interval settings
+- **Standard Tests (`[Fact]`, `[Theory]`)**: Execute immediately using standard xUnit execution patterns
+- **Load Tests (`[LoadFact]`)**: Execute as standard xUnit tests but use `LoadTestHelper` to run load scenarios with actor-based concurrency
 
 ### Class Requirements
 
-- **No special inheritance requirements**: Any test class can contain both standard tests and load tests
-- **Standard xUnit patterns**: Use constructor and IDisposable for setup/cleanup
-- **Mixed Classes**: Can contain both `[Fact]`/`[Theory]` methods and `[Load]` methods
+- **No special inheritance**: Standard xUnit test classes work as-is
+- **Optional TestSetup**: Load tests can inherit from `TestSetup` for dependency injection
+- **Mixed Classes**: Can contain both standard and load test methods
 
-## Error Handling
+## Advanced Usage
 
-The framework properly handles:
-- Constructor exceptions in both standard and load test classes
-- Method execution failures
-- Mixed success/failure scenarios across different test types
+### Custom Load Test Configurations
+
+```csharp
+[LoadFact(concurrency: 10, duration: 5000, interval: 100)]
+public async Task HighIntensityLoadTest()
+{
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(
+        testAction: async () => {
+            // Custom test logic
+            return await PerformComplexOperation();
+        },
+        // Override attribute settings if needed
+        concurrency: 15,
+        duration: TimeSpan.FromSeconds(10)
+    );
+    
+    Assert.True(result.Success > 0);
+}
+```
+
+### Error Handling and Metrics
+
+```csharp
+[LoadFact(concurrency: 5, duration: 3000)]
+public async Task ShouldHandlePartialFailures()
+{
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    {
+        // Test logic that might occasionally fail
+        var random = new Random();
+        if (random.Next(100) < 10) // 10% failure rate
+        {
+            throw new InvalidOperationException("Simulated failure");
+        }
+        return true;
+    });
+    
+    // Verify that some tests succeeded even with failures
+    Assert.True(result.Success > 0, "Should have some successful executions");
+    Assert.True(result.Total > result.Success, "Should have some failed executions");
+    
+    // Calculate success rate
+    var successRate = (double)result.Success / result.Total;
+    Assert.True(successRate > 0.8, "Success rate should be above 80%");
+}
+```
 
 ## Migration Guide
 
-### From Previous Specification Approach
-If you currently inherit from `Specification` class:
+### From Previous Versions
+If you previously used custom test frameworks or Specification classes:
 
-1. Remove inheritance from `Specification` base class
-2. Convert `EstablishContext()` to constructor setup
-3. Convert `DestroyContext()` to `IDisposable.Dispose()` cleanup
-4. Remove `Because()` method - logic goes directly in test methods
-5. Your existing `[Load]` methods will continue to work as load tests
+1. **Remove custom framework dependencies** - standard xUnit is now sufficient
+2. **Convert to LoadFact** - replace custom attributes with `[LoadFact]`
+3. **Use LoadTestHelper** - call `LoadTestHelper.ExecuteLoadTestAsync()` within test methods
+4. **Inherit from TestSetup** - for dependency injection and test context access
 
 ### From Standard xUnit Only
 If you have existing standard xUnit tests and want to add load testing:
 
-1. Configure the assembly for LoadTestFramework in GlobalUsings.cs
-2. Keep existing test classes as-is (they'll continue to run as standard tests)
-3. Add `[Load]` attributes to any methods you want to convert to load tests
-4. Optionally inherit from `Specification` for lifecycle hooks
+1. **Keep existing tests** - they'll continue to run as standard tests
+2. **Add LoadFact tests** - create new methods with `[LoadFact]` attributes
+3. **Use TestSetup base class** - for tests that need dependency injection
+4. **Add LoadTestHelper calls** - within LoadFact methods for load execution
 
 ## Best Practices
 
 1. **Use descriptive method names** to distinguish between standard and load test methods
 2. **Consider separation** - while you can mix test types, separate classes might be clearer for complex scenarios
-3. **Document the testing strategy** in your project to help other developers understand when to use each approach
+3. **Document testing strategy** in your project to help other developers understand when to use each approach
 4. **Run load tests separately** in CI/CD pipelines if they take significantly longer than standard tests
+5. **Use appropriate assertions** - verify both success counts and business logic outcomes
+
+This approach provides the best of both worlds: standard xUnit compatibility with powerful load testing capabilities when needed.

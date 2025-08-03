@@ -7,6 +7,7 @@ Complete reference for all public APIs in the xUnitV3LoadFramework.
 The framework provides the following main API surfaces:
 
 - **[Attributes](#attributes)** - Test decoration and configuration
+- **[Helper Classes](#helper-classes)** - Load test execution utilities
 - **[Base Classes](#base-classes)** - Test infrastructure and lifecycle management  
 - **[Actors](#actors)** - Core execution engine components
 - **[Models](#models)** - Data structures for results and configuration
@@ -17,48 +18,143 @@ The framework provides the following main API surfaces:
 
 ## 🏷️ Attributes
 
-### LoadAttribute
+### LoadFactAttribute
 
-Configures load test execution parameters.
+A load testing attribute that inherits from xUnit's `FactAttribute`, enabling load tests to be discovered and executed as standard xUnit tests.
 
 ```csharp
 namespace xUnitV3LoadFramework.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class LoadAttribute : FactAttribute
+    public class LoadFactAttribute : FactAttribute
     {
-        public LoadAttribute(int order, int concurrency, int duration, int interval);
+        public LoadFactAttribute(
+            int order = 0, 
+            int concurrency = 1, 
+            int duration = 1000, 
+            int interval = 100,
+            [CallerFilePath] string filePath = "",
+            [CallerLineNumber] int lineNumber = 0);
         
         public int Order { get; set; }
         public int Concurrency { get; set; }
         public int Duration { get; set; }
         public int Interval { get; set; }
-        public string Skip { get; set; }
+        public string FilePath { get; set; }
+        public int LineNumber { get; set; }
     }
 }
 ```
 
 **Constructor Parameters**:
-- `order` - Test execution order (Required)
-- `concurrency` - Number of concurrent users/threads (Required)
-- `duration` - Test duration in milliseconds (Required)
-- `interval` - Progress reporting interval in milliseconds (Required)
+- `order` - Test execution order (Default: 0)
+- `concurrency` - Number of concurrent executions (Default: 1)
+- `duration` - Test duration in milliseconds (Default: 1000)
+- `interval` - Progress reporting interval in milliseconds (Default: 100)
+- `filePath` - Automatically captured source file path
+- `lineNumber` - Automatically captured source line number
 
 **Properties**:
-- `Skip` - Reason for skipping the test (Optional)
+- `Skip` - Inherited from FactAttribute for skipping tests
+- `DisplayName` - Inherited from FactAttribute for custom test names
+- `Timeout` - Inherited from FactAttribute for test timeouts
 
 **Example**:
 ```csharp
-[Load(order: 1, concurrency: 100, duration: 60000, interval: 5000)]
-public void My_Load_Test()
+[LoadFact(order: 1, concurrency: 100, duration: 60000, interval: 5000)]
+public async Task My_Load_Test()
 {
-    // Test implementation
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    {
+        // Test implementation
+        return true;
+    });
+    
+    Assert.True(result.Success > 0);
 }
 
-[Load(order: 2, concurrency: 50, duration: 30000, interval: 1000, Skip = "Under maintenance")]
-public void Skipped_Load_Test()
+[LoadFact(order: 2, concurrency: 50, duration: 30000, interval: 1000, Skip = "Under maintenance")]
+public async Task Skipped_Load_Test()
 {
-    // This test will be skipped
+    // This test will be skipped by xUnit
+    await LoadTestHelper.ExecuteLoadTestAsync(async () => true);
+}
+```
+
+---
+
+## 🔧 Helper Classes
+
+### LoadTestHelper
+
+Provides methods for executing load tests within xUnit test methods.
+
+```csharp
+namespace xUnitV3LoadFramework.Extensions
+{
+    public static class LoadTestHelper
+    {
+        // Execute with automatic attribute detection
+        public static Task<LoadTestResult> ExecuteLoadTestAsync<T>(
+            Func<Task<T>> testAction,
+            [CallerFilePath] string filePath = "",
+            [CallerLineNumber] int lineNumber = 0);
+
+        // Execute with explicit configuration
+        public static Task<LoadTestResult> ExecuteLoadTestAsync<T>(
+            Func<Task<T>> testAction,
+            int concurrency,
+            TimeSpan duration,
+            TimeSpan interval,
+            [CallerFilePath] string filePath = "",
+            [CallerLineNumber] int lineNumber = 0);
+
+        // Execute with LoadFactAttribute configuration
+        public static Task<LoadTestResult> ExecuteLoadTestAsync<T>(
+            Func<Task<T>> testAction,
+            LoadFactAttribute loadAttribute);
+    }
+}
+```
+
+**Methods**:
+- `ExecuteLoadTestAsync<T>(Func<Task<T>>)` - Automatically detects LoadFact attribute configuration
+- `ExecuteLoadTestAsync<T>(Func<Task<T>>, int, TimeSpan, TimeSpan)` - Uses explicit configuration parameters
+- `ExecuteLoadTestAsync<T>(Func<Task<T>>, LoadFactAttribute)` - Uses provided attribute configuration
+
+**Return Type**: `LoadTestResult` containing execution statistics
+
+**Example**:
+```csharp
+[LoadFact(concurrency: 10, duration: 5000)]
+public async Task Should_Handle_Concurrent_Requests()
+{
+    // Automatic configuration from attribute
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    {
+        var response = await httpClient.GetAsync("https://api.example.com");
+        return response.IsSuccessStatusCode;
+    });
+    
+    Assert.True(result.Success > 0);
+    Assert.True(result.Total >= result.Success);
+}
+
+// Custom configuration override
+[LoadFact(concurrency: 5, duration: 2000)]
+public async Task Should_Handle_Custom_Configuration()
+{
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(
+        testAction: async () => {
+            // Test logic
+            return true;
+        },
+        concurrency: 20,  // Override attribute
+        duration: TimeSpan.FromSeconds(10),
+        interval: TimeSpan.FromMilliseconds(500)
+    );
+    
+    Assert.True(result.Success > 0);
 }
 ```
 
@@ -66,25 +162,63 @@ public void Skipped_Load_Test()
 
 ## 🏗️ Base Classes
 
+### TestSetup
+
+Optional base class providing dependency injection and test context for load tests.
+
+```csharp
+namespace xUnitV3LoadFramework
+{
+    public abstract class TestSetup : IDisposable
+    {
+        protected IServiceProvider ServiceProvider { get; }
+        protected TestContext TestContext { get; }
+        
+        protected T GetService<T>() where T : class;
+        protected T GetRequiredService<T>();
+        
+        public virtual void Dispose();
+    }
+}
+```
+
+**Properties**:
+- `ServiceProvider` - Access to dependency injection container
+- `TestContext` - Current test execution context
+
+**Methods**:
+- `GetService<T>()` - Retrieve optional service from DI container
+- `GetRequiredService<T>()` - Retrieve required service from DI container
+
 ### Standard xUnit Patterns
 
 The framework supports standard xUnit patterns for test organization and lifecycle management.
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
+using xUnitV3LoadFramework.Extensions;
 using Xunit;
 
 namespace YourTests
 {
-    public class ApiLoadTests : IDisposable
+    // Simple class - no special inheritance needed
+    public class SimpleLoadTests
     {
-        private readonly HttpClient _httpClient;
-        
-        public ApiLoadTests()
+        [LoadFact(concurrency: 5, duration: 2000)]
+        public async Task Should_Handle_Basic_Load()
         {
-            // Constructor - setup executed once per test class
-            _httpClient = new HttpClient();
+            var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+            {
+                // Test logic
+                return true;
+            });
+            
+            Assert.True(result.Success > 0);
         }
+    }
+    
+    // With dependency injection via TestSetup
+    public class ApiLoadTests : TestSetup
         
         public void Dispose()
         {
@@ -115,7 +249,7 @@ namespace YourTests
 - **Constructor** - Setup executed once before test class instantiation
 - **IDisposable.Dispose()** - Cleanup executed once after all tests in class complete
 - **[Fact] methods** - Standard xUnit functional tests
-- **[Load] methods** - Load tests executed with specified concurrency and duration
+- **[LoadFact] methods** - Load tests executed with LoadTestHelper and specified concurrency/duration
 
 ---
 

@@ -1,114 +1,104 @@
-# Migration Guide: From Specification to Standard xUnit Patterns
+# Migration Guide: To LoadFact Attribute Approach
 
 ## Overview
 
-The `Specification` base class has been removed from the xUnitV3LoadFramework to simplify the framework and make it more compatible with standard xUnit patterns. This change enables you to use standard xUnit constructor and `IDisposable` patterns while still getting the benefits of load testing.
+The xUnitV3LoadFramework has evolved to use a simpler `LoadFactAttribute` approach that provides full compatibility with standard xUnit v3 while maintaining powerful load testing capabilities. This change eliminates the need for custom test frameworks and makes the framework much easier to use.
 
 ## What Changed
 
 ### Removed
+- Custom `LoadTestFramework` implementation
 - `Specification` abstract base class
-- `EstablishContext()` method
-- `Because()` method  
-- `DestroyContext()` method
-- `OnStart()` and `OnFinish()` internal methods
+- Complex framework configuration requirements
+- `[Load]` attribute (replaced with `[LoadFact]`)
 
-### Now Use Standard xUnit Patterns
-- **Constructor** for setup (replaces `EstablishContext()`)
-- **IDisposable.Dispose()** for cleanup (replaces `DestroyContext()`)
-- **Test method content** for test logic (replaces `Because()`)
-- **[Fact] and [Theory]** alongside [Load] in the same class
+### New Approach: LoadFact + LoadTestHelper
+- **`[LoadFact]` attribute** that inherits from xUnit's `[Fact]` 
+- **`LoadTestHelper.ExecuteLoadTestAsync()`** for running load tests
+- **Standard xUnit v3 compatibility** with no custom framework needed
+- **Mixed testing** - combine `[Fact]`, `[Theory]`, and `[LoadFact]` in same class
 
 ## Migration Steps
 
-### Before (with Specification)
+### Before (Old Load Attribute)
 ```csharp
-public class MyLoadTests : Specification
+[assembly: TestFramework(typeof(LoadTestFramework))]
+
+public class MyLoadTests : IDisposable
 {
     private HttpClient _httpClient;
     
-    protected override void EstablishContext()
+    public MyLoadTests()
     {
         _httpClient = new HttpClient();
-        Console.WriteLine("Setup completed");
     }
     
-    protected override void Because()
-    {
-        // This was called for each iteration
-        Console.WriteLine("Action executed");
-    }
-    
-    protected override void DestroyContext()
+    public void Dispose()
     {
         _httpClient?.Dispose();
-        Console.WriteLine("Cleanup completed");
     }
     
     [Load(order: 1, concurrency: 5, duration: 3000, interval: 500)]
     public void Should_Handle_Load()
     {
-        // Test specific logic here
+        var response = _httpClient.GetAsync("https://httpbin.org/get").Result;
+        Assert.True(response.IsSuccessStatusCode);
     }
 }
 ```
 
-### After (Standard xUnit)
+```
+
+### After (LoadFact Approach)
 ```csharp
-public class MyLoadTests : IDisposable
+// No assembly configuration needed - uses standard xUnit v3
+
+public class MyLoadTests : TestSetup // Optional for dependency injection
 {
-    private readonly HttpClient _httpClient;
-    
-    public MyLoadTests()
-    {
-        // Setup - replaces EstablishContext()
-        _httpClient = new HttpClient();
-        Console.WriteLine("Setup completed");
-    }
-    
-    public void Dispose()
-    {
-        // Cleanup - replaces DestroyContext()
-        _httpClient?.Dispose();
-        Console.WriteLine("Cleanup completed");
-    }
-    
     [Fact]
     public async Task Should_Connect_Successfully()
     {
         // Standard xUnit test
-        var response = await _httpClient.GetAsync("https://httpbin.org/get");
+        var httpClient = GetService<IHttpClientFactory>().CreateClient();
+        var response = await httpClient.GetAsync("https://httpbin.org/get");
         Assert.True(response.IsSuccessStatusCode);
     }
     
-    [Load(order: 1, concurrency: 5, duration: 3000, interval: 500)]
+    [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 500)]
     public async Task Should_Handle_Load()
     {
-        // Load test logic - includes what was in Because() 
-        var response = await _httpClient.GetAsync("https://httpbin.org/get");
-        Assert.True(response.IsSuccessStatusCode);
-        Console.WriteLine("Load test iteration completed");
+        // Load test using LoadTestHelper
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            var httpClient = GetService<IHttpClientFactory>().CreateClient();
+            var response = await httpClient.GetAsync("https://httpbin.org/get", TestContext.Current.CancellationToken);
+            response.EnsureSuccessStatusCode();
+            return true;
+        });
+        
+        Assert.True(result.Success > 0, "Load test should have successful executions");
     }
 }
 ```
 
-## Benefits of the Change
+## Benefits of the New Approach
 
-1. **Standard xUnit Compatibility**: Full compatibility with standard xUnit patterns
-2. **Mixed Testing**: Can use [Fact], [Theory], and [Load] in the same class
-3. **Simplified Learning**: No custom base class to learn
-4. **Better Tooling Support**: Standard patterns work with all xUnit tooling
-5. **Cleaner Code**: Less abstraction, more explicit test logic
+1. **Standard xUnit Compatibility**: Uses standard xUnit v3 test discovery and execution
+2. **No Custom Framework**: Eliminates complex framework configuration 
+3. **Mixed Testing**: Combine `[Fact]`, `[Theory]`, and `[LoadFact]` in same class
+4. **Better Tooling Support**: Works with all standard xUnit tooling and runners
+5. **Simplified Setup**: No assembly attributes or framework configuration needed
+6. **Async Support**: Full async/await support in load tests
 
 ## Key Differences
 
-| Aspect | Old (Specification) | New (Standard xUnit) |
-|--------|-------------------|---------------------|
-| Base Class | `Specification` | None (or `IDisposable`) |
-| Setup | `EstablishContext()` | Constructor |
-| Action | `Because()` | Test method content |
-| Cleanup | `DestroyContext()` | `Dispose()` |
-| Test Types | Load tests only | [Fact], [Theory], [Load] |
+| Aspect | Old (Load + Framework) | New (LoadFact + Helper) |
+|--------|----------------------|------------------------|
+| Attribute | `[Load]` | `[LoadFact]` |
+| Base Class | Any class | Optional `TestSetup` for DI |
+| Framework Config | `[assembly: TestFramework]` | None needed |
+| Test Method | Sync methods | Async methods with LoadTestHelper |
+| Execution | Custom framework | Standard xUnit + load helper |
 
 ## Examples
 
@@ -116,103 +106,129 @@ public class MyLoadTests : IDisposable
 ```csharp
 public class SimpleLoadTest
 {
-    [Load(order: 1, concurrency: 10, duration: 5000, interval: 1000)]
-    public void Should_Handle_Simple_Load()
+    [LoadFact(order: 1, concurrency: 10, duration: 5000, interval: 1000)]
+    public async Task Should_Handle_Simple_Load()
     {
-        // Your load test logic here
-        Thread.Sleep(100); // Simulate work
-        Console.WriteLine($"Executed at {DateTime.Now:HH:mm:ss.fff}");
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            // Your load test logic here
+            await Task.Delay(100); // Simulate work
+            Console.WriteLine($"Executed at {DateTime.Now:HH:mm:ss.fff}");
+            return true;
+        });
+        
+        Assert.True(result.Success > 0);
     }
 }
 ```
 
 ### Mixed Test Class
 ```csharp
-public class MixedTests : IDisposable
+public class MixedTests : TestSetup
 {
-    private readonly HttpClient _client;
-    
-    public MixedTests()
-    {
-        _client = new HttpClient();
-    }
-    
-    public void Dispose()
-    {
-        _client?.Dispose();
-    }
-    
     [Fact]
     public async Task Should_Connect_To_API()
     {
-        var response = await _client.GetAsync("https://api.example.com/health");
+        var client = GetService<IHttpClientFactory>().CreateClient();
+        var response = await client.GetAsync("https://api.example.com/health");
         Assert.True(response.IsSuccessStatusCode);
     }
     
-    [Load(order: 1, concurrency: 50, duration: 30000, interval: 2000)]
+    [LoadFact(order: 1, concurrency: 50, duration: 30000, interval: 2000)]
     public async Task Should_Handle_API_Load()
     {
-        var response = await _client.GetAsync("https://api.example.com/data");
-        Assert.True(response.IsSuccessStatusCode);
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            var client = GetService<IHttpClientFactory>().CreateClient();
+            var response = await client.GetAsync("https://api.example.com/data", TestContext.Current.CancellationToken);
+            response.EnsureSuccessStatusCode();
+            return true;
+        });
+        
+        Assert.True(result.Success > 0);
     }
 }
 ```
 
 ### Database Load Test
 ```csharp
-public class DatabaseLoadTest : IDisposable
+public class DatabaseLoadTest : TestSetup
 {
-    private readonly DbContext _context;
-    
-    public DatabaseLoadTest()
+    [LoadFact(order: 1, concurrency: 20, duration: 10000, interval: 500)]
+    public async Task Should_Handle_Database_Operations()
     {
-        var options = new DbContextOptionsBuilder<MyDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        _context = new MyDbContext(options);
-        _context.Database.EnsureCreated();
-    }
-    
-    public void Dispose()
-    {
-        _context?.Dispose();
-    }
-    
-    [Load(order: 1, concurrency: 20, duration: 10000, interval: 500)]
-    public void Should_Handle_Database_Operations()
-    {
-        var user = new User { Name = $"User_{Guid.NewGuid()}" };
-        _context.Users.Add(user);
-        _context.SaveChanges();
+        var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+        {
+            var context = GetService<MyDbContext>();
+            var user = new User { Name = $"User_{Guid.NewGuid()}" };
+            context.Users.Add(user);
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+            
+            var count = await context.Users.CountAsync(TestContext.Current.CancellationToken);
+            return count > 0;
+        });
         
-        var count = _context.Users.Count();
-        Assert.True(count > 0);
+        Assert.True(result.Success > 0);
+        Assert.True(result.Total > 0);
     }
 }
 ```
 
 ## Troubleshooting
 
-### Common Issues
+### Common Migration Issues
 
-1. **Compilation Errors**: Remove `using xUnitV3LoadFramework.Extensions;` and inheritance from `Specification`
-2. **Missing Setup**: Move `EstablishContext()` logic to constructor
-3. **Missing Cleanup**: Move `DestroyContext()` logic to `Dispose()` method
-4. **Test Logic**: Move `Because()` logic directly into test methods
+1. **Remove Assembly Configuration**: Delete `[assembly: TestFramework]` declarations
+2. **Update Attributes**: Change `[Load]` to `[LoadFact]` 
+3. **Add LoadTestHelper**: Wrap test logic in `LoadTestHelper.ExecuteLoadTestAsync()`
+4. **Make Methods Async**: LoadFact methods should return `Task` and use async/await
+5. **Use TestSetup**: Inherit from `TestSetup` for dependency injection support
 
-### Framework Configuration
-
-Make sure your `GlobalUsings.cs` or test assembly still has:
+### Updated GlobalUsings.cs
 ```csharp
-[assembly: TestFramework(typeof(LoadTestFramework))]
+global using Xunit;
+global using xUnitV3LoadFramework.Attributes;
+global using xUnitV3LoadFramework.Extensions;
+
+// No TestFramework assembly attribute needed
 ```
 
-This ensures load tests run with the Load Testing Framework while standard tests use regular xUnit.
+### Before/After Comparison
+
+**Before:**
+```csharp
+[assembly: TestFramework(typeof(LoadTestFramework))]
+
+[Load(concurrency: 5, duration: 2000)]
+public void MyLoadTest()
+{
+    // Sync test logic
+}
+```
+
+**After:**
+```csharp
+// No assembly attribute needed
+
+[LoadFact(concurrency: 5, duration: 2000)]
+public async Task MyLoadTest()
+{
+    var result = await LoadTestHelper.ExecuteLoadTestAsync(async () =>
+    {
+        // Async test logic
+        return true;
+    });
+    
+    Assert.True(result.Success > 0);
+}
+```
 
 ## Need Help?
 
 If you encounter issues during migration:
-1. Check the examples in this guide
-2. Review the updated documentation
-3. Look at the example test files in the project
-4. Open an issue on GitHub if you need assistance
+1. Check that you've removed all `[assembly: TestFramework]` declarations
+2. Ensure all `[Load]` attributes are changed to `[LoadFact]`
+3. Verify test methods use `LoadTestHelper.ExecuteLoadTestAsync()`
+4. Make sure test methods are async and return `Task`
+5. Review the examples in this guide
+6. Look at the working test files like `WebTests.cs` in the project
