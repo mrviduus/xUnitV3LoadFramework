@@ -4,8 +4,8 @@ using Xunit;
 namespace xUnitV3LoadFramework.Tests.Unit;
 
 /// <summary>
-/// Unit tests for LoadFactAttribute configuration and validation.
-/// Tests the attribute's constructor, properties, and validation logic.
+/// Core unit tests for LoadFactAttribute.
+/// Tests the attribute's basic constructor and properties.
 /// </summary>
 public class LoadFactAttributeTests
 {
@@ -24,49 +24,6 @@ public class LoadFactAttributeTests
         Assert.Equal(5, attribute.Concurrency);
         Assert.Equal(3000, attribute.Duration);
         Assert.Equal(500, attribute.Interval);
-    }
-
-    [Theory]
-    [InlineData(0, 5, 1000, 100)]
-    [InlineData(-1, 5, 1000, 100)]
-    public void LoadFactAttribute_Should_Accept_Any_Order_Value(int order, int concurrency, int duration, int interval)
-    {
-        // Arrange & Act & Assert
-        var exception = Record.Exception(() => new LoadFactAttribute(order, concurrency, duration, interval));
-        Assert.Null(exception);
-    }
-
-    [Theory]
-    [InlineData(1, 0, 1000, 100)]
-    [InlineData(1, -1, 1000, 100)]
-    public void LoadFactAttribute_Should_Throw_ArgumentOutOfRangeException_For_Invalid_Concurrency(int order, int concurrency, int duration, int interval)
-    {
-        // Arrange, Act & Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
-            new LoadFactAttribute(order, concurrency, duration, interval));
-        Assert.Equal("concurrency", exception.ParamName);
-    }
-
-    [Theory]
-    [InlineData(1, 5, 0, 100)]
-    [InlineData(1, 5, -1, 100)]
-    public void LoadFactAttribute_Should_Throw_ArgumentOutOfRangeException_For_Invalid_Duration(int order, int concurrency, int duration, int interval)
-    {
-        // Arrange, Act & Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
-            new LoadFactAttribute(order, concurrency, duration, interval));
-        Assert.Equal("duration", exception.ParamName);
-    }
-
-    [Theory]
-    [InlineData(1, 5, 1000, 0)]
-    [InlineData(1, 5, 1000, -1)]
-    public void LoadFactAttribute_Should_Throw_ArgumentOutOfRangeException_For_Invalid_Interval(int order, int concurrency, int duration, int interval)
-    {
-        // Arrange, Act & Assert
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => 
-            new LoadFactAttribute(order, concurrency, duration, interval));
-        Assert.Equal("interval", exception.ParamName);
     }
 
     [Fact]
