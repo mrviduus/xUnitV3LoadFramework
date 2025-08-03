@@ -40,7 +40,7 @@ public class LoadTestRunnerDemonstration : IDisposable
         Assert.True(result.Success > 0, "Should have successful executions");
         Assert.True(result.RequestsPerSecond > 0, "Should achieve measurable throughput");
         
-        Console.WriteLine($"✅ Traditional LoadTest completed: {result.Success}/{result.Total} success, {result.RequestsPerSecond:F2} req/sec");
+        Console.WriteLine($" Traditional LoadTest completed: {result.Success}/{result.Total} success, {result.RequestsPerSecond:F2} req/sec");
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public class LoadTestRunnerDemonstration : IDisposable
         });
 
         Assert.True(result.Success > 0, "Should have successful executions");
-        Console.WriteLine($"✅ Simplified LoadTest completed: {result.Success}/{result.Total} success");
+        Console.WriteLine($" Simplified LoadTest completed: {result.Success}/{result.Total} success");
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class LoadTestRunnerDemonstration : IDisposable
 
         Assert.True(result.Success > 0, "Fluent API test should succeed");
         Assert.Equal("FluentAPI_Basic_Test", result.Name);
-        Console.WriteLine($"✅ Fluent API Test '{result.Name}' completed: {result.RequestsPerSecond:F2} req/sec");
+        Console.WriteLine($" Fluent API Test '{result.Name}' completed: {result.RequestsPerSecond:F2} req/sec");
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public class LoadTestRunnerDemonstration : IDisposable
 
         Assert.True(result.Success > 0, "Should have successful executions");
         Assert.True(result.Success >= result.Total * 0.8, "Should have high success rate");
-        Console.WriteLine($"✅ Explicit Success Test completed: {result.Success}/{result.Total} success ({(double)result.Success / result.Total * 100:F1}% success rate)");
+        Console.WriteLine($" Explicit Success Test completed: {result.Success}/{result.Total} success ({(double)result.Success / result.Total * 100:F1}% success rate)");
     }
 
     /// <summary>
@@ -147,7 +147,7 @@ public class LoadTestRunnerDemonstration : IDisposable
         };
 
         Assert.True(result.Success > 0, $"{loadLevel} load should have successful executions");
-        Console.WriteLine($"✅ {loadLevel} Load Test: {result.RequestsPerSecond:F2} req/sec (expected min: {expectedMinRps})");
+        Console.WriteLine($" {loadLevel} Load Test: {result.RequestsPerSecond:F2} req/sec (expected min: {expectedMinRps})");
     }
 
     /// <summary>
@@ -177,6 +177,6 @@ public class LoadTestRunnerDemonstration : IDisposable
         // Should have some failures but also some successes
         Assert.True(result.Total > 0, "Should have total executions");
         Assert.True(result.Failure > 0, "Should have some failures due to simulated errors");
-        Console.WriteLine($"✅ Error Handling Test: {result.Success} success, {result.Failure} failures out of {result.Total} total");
+        Console.WriteLine($" Error Handling Test: {result.Success} success, {result.Failure} failures out of {result.Total} total");
     }
 }

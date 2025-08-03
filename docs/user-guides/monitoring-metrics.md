@@ -24,7 +24,7 @@ public class MetricsCollectionTests : Specification
 
 Comprehensive guide to monitoring, metrics collection, and analysis in xUnitV3LoadFramework.
 
-## 📊 Built-in Metrics
+## Built-in Metrics
 
 ### Core Performance Metrics
 
@@ -170,9 +170,9 @@ public class SystemMonitoredLoadTests : Specification, IDisposable
         
         // Alert on resource constraints
         if (cpuUsage > 90)
-            Console.WriteLine("  ⚠️  HIGH CPU USAGE DETECTED");
+            Console.WriteLine("  WARNING: HIGH CPU USAGE DETECTED");
         if (availableMemoryMB < 1000)
-            Console.WriteLine("  ⚠️  LOW MEMORY DETECTED");
+            Console.WriteLine("  WARNING: LOW MEMORY DETECTED");
     }
     
     [Load(concurrency: 200, duration: 300000, interval: 15000)]
@@ -203,7 +203,7 @@ public class SystemMonitoredLoadTests : Specification, IDisposable
 }
 ```
 
-## 📈 Custom Metrics Collection
+##  Custom Metrics Collection
 
 ### Application-Specific Metrics
 
@@ -295,11 +295,11 @@ public class CustomMetricsLoadTest : Specification
     
     private void GenerateCustomMetricsReport()
     {
-        Console.WriteLine("\n📊 CUSTOM METRICS REPORT");
+        Console.WriteLine("\n CUSTOM METRICS REPORT");
         Console.WriteLine("=" + new string('=', 50));
         
         // Summary counters
-        Console.WriteLine("\n📈 Operation Counters:");
+        Console.WriteLine("\n Operation Counters:");
         foreach (var counter in _customCounters.OrderBy(c => c.Key))
         {
             Console.WriteLine($"  {counter.Key}: {counter.Value.Value:N0}");
@@ -309,7 +309,7 @@ public class CustomMetricsLoadTest : Specification
         var successMetrics = _customMetrics.Where(m => m.IsSuccess).ToList();
         var failureMetrics = _customMetrics.Where(m => !m.IsSuccess).ToList();
         
-        Console.WriteLine($"\n⏱️  Response Time Analysis:");
+        Console.WriteLine($"\n  Response Time Analysis:");
         if (successMetrics.Any())
         {
             var durations = successMetrics.Select(m => m.Duration).OrderBy(d => d).ToArray();
@@ -324,7 +324,7 @@ public class CustomMetricsLoadTest : Specification
         // Error analysis
         if (failureMetrics.Any())
         {
-            Console.WriteLine($"\n❌ Error Analysis:");
+            Console.WriteLine($"\n Error Analysis:");
             var errorsByType = failureMetrics
                 .GroupBy(m => m.Properties.GetValueOrDefault("ErrorType", "Unknown"))
                 .OrderByDescending(g => g.Count());
@@ -383,7 +383,7 @@ public class BaselineTrackingTests : Specification
     
     protected override void EstablishContext()
     {
-        Console.WriteLine("🎯 Running baseline tracking load test");
+        Console.WriteLine(" Running baseline tracking load test");
     }
     
     protected override void DestroyContext()
@@ -432,7 +432,7 @@ public class BaselineTrackingTests : Specification
         var updatedJson = JsonSerializer.Serialize(baselines, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(_baselineFile, updatedJson);
         
-        Console.WriteLine($"💾 Baseline saved: {metric.TestDate:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($" Baseline saved: {metric.TestDate:yyyy-MM-dd HH:mm:ss}");
     }
     
     private void CompareWithPreviousBaselines(BaselineMetric current)
@@ -451,7 +451,7 @@ public class BaselineTrackingTests : Specification
         
         if (previous == null) return;
         
-        Console.WriteLine("\n📊 BASELINE COMPARISON");
+        Console.WriteLine("\n BASELINE COMPARISON");
         Console.WriteLine("=" + new string('=', 40));
         
         CompareMetric("Average Latency", current.AverageLatency, previous.AverageLatency, "ms", false);
@@ -470,8 +470,8 @@ public class BaselineTrackingTests : Specification
         var isImprovement = higherIsBetter ? change > 0 : change < 0;
         var isRegression = higherIsBetter ? change < 0 : change > 0;
         
-        var symbol = isImprovement ? "✅" : isRegression ? "⚠️" : "➖";
-        var direction = change > 0 ? "▲" : change < 0 ? "▼" : "=";
+        var symbol = isImprovement ? "" : isRegression ? "" : "";
+        var direction = change > 0 ? "" : change < 0 ? "" : "=";
         
         Console.WriteLine($"{symbol} {name}: {current:F2}{unit} {direction} {changePercent:F1}% from {previous:F2}{unit}");
         
@@ -518,7 +518,7 @@ public class BaselineTrackingTests : Specification
 }
 ```
 
-## 📊 Metrics Analysis and Visualization
+##  Metrics Analysis and Visualization
 
 ### Statistical Analysis
 
@@ -584,26 +584,26 @@ public class StatisticalAnalysisTests : Specification
         var standardDeviation = Math.Sqrt(variance);
         var coefficientOfVariation = standardDeviation / mean;
         
-        Console.WriteLine("\n📊 STATISTICAL ANALYSIS");
+        Console.WriteLine("\n STATISTICAL ANALYSIS");
         Console.WriteLine("=" + new string('=', 50));
         Console.WriteLine($"Sample Size: {count:N0} requests");
         Console.WriteLine();
         
-        Console.WriteLine("📈 Response Time Distribution:");
+        Console.WriteLine(" Response Time Distribution:");
         Console.WriteLine($"  Minimum:  {min:F2}ms");
         Console.WriteLine($"  Maximum:  {max:F2}ms");
         Console.WriteLine($"  Mean:     {mean:F2}ms");
         Console.WriteLine($"  Median:   {median:F2}ms");
         Console.WriteLine();
         
-        Console.WriteLine("📊 Percentiles:");
+        Console.WriteLine(" Percentiles:");
         Console.WriteLine($"  P90:      {p90:F2}ms");
         Console.WriteLine($"  P95:      {p95:F2}ms");
         Console.WriteLine($"  P99:      {p99:F2}ms");
         Console.WriteLine($"  P99.9:    {p999:F2}ms");
         Console.WriteLine();
         
-        Console.WriteLine("📏 Variability:");
+        Console.WriteLine(" Variability:");
         Console.WriteLine($"  Std Dev:  {standardDeviation:F2}ms");
         Console.WriteLine($"  CV:       {coefficientOfVariation:F3} ({coefficientOfVariation:P1})");
         Console.WriteLine();
@@ -630,43 +630,43 @@ public class StatisticalAnalysisTests : Specification
     
     private void AssessPerformanceCharacteristics(double mean, double p95, double cv)
     {
-        Console.WriteLine("🎯 Performance Assessment:");
+        Console.WriteLine(" Performance Assessment:");
         
         // Response time assessment
         if (mean < 100)
-            Console.WriteLine("  ✅ Excellent response times (< 100ms average)");
+            Console.WriteLine("   Excellent response times (< 100ms average)");
         else if (mean < 500)
-            Console.WriteLine("  ✅ Good response times (< 500ms average)");
+            Console.WriteLine("   Good response times (< 500ms average)");
         else if (mean < 1000)
-            Console.WriteLine("  ⚠️  Acceptable response times (< 1s average)");
+            Console.WriteLine("    Acceptable response times (< 1s average)");
         else
-            Console.WriteLine("  ❌ Poor response times (> 1s average)");
+            Console.WriteLine("   Poor response times (> 1s average)");
         
         // Consistency assessment
         if (cv < 0.3)
-            Console.WriteLine("  ✅ Very consistent performance (CV < 0.3)");
+            Console.WriteLine("   Very consistent performance (CV < 0.3)");
         else if (cv < 0.6)
-            Console.WriteLine("  ✅ Good consistency (CV < 0.6)");
+            Console.WriteLine("   Good consistency (CV < 0.6)");
         else if (cv < 1.0)
-            Console.WriteLine("  ⚠️  Moderate variability (CV < 1.0)");
+            Console.WriteLine("    Moderate variability (CV < 1.0)");
         else
-            Console.WriteLine("  ❌ High variability (CV > 1.0)");
+            Console.WriteLine("   High variability (CV > 1.0)");
         
         // P95 vs mean ratio
         var p95Ratio = p95 / mean;
         if (p95Ratio < 2.0)
-            Console.WriteLine("  ✅ Low tail latency (P95/mean < 2.0)");
+            Console.WriteLine("   Low tail latency (P95/mean < 2.0)");
         else if (p95Ratio < 3.0)
-            Console.WriteLine("  ⚠️  Moderate tail latency (P95/mean < 3.0)");
+            Console.WriteLine("    Moderate tail latency (P95/mean < 3.0)");
         else
-            Console.WriteLine("  ❌ High tail latency (P95/mean > 3.0)");
+            Console.WriteLine("   High tail latency (P95/mean > 3.0)");
     }
     
     private void AnalyzeThroughputPattern()
     {
         if (_requestTimestamps.Count < 10) return;
         
-        Console.WriteLine("🚀 Throughput Analysis:");
+        Console.WriteLine(" Throughput Analysis:");
         
         // Calculate throughput in 5-second windows
         var testStart = _requestTimestamps.Min();
@@ -700,11 +700,11 @@ public class StatisticalAnalysisTests : Specification
             Console.WriteLine($"  Throughput CV:      {throughputCV:F3}");
             
             if (throughputCV < 0.1)
-                Console.WriteLine("  ✅ Very stable throughput");
+                Console.WriteLine("   Very stable throughput");
             else if (throughputCV < 0.2)
-                Console.WriteLine("  ✅ Stable throughput");
+                Console.WriteLine("   Stable throughput");
             else
-                Console.WriteLine("  ⚠️  Variable throughput - investigate bottlenecks");
+                Console.WriteLine("    Variable throughput - investigate bottlenecks");
         }
     }
     
@@ -812,7 +812,7 @@ public class ThresholdMonitoringTests : Specification
         var testDurationSeconds = 180; // From Load attribute
         var throughput = _totalCount / (double)testDurationSeconds;
         
-        Console.WriteLine("\n🎯 PERFORMANCE THRESHOLD VALIDATION");
+        Console.WriteLine("\n PERFORMANCE THRESHOLD VALIDATION");
         Console.WriteLine("=" + new string('=', 50));
         
         ValidateThreshold("Average Latency", avgLatency, _thresholds.MaxAverageLatency, "ms", false);
@@ -826,11 +826,11 @@ public class ThresholdMonitoringTests : Specification
         
         if (violations == 0)
         {
-            Console.WriteLine("\n✅ ALL PERFORMANCE THRESHOLDS PASSED");
+            Console.WriteLine("\n ALL PERFORMANCE THRESHOLDS PASSED");
         }
         else
         {
-            Console.WriteLine($"\n❌ {violations} PERFORMANCE THRESHOLD(S) VIOLATED");
+            Console.WriteLine($"\n {violations} PERFORMANCE THRESHOLD(S) VIOLATED");
             Console.WriteLine("Consider investigating performance issues or adjusting thresholds.");
         }
     }
@@ -838,7 +838,7 @@ public class ThresholdMonitoringTests : Specification
     private void ValidateThreshold(string metric, double actual, double threshold, string unit, bool higherIsBetter)
     {
         var passed = higherIsBetter ? actual >= threshold : actual <= threshold;
-        var symbol = passed ? "✅" : "❌";
+        var symbol = passed ? "" : "";
         var comparison = higherIsBetter ? "≥" : "≤";
         
         Console.WriteLine($"{symbol} {metric}: {actual:F2}{unit} (threshold: {comparison} {threshold:F2}{unit})");

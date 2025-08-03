@@ -13,7 +13,7 @@ The `[Load]` attribute is the heart of xUnitV3LoadFramework, defining how your l
 )]
 ```
 
-## 🎯 Core Parameters
+##  Core Parameters
 
 ### Order
 
@@ -105,7 +105,7 @@ public void Low_Concurrency_Test() { }
 - **Long Tests**: Use longer intervals (10-60 seconds) to reduce noise
 - **CI/CD**: Use appropriate intervals to avoid overwhelming logs
 
-## 🚀 Optional Parameters
+##  Optional Parameters
 
 ### Skip
 
@@ -125,7 +125,7 @@ public void Production_Only_Test()
 }
 ```
 
-## 🎛️ Configuration Patterns
+## Configuration Patterns
 
 ### Smoke Testing Pattern
 
@@ -187,7 +187,7 @@ public async Task Soak_Test_Memory_Leaks() { }
 public async Task Soak_Test_Extended_Stability() { }
 ```
 
-## 🎯 Environment-Specific Configuration
+##  Environment-Specific Configuration
 
 ### Development Environment
 
@@ -243,7 +243,7 @@ public class PipelineLoadTests
 }
 ```
 
-## ⚖️ Parameter Selection Guidelines
+## Parameter Selection Guidelines
 
 ### Concurrency Selection
 
@@ -284,7 +284,7 @@ var minDuration = minRequestsNeeded / expectedRPS * 1000; // milliseconds
 [Load(concurrency: 200, duration: 300000, rampUp: 120000)]
 ```
 
-## 📊 Performance Impact
+## Performance Impact
 
 ### Framework Overhead
 
@@ -312,7 +312,7 @@ The Load attribute configuration affects framework overhead:
 // ~100MB+ working set for detailed metrics
 ```
 
-## 🔧 Troubleshooting Configuration Issues
+##  Troubleshooting Configuration Issues
 
 ### Common Problems
 
@@ -359,7 +359,7 @@ services.Configure<HttpClientOptions>(options =>
 // 20s ramp up + 30s steady + 10s ramp down = 60s total
 ```
 
-## 📈 Best Practices
+##  Best Practices
 
 ### 1. Progressive Load Testing
 

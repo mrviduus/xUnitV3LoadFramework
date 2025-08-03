@@ -2,7 +2,7 @@
 
 Optimize your load tests and systems under test for maximum performance and reliability with xUnitV3LoadFramework.
 
-## 🎯 Framework Optimization
+##  Framework Optimization
 
 ### 1. Choose the Right Worker Model
 
@@ -99,7 +99,7 @@ public class OptimizedReportingTests : Specification
     private readonly HttpClient _httpClient = new HttpClient();
 }
 
-## 🚀 HTTP Client Optimization
+##  HTTP Client Optimization
 
 ### 1. Connection Pool Optimization
 
@@ -244,7 +244,7 @@ public class NetworkOptimizedTests : Specification
 }
 ```
 
-## 🗄️ Database Optimization
+##  Database Optimization
 
 ### 1. Connection Pool Configuration
 
@@ -600,7 +600,7 @@ public class GCOptimizedTests : Specification
 }
 ```
 
-## 📊 Monitoring and Profiling
+##  Monitoring and Profiling
 
 ### 1. Performance Counters
 
@@ -736,7 +736,7 @@ public class CustomMetricsTests : Specification
 }
 ```
 
-## 🎯 Best Practices Summary
+##  Best Practices Summary
 
 ### Framework-Level Optimizations
 1. **Use Hybrid Workers**: Leverage channel-based execution for consistent performance

@@ -17,7 +17,7 @@ ActorSystem (LoadTestSystem)
 │       └── ResourceMonitor
 ```
 
-## 🏗️ Core Actors
+## Core Actors
 
 ### 1. LoadWorkerActorHybrid
 
@@ -125,7 +125,7 @@ sequenceDiagram
     S->>W: RestartWorkerMessage
 ```
 
-## 🔧 Actor Configuration
+##  Actor Configuration
 
 ### Actor System Setup
 
@@ -169,7 +169,7 @@ The framework uses optimized dispatchers for different actor types:
 - **Dedicated Thread**: True
 - **Mailbox**: UnboundedPriorityMailbox
 
-## 🛡️ Fault Tolerance
+## Fault Tolerance
 
 ### Supervision Strategy
 
@@ -195,7 +195,7 @@ protected override SupervisorStrategy SupervisorStrategy() =>
 2. **Actor Failures**: Actors are restarted with preserved state where possible
 3. **System Failures**: Graceful shutdown with result preservation
 
-## 🔄 Lifecycle Management
+##  Lifecycle Management
 
 ### Actor Creation
 
@@ -227,7 +227,7 @@ public async Task StopAsync()
 }
 ```
 
-## 📊 Performance Characteristics
+## Performance Characteristics
 
 ### Message Throughput
 
@@ -247,7 +247,7 @@ public async Task StopAsync()
 - **Result Aggregation**: < 10ms for 10K results
 - **Test Coordination**: < 100ms test start/stop
 
-## 🔧 Configuration Options
+##  Configuration Options
 
 ### Worker Pool Configuration
 
@@ -277,7 +277,7 @@ public async Task StopAsync()
 }
 ```
 
-## 🎯 Best Practices
+##  Best Practices
 
 ### Message Design
 
@@ -332,7 +332,7 @@ public class LoadWorkerActorHybrid : ReceiveActor
 2. **Message Tracing**: Message flow debugging and profiling  
 3. **Performance Counters**: Real-time actor performance metrics
 
-## 🚀 Scaling Considerations
+##  Scaling Considerations
 
 ### Horizontal Scaling
 

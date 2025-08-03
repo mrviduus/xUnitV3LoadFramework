@@ -6,19 +6,19 @@ A comprehensive JSON results export system for the xUnitV3LoadFramework that aut
 
 ## Key Features
 
-### 🎯 Core Functionality
+### Core Functionality
 - **Automatic JSON Export**: Every load test automatically generates a JSON file with comprehensive results
 - **Organized File Structure**: Tests are organized in timestamped folders (`Run_yyyyMMdd_HHmmss`)
 - **Safe File Naming**: Test names are sanitized for filesystem compatibility
 - **Zero Configuration**: Works out-of-the-box with no setup required
 
-### 📊 Rich Data Export
+### Rich Data Export
 - **Complete Load Metrics**: All LoadResult data including latency percentiles, throughput, resource utilization
 - **Test Configuration**: Concurrency, duration, interval, and test metadata
 - **Environment Context**: Machine info, OS version, .NET framework, memory usage
 - **Summary Statistics**: High-level metrics with pass/fail status
 
-### 🏗️ Technical Architecture
+### Technical Architecture
 - **LoadTestResultsExporter**: Main class handling JSON serialization and file operations
 - **Enhanced LoadTestRunner**: Modified to call JSON export after each test
 - **Comprehensive Models**: Structured data models for all result components
@@ -84,21 +84,21 @@ Console.WriteLine($"Success Rate: {result.Summary.SuccessRate}%");
 
 ## Benefits Delivered
 
-1. **📈 Performance Tracking**: Historical data for trend analysis
+1. **Performance Tracking**: Historical data for trend analysis
 2. **🔍 Detailed Analysis**: Rich metrics for performance debugging  
 3. **🤖 CI/CD Integration**: Machine-readable format for automated pipelines
 4. **📝 Comprehensive Reporting**: All test context preserved
-5. **🔧 Zero Maintenance**: Automatic operation with built-in error handling
+5. ** Zero Maintenance**: Automatic operation with built-in error handling
 
 ## Verification
 
 The implementation was successfully tested:
-- ✅ JSON files generated for all test executions
-- ✅ Proper folder structure created (`Run_yyyyMMdd_HHmmss`)
-- ✅ Complete data export with all metrics
-- ✅ Safe filename generation
-- ✅ Error handling for edge cases
-- ✅ Build successful without compilation errors
+- JSON files generated for all test executions
+- Proper folder structure created (`Run_yyyyMMdd_HHmmss`)
+- Complete data export with all metrics
+- Safe filename generation
+- Error handling for edge cases
+- Build successful without compilation errors
 
 ## Sample Output
 

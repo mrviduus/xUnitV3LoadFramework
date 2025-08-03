@@ -2,7 +2,7 @@
 
 Welcome to xUnitV3LoadFramework! This guide will help you set up and run your first load tests in minutes.
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Installation
 
@@ -72,7 +72,7 @@ Throughput: 99.8 RPS
 Worker Threads: 10
 ```
 
-## 📊 Understanding Load Test Configuration
+## Understanding Load Test Configuration
 
 ### The Load Attribute
 
@@ -96,7 +96,7 @@ The `[Load]` attribute configures your test execution:
 | `duration` | Test duration (ms) | Yes | `30000` (30s) |
 | `interval` | Progress reporting interval (ms) | Yes | `1000` (1s) |
 
-## 🎯 Test Patterns
+##  Test Patterns
 
 ### 1. Simple Load Test
 
@@ -199,7 +199,7 @@ public async Task Should_Survive_Stress_Test()
 }
 ```
 
-## 🔧 Test Setup and Teardown
+##  Test Setup and Teardown
 
 ### Using Specification Base Class
 
@@ -277,7 +277,7 @@ public class CustomLoadTest : Specification
 }
 ```
 
-## 🏗️ Working with Dependency Injection
+## Working with Dependency Injection
 
 ### Setting up DI Container
 
@@ -314,7 +314,7 @@ public class DatabaseLoadTests : Specification, IDisposable
 }
 ```
 
-## 📈 Interpreting Results
+##  Interpreting Results
 
 ### Key Metrics Explained
 
@@ -375,7 +375,7 @@ private void AssertPerformanceTargets(LoadResult result)
 **Problem**: Tests failing due to connection pool exhaustion
 
 ```csharp
-// ❌ Bad - Creates new HttpClient for each iteration
+// BAD - Creates new HttpClient for each iteration
 [Load(concurrency: 100, duration: 60000)]
 public async Task BadExample()
 {
@@ -383,7 +383,7 @@ public async Task BadExample()
     await client.GetAsync("https://api.example.com/data");
 }
 
-// ✅ Good - Reuse HttpClient instances
+//  Good - Reuse HttpClient instances
 private static readonly HttpClient SharedClient = new HttpClient();
 
 [Load(concurrency: 100, duration: 60000)]
@@ -398,7 +398,7 @@ public async Task GoodExample()
 **Problem**: Database connection pool exhaustion
 
 ```csharp
-// ✅ Good - Proper connection management
+//  Good - Proper connection management
 [Load(concurrency: 50, duration: 30000)]
 public async Task Should_Handle_Database_Load()
 {
@@ -417,7 +417,7 @@ public async Task Should_Handle_Database_Load()
 **Problem**: Shared state causing race conditions
 
 ```csharp
-// ❌ Bad - Shared mutable state
+// BAD - Shared mutable state
 private int _counter = 0;
 
 [Load(concurrency: 100, duration: 10000)]
@@ -427,7 +427,7 @@ public async Task BadThreadSafety()
     await DoWorkAsync();
 }
 
-// ✅ Good - Thread-local or immutable state
+//  Good - Thread-local or immutable state
 [Load(concurrency: 100, duration: 10000)]
 public async Task GoodThreadSafety()
 {
@@ -441,14 +441,14 @@ public async Task GoodThreadSafety()
 **Problem**: Tests that don't reflect real usage
 
 ```csharp
-// ❌ Bad - All users hit same endpoint simultaneously
+// BAD - All users hit same endpoint simultaneously
 [Load(concurrency: 1000, duration: 5000)]
 public async Task UnrealisticLoad()
 {
     await _httpClient.GetAsync("/api/users/1"); // Everyone gets user 1
 }
 
-// ✅ Good - Realistic user behavior
+//  Good - Realistic user behavior
 private readonly Random _random = new Random();
 
 [Load(concurrency: 100, duration: 60000)]
@@ -462,7 +462,7 @@ public async Task RealisticLoad()
 }
 ```
 
-## 🔧 Configuration Tips
+##  Configuration Tips
 
 ### Test Environment Setup
 
@@ -508,7 +508,7 @@ public class EnvironmentSpecificTests : Specification
     ENVIRONMENT: Staging
 ```
 
-## 🎯 Next Steps
+##  Next Steps
 
 Now that you understand the basics:
 
@@ -517,7 +517,7 @@ Now that you understand the basics:
 3. **[Performance Optimization](performance-optimization.md)** - Optimize your tests and system under test
 4. **[Monitoring and Metrics](monitoring-metrics.md)** - Advanced metrics collection and analysis
 
-## 💡 Pro Tips
+## Pro Tips
 
 1. **Start Small**: Begin with low concurrency and short duration, then scale up
 2. **Monitor Resources**: Watch CPU, memory, and network during tests
@@ -525,4 +525,4 @@ Now that you understand the basics:
 4. **Test Different Scenarios**: Mix read/write operations, different user types
 5. **Automate Everything**: Include load tests in your CI/CD pipeline
 
-Happy load testing! 🚀
+Happy load testing! 

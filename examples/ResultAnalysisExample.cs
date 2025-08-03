@@ -133,7 +133,7 @@ public static class ResultAnalysisExample
     /// </summary>
     private static void DisplayTestSummary(LoadTestResult result)
     {
-        var status = result.Summary.Status == "PASSED" ? "✅" : "❌";
+        var status = result.Summary.Status == "PASSED" ? "PASS" : "FAIL";
         Console.WriteLine($"  {status} {result.TestName}");
         Console.WriteLine($"     Success Rate: {result.Summary.SuccessRate:F1}% | " +
                          $"Avg Latency: {result.Summary.AverageLatency:F2}ms | " +
@@ -292,12 +292,12 @@ class Program
         var slowTests = await ResultAnalysisExample.FindSlowTests(50.0);
         foreach (var slowTest in slowTests)
         {
-            Console.WriteLine($"  ⚠️  {slowTest}");
+            Console.WriteLine($"  WARNING: {slowTest}");
         }
         
         if (!slowTests.Any())
         {
-            Console.WriteLine("  ✅ No slow tests found!");
+            Console.WriteLine("  No slow tests found!");
         }
         
         Console.WriteLine();

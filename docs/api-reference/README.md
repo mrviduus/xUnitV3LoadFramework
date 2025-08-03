@@ -16,7 +16,7 @@ The framework provides the following main API surfaces:
 
 ---
 
-## 🏷️ Attributes
+## Attributes
 
 ### LoadFactAttribute
 
@@ -83,7 +83,7 @@ public async Task Skipped_Load_Test()
 
 ---
 
-## 🔧 Helper Classes
+##  Helper Classes
 
 ### LoadTestRunner
 
@@ -160,7 +160,7 @@ public async Task Should_Handle_Custom_Configuration()
 
 ---
 
-## 🏗️ Base Classes
+## Base Classes
 
 ### TestSetup
 
@@ -409,7 +409,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Messages
 
 ---
 
-## 📊 Models
+## Models
 
 ### LoadResult
 
@@ -518,7 +518,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Models
 
 ---
 
-## 🔧 Extensions
+##  Extensions
 
 ### Framework Extensions
 

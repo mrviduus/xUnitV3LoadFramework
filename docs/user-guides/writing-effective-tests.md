@@ -2,7 +2,7 @@
 
 This guide covers best practices for creating meaningful, maintainable, and reliable load tests using xUnitV3LoadFramework.
 
-## 🎯 Design Principles
+## Pro Tips
 
 ### 1. Test Realistic Scenarios
 
@@ -15,7 +15,7 @@ public class RealisticLoadTests : Specification
     private readonly HttpClient _httpClient = new HttpClient();
     private static readonly StringContent content = new StringContent("test", Encoding.UTF8, "application/json");
 
-    // ❌ Bad - Unrealistic uniform load
+    // BAD - Unrealistic uniform load
     [Load(order: 1, concurrency: 1000, duration: 60000, interval: 1000)]
     public async Task Unrealistic_Load_Test()
     {
@@ -23,7 +23,7 @@ public class RealisticLoadTests : Specification
         await _httpClient.GetAsync("/api/users/1");
     }
 
-    // ✅ Good - Realistic varied load
+    //  Good - Realistic varied load
     [Load(order: 2, concurrency: 100, duration: 60000, interval: 1000)]
     public async Task Realistic_User_Behavior()
     {
@@ -134,7 +134,7 @@ public class ErrorHandlingLoadTests : Specification
 }
 ```
 
-## 🏗️ Test Structure Patterns
+## Test Structure Patterns
 
 ### 1. Specification Pattern (Recommended)
 
@@ -274,7 +274,7 @@ public async Task Should_Handle_Complete_User_Journey()
 }
 ```
 
-## 📊 Data Management
+## Data Management
 
 ### 1. Test Data Isolation
 
@@ -368,7 +368,7 @@ public class DatabaseLoadTests : Specification, IDisposable
 }
 ```
 
-## ⚡ Performance Optimization
+## Performance Optimization
 
 ### 1. Resource Management
 
@@ -542,7 +542,7 @@ public async Task Should_Handle_Stress_With_Appropriate_Expectations()
 }
 ```
 
-## 🚀 Advanced Patterns
+##  Advanced Patterns
 
 ### 1. Multi-Phase Testing
 
@@ -675,7 +675,7 @@ Before running load tests, verify:
 - [ ] Resource utilization was reasonable
 - [ ] Database connections didn't leak
 
-## 💡 Pro Tips
+## Pro Tips
 
 1. **Start Small**: Always begin with single-user tests, then scale up
 2. **Monitor Everything**: Watch CPU, memory, connections, and application metrics

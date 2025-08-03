@@ -46,7 +46,7 @@ public class MixedTestsExample : IDisposable
 		Assert.NotNull(_httpClient);
 		Assert.True(_httpClient.BaseAddress == null); // Default base address should be null
 
-		Console.WriteLine("✓ Functional test: HttpClient initialized correctly");
+		Console.WriteLine("Functional test: HttpClient initialized correctly");
 	}
 
 	// Another standard xUnit test using Theory
@@ -61,7 +61,7 @@ public class MixedTestsExample : IDisposable
 		// Assert
 		Assert.True(response.IsSuccessStatusCode, $"Failed to get response from {url}");
 
-		Console.WriteLine($"✓ Functional test: Successfully called {url}");
+		Console.WriteLine($"Functional test: Successfully called {url}");
 	}
 
 	// Load test - executes multiple times concurrently using LoadFact
@@ -76,11 +76,11 @@ public class MixedTestsExample : IDisposable
 			
 			if (!response.IsSuccessStatusCode)
 			{
-				Console.WriteLine($"❌ HTTP request failed with status: {response.StatusCode}");
+				Console.WriteLine($"HTTP request failed with status: {response.StatusCode}");
 				return false;
 			}
 
-			Console.WriteLine($"✓ Load test: HTTP request completed at {DateTime.Now:HH:mm:ss.fff}");
+			Console.WriteLine($"Load test: HTTP request completed at {DateTime.Now:HH:mm:ss.fff}");
 			return true;
 		});
 
@@ -88,7 +88,7 @@ public class MixedTestsExample : IDisposable
 		Assert.True(result.Success > 0, $"Load test should have at least some successful executions. Success: {result.Success}, Failure: {result.Failure}");
 		Assert.True(result.Success > result.Failure, $"Load test should have more successes than failures. Success: {result.Success}, Failure: {result.Failure}");
 		
-		Console.WriteLine($"✓ Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
+		Console.WriteLine($"Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
 	// Another load test with different parameters using LoadFact
@@ -104,17 +104,17 @@ public class MixedTestsExample : IDisposable
 
 			if (!response.IsSuccessStatusCode)
 			{
-				Console.WriteLine($"❌ JSON API request failed with status: {response.StatusCode}");
+				Console.WriteLine($"JSON API request failed with status: {response.StatusCode}");
 				return false;
 			}
 
 			if (!content.Contains("userId", StringComparison.OrdinalIgnoreCase))
 			{
-				Console.WriteLine($"❌ JSON response doesn't contain expected 'userId' field");
+				Console.WriteLine($"JSON response doesn't contain expected 'userId' field");
 				return false;
 			}
 
-			Console.WriteLine($"✓ Load test: JSON processing completed at {DateTime.Now:HH:mm:ss.fff}");
+			Console.WriteLine($"Load test: JSON processing completed at {DateTime.Now:HH:mm:ss.fff}");
 			return true;
 		});
 
@@ -122,7 +122,7 @@ public class MixedTestsExample : IDisposable
 		Assert.True(result.Success > 0, $"Load test should have at least some successful executions. Success: {result.Success}, Failure: {result.Failure}");
 		Assert.True(result.Success >= result.Failure, $"Load test should have equal or more successes than failures. Success: {result.Success}, Failure: {result.Failure}");
 		
-		Console.WriteLine($"✓ JSON Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
+		Console.WriteLine($"JSON Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
 	// Load test focusing on error conditions using LoadFact
@@ -139,16 +139,16 @@ public class MixedTestsExample : IDisposable
 
 				if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
 				{
-					Console.WriteLine($"❌ Expected 404 but got: {response.StatusCode}");
+					Console.WriteLine($"Expected 404 but got: {response.StatusCode}");
 					return false;
 				}
 
-				Console.WriteLine($"✓ Load test: Error handling verified at {DateTime.Now:HH:mm:ss.fff}");
+				Console.WriteLine($"Load test: Error handling verified at {DateTime.Now:HH:mm:ss.fff}");
 				return true;
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"❌ Load test: Unexpected exception - {ex.Message}");
+				Console.WriteLine($"Load test: Unexpected exception - {ex.Message}");
 				return false;
 			}
 		});
@@ -157,7 +157,7 @@ public class MixedTestsExample : IDisposable
 		Assert.True(result.Success > 0, $"Load test should have at least some successful executions. Success: {result.Success}, Failure: {result.Failure}");
 		Assert.True(result.Success >= result.Failure, $"Load test should handle error conditions properly. Success: {result.Success}, Failure: {result.Failure}");
 		
-		Console.WriteLine($"✓ Error handling Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
+		Console.WriteLine($"Error handling Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
 	// Standard fact test that can run independently
@@ -168,7 +168,7 @@ public class MixedTestsExample : IDisposable
 		Assert.NotNull(_httpClient);
 		Assert.NotNull(_testHost);
 
-		Console.WriteLine("✓ Functional test: Test infrastructure validated");
+		Console.WriteLine("Functional test: Test infrastructure validated");
 	}
 
 	// Advanced load test that validates performance characteristics
@@ -196,17 +196,17 @@ public class MixedTestsExample : IDisposable
 
 				if (!response.IsSuccessStatusCode)
 				{
-					Console.WriteLine($"❌ Performance test request failed: {response.StatusCode}");
+					Console.WriteLine($"Performance test request failed: {response.StatusCode}");
 					return false;
 				}
 
-				Console.WriteLine($"✓ Performance test: Request #{requestCount} completed in {stopwatch.Elapsed.TotalMilliseconds:F2}ms");
+				Console.WriteLine($"Performance test: Request #{requestCount} completed in {stopwatch.Elapsed.TotalMilliseconds:F2}ms");
 				return true;
 			}
 			catch (Exception ex)
 			{
 				stopwatch.Stop();
-				Console.WriteLine($"❌ Performance test exception: {ex.Message}");
+				Console.WriteLine($"Performance test exception: {ex.Message}");
 				return false;
 			}
 		});
@@ -233,7 +233,7 @@ public class MixedTestsExample : IDisposable
 			Assert.True(executionTimes.Count >= 5, $"Should execute at least 5 requests under load. Actual: {executionTimes.Count}");
 		}
 
-		Console.WriteLine($"✓ Performance Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
+		Console.WriteLine($"Performance Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 }
 

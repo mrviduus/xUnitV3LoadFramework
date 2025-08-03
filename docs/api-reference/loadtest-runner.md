@@ -2,12 +2,12 @@
 
 The `LoadTestRunner` class provides the core functionality for executing load tests with LoadFact attributes. It serves as the bridge between your test logic and the underlying load testing engine, offering both direct execution methods and a fluent API for load test configuration.
 
-## 🔧 Namespace
+##  Namespace
 ```csharp
 xUnitV3LoadFramework.Extensions
 ```
 
-## 🏗️ Class Overview
+## Class Overview
 
 ```csharp
 public static class LoadTestRunner
@@ -196,7 +196,7 @@ public async Task SimpleLoadTest()
 }
 ```
 
-## 🎯 Fluent API
+##  Fluent API
 
 ### Create() - Fluent Builder
 
@@ -268,7 +268,7 @@ public async Task FluentAPI_ParameterizedTest(int concurrency, int duration)
 }
 ```
 
-## ⚙️ Method Resolution Logic
+## Method Resolution Logic
 
 The LoadTestRunner automatically detects the calling method's LoadFactAttribute using reflection and stack trace analysis:
 
@@ -278,7 +278,7 @@ The LoadTestRunner automatically detects the calling method's LoadFactAttribute 
 4. **Executes the load test** using the Akka.NET-based engine
 5. **Returns comprehensive results** with performance metrics
 
-## 📊 LoadResult Properties
+## LoadResult Properties
 
 The `LoadResult` object contains comprehensive metrics:
 
@@ -388,7 +388,7 @@ public async Task LoadTest_Dynamic(string level, int concurrency, int duration)
 }
 ```
 
-## ⚠️ Important Notes
+## Important Notes
 
 ### Exception Handling
 - **Func<Task<bool>>**: Return `false` for controlled failures
