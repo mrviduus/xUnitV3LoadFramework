@@ -21,7 +21,7 @@ Technical documentation for xUnitV3LoadFramework - a high-performance load testi
 ##  Basic Usage
 
 ```csharp
-[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+[Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task LoadTest_API_Endpoint()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>

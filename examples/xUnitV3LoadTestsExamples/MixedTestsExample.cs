@@ -64,8 +64,8 @@ public class MixedTestsExample : IDisposable
 		Console.WriteLine($"Functional test: Successfully called {url}");
 	}
 
-	// Load test - executes multiple times concurrently using LoadFact
-	[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 100)]
+	// Load test - executes multiple times concurrently using Load
+	[Load(order: 1, concurrency: 5, duration: 3000, interval: 100)]
 	public async Task Should_Handle_Concurrent_HTTP_Requests()
 	{
 		// Use LoadTestRunner to properly execute this as a load test
@@ -91,8 +91,8 @@ public class MixedTestsExample : IDisposable
 		Console.WriteLine($"Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
-	// Another load test with different parameters using LoadFact
-	[LoadFact(order: 2, concurrency: 3, duration: 2000, interval: 200)]
+	// Another load test with different parameters using Load
+	[Load(order: 2, concurrency: 3, duration: 2000, interval: 200)]
 	public async Task Should_Process_JSON_Data_Under_Load()
 	{
 		// Use LoadTestRunner to properly execute this as a load test
@@ -125,8 +125,8 @@ public class MixedTestsExample : IDisposable
 		Console.WriteLine($"JSON Load test completed - Success: {result.Success}, Failure: {result.Failure}, Success Rate: {(double)result.Success / result.Total * 100:F2}%");
 	}
 
-	// Load test focusing on error conditions using LoadFact
-	[LoadFact(order: 3, concurrency: 2, duration: 1500, interval: 300)]
+	// Load test focusing on error conditions using Load
+	[Load(order: 3, concurrency: 2, duration: 1500, interval: 300)]
 	public async Task Should_Handle_Error_Conditions_Under_Load()
 	{
 		// Use LoadTestRunner to properly execute this as a load test
@@ -172,7 +172,7 @@ public class MixedTestsExample : IDisposable
 	}
 
 	// Advanced load test that validates performance characteristics
-	[LoadFact(order: 4, concurrency: 10, duration: 5000, interval: 50)]
+	[Load(order: 4, concurrency: 10, duration: 5000, interval: 50)]
 	public async Task Should_Validate_Load_Performance_Metrics()
 	{
 		var executionTimes = new List<double>();

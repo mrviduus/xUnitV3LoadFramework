@@ -14,26 +14,26 @@ namespace xUnitV3LoadFramework.Extensions
     public static class LoadTestRunner
     {
         /// <summary>
-        /// Executes the current test method as a load test if it has a LoadFact attribute.
-        /// This method should be called at the beginning of a LoadFact test method.
+        /// Executes the current test method as a load test if it has a Load attribute.
+        /// This method should be called at the beginning of a Load test method.
         /// </summary>
         /// <param name="testAction">The test action to execute under load</param>
         /// <param name="testMethodName">Optional test method name. If not provided, will be inferred from the call stack.</param>
         /// <returns>A task representing the load test execution</returns>
         public static async Task<LoadResult> ExecuteAsync(Func<Task<bool>> testAction, string? testMethodName = null)
         {
-            // Get the calling method to find LoadFact attribute
+            // Get the calling method to find Load attribute
             var callingMethod = GetCallingTestMethod();
             if (callingMethod == null)
             {
                 throw new InvalidOperationException("Could not determine the calling test method.");
             }
 
-            // Look for LoadFact attribute
-            var loadFactAttribute = callingMethod.GetCustomAttribute<LoadFactAttribute>();
-            if (loadFactAttribute == null)
+            // Look for Load attribute
+            var loadAttribute = callingMethod.GetCustomAttribute<LoadAttribute>();
+            if (loadAttribute == null)
             {
-                throw new InvalidOperationException($"Method {callingMethod.Name} is not decorated with LoadFactAttribute.");
+                throw new InvalidOperationException($"Method {callingMethod.Name} is not decorated with LoadAttribute.");
             }
 
             // Create load execution plan
@@ -43,9 +43,9 @@ namespace xUnitV3LoadFramework.Extensions
                 Action = testAction,
                 Settings = new LoadSettings
                 {
-                    Concurrency = loadFactAttribute.Concurrency,
-                    Duration = TimeSpan.FromMilliseconds(loadFactAttribute.Duration),
-                    Interval = TimeSpan.FromMilliseconds(loadFactAttribute.Interval)
+                    Concurrency = loadAttribute.Concurrency,
+                    Duration = TimeSpan.FromMilliseconds(loadAttribute.Duration),
+                    Interval = TimeSpan.FromMilliseconds(loadAttribute.Interval)
                 }
             };
 
@@ -54,7 +54,7 @@ namespace xUnitV3LoadFramework.Extensions
             
             // Log results
             Console.WriteLine($"Load test '{executionPlan.Name}' completed:");
-            Console.WriteLine($"  Order: {loadFactAttribute.Order}");
+            Console.WriteLine($"  Order: {loadAttribute.Order}");
             Console.WriteLine($"  Total executions: {result.Total}");
             Console.WriteLine($"  Successful executions: {result.Success}");
             Console.WriteLine($"  Failed executions: {result.Failure}");
@@ -67,7 +67,7 @@ namespace xUnitV3LoadFramework.Extensions
         }
 
         /// <summary>
-        /// Executes the current test method as a load test if it has a LoadFact attribute.
+        /// Executes the current test method as a load test if it has a Load attribute.
         /// This overload is for synchronous test actions.
         /// </summary>
         /// <param name="testAction">The synchronous test action to execute under load</param>
@@ -79,7 +79,7 @@ namespace xUnitV3LoadFramework.Extensions
         }
 
         /// <summary>
-        /// Executes the current test method as a load test if it has a LoadFact attribute.
+        /// Executes the current test method as a load test if it has a Load attribute.
         /// This overload is for test actions that don't return a success indicator (assumes success if no exception).
         /// </summary>
         /// <param name="testAction">The test action to execute under load</param>
@@ -102,7 +102,7 @@ namespace xUnitV3LoadFramework.Extensions
         }
 
         /// <summary>
-        /// Executes the current test method as a load test if it has a LoadFact attribute.
+        /// Executes the current test method as a load test if it has a Load attribute.
         /// This overload is for simple test actions without async.
         /// </summary>
         /// <param name="testAction">The simple test action to execute under load</param>
@@ -178,13 +178,13 @@ namespace xUnitV3LoadFramework.Extensions
         {
             var stackTrace = new System.Diagnostics.StackTrace();
             
-            // Look through the stack trace to find a method with LoadFactAttribute
+            // Look through the stack trace to find a method with LoadAttribute
             for (int i = 1; i < stackTrace.FrameCount; i++)
             {
                 var frame = stackTrace.GetFrame(i);
                 var method = frame?.GetMethod();
                 
-                if (method != null && method.GetCustomAttribute<LoadFactAttribute>() != null)
+                if (method != null && method.GetCustomAttribute<LoadAttribute>() != null)
                 {
                     return method as MethodInfo;
                 }

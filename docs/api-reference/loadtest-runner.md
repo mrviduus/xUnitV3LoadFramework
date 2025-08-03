@@ -1,6 +1,6 @@
 # LoadTestRunner API Reference
 
-The `LoadTestRunner` class provides the core functionality for executing load tests with LoadFact attributes. It serves as the bridge between your test logic and the underlying load testing engine, offering both direct execution methods and a fluent API for load test configuration.
+The `LoadTestRunner` class provides the core functionality for executing load tests with Load attributes. It serves as the bridge between your test logic and the underlying load testing engine, offering both direct execution methods and a fluent API for load test configuration.
 
 ##  Namespace
 ```csharp
@@ -61,7 +61,7 @@ public static async Task<LoadResult> ExecuteAsync(
 
 #### Example
 ```csharp
-[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+[Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task TestWithExplicitSuccessIndication()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -97,7 +97,7 @@ public static async Task<LoadResult> ExecuteAsync(
 
 #### Example
 ```csharp
-[LoadFact(order: 1, concurrency: 3, duration: 2000, interval: 300)]
+[Load(order: 1, concurrency: 3, duration: 2000, interval: 300)]
 public async Task TestSynchronousOperation()
 {
     var result = await LoadTestRunner.ExecuteAsync(() =>
@@ -126,7 +126,7 @@ public static async Task<LoadResult> ExecuteAsync(
 
 #### Example
 ```csharp
-[LoadFact(order: 1, concurrency: 4, duration: 4000, interval: 250)]
+[Load(order: 1, concurrency: 4, duration: 4000, interval: 250)]
 public async Task TestWithImplicitSuccessIndication()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -157,7 +157,7 @@ public static async Task<LoadResult> ExecuteAsync(
 
 #### Example
 ```csharp
-[LoadFact(order: 1, concurrency: 2, duration: 1500, interval: 400)]
+[Load(order: 1, concurrency: 2, duration: 1500, interval: 400)]
 public async Task TestSynchronousAction()
 {
     var result = await LoadTestRunner.ExecuteAsync(() =>
@@ -183,7 +183,7 @@ public static async Task<LoadResult> RunAsync(Func<Task> action)
 
 #### Example
 ```csharp
-[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+[Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task SimpleLoadTest()
 {
     var result = await LoadTestRunner.RunAsync(async () =>
@@ -270,9 +270,9 @@ public async Task FluentAPI_ParameterizedTest(int concurrency, int duration)
 
 ## Method Resolution Logic
 
-The LoadTestRunner automatically detects the calling method's LoadFactAttribute using reflection and stack trace analysis:
+The LoadTestRunner automatically detects the calling method's LoadAttribute using reflection and stack trace analysis:
 
-1. **Scans the call stack** to find the method with `LoadFactAttribute`
+1. **Scans the call stack** to find the method with `LoadAttribute`
 2. **Extracts load test parameters** (concurrency, duration, interval)
 3. **Creates LoadExecutionPlan** with the specified configuration
 4. **Executes the load test** using the Akka.NET-based engine
@@ -300,7 +300,7 @@ public class LoadResult
 
 ### Pattern 1: HTTP API Testing
 ```csharp
-[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+[Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task LoadTest_API()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -318,7 +318,7 @@ public async Task LoadTest_API()
 
 ### Pattern 2: Database Load Testing
 ```csharp
-[LoadFact(order: 1, concurrency: 3, duration: 5000, interval: 300)]
+[Load(order: 1, concurrency: 3, duration: 5000, interval: 300)]
 public async Task LoadTest_Database()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -334,7 +334,7 @@ public async Task LoadTest_Database()
 
 ### Pattern 3: Complex Business Logic
 ```csharp
-[LoadFact(order: 1, concurrency: 4, duration: 4000, interval: 250)]
+[Load(order: 1, concurrency: 4, duration: 4000, interval: 250)]
 public async Task LoadTest_BusinessLogic()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -396,7 +396,7 @@ public async Task LoadTest_Dynamic(string level, int concurrency, int duration)
 - **Automatic wrapping**: All exceptions are caught and recorded as failures
 
 ### Method Name Resolution
-- **Automatic detection**: Uses reflection to find LoadFactAttribute
+- **Automatic detection**: Uses reflection to find LoadAttribute
 - **Manual override**: Provide `testMethodName` parameter if needed
 - **Fallback behavior**: Uses calling method name if detection fails
 

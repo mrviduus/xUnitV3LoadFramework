@@ -6,16 +6,16 @@ using Xunit;
 namespace xUnitV3LoadFramework.Tests.Integration;
 
 /// <summary>
-/// Core integration tests for LoadFact attribute functionality.
+/// Core integration tests for Load attribute functionality.
 /// Tests the essential end-to-end execution of load tests.
 /// </summary>
-public class LoadFactIntegrationTests : xUnitV3LoadTests.TestSetup
+public class LoadIntegrationTests : xUnitV3LoadTests.TestSetup
 {
     /// <summary>
-    /// Tests basic LoadFact functionality with HTTP client requests.
+    /// Tests basic Load functionality with HTTP client requests.
     /// </summary>
-    [LoadFact(order: 1, concurrency: 2, duration: 2000, interval: 500)]
-    public async Task LoadFact_Should_Execute_HTTP_Requests_Successfully()
+    [Load(order: 1, concurrency: 2, duration: 2000, interval: 500)]
+    public async Task Load_Should_Execute_HTTP_Requests_Successfully()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
@@ -32,10 +32,10 @@ public class LoadFactIntegrationTests : xUnitV3LoadTests.TestSetup
     }
 
     /// <summary>
-    /// Tests LoadFact with JSON API processing.
+    /// Tests Load with JSON API processing.
     /// </summary>
-    [LoadFact(order: 2, concurrency: 2, duration: 1500, interval: 400)]
-    public async Task LoadFact_Should_Process_JSON_Data()
+    [Load(order: 2, concurrency: 2, duration: 1500, interval: 400)]
+    public async Task Load_Should_Process_JSON_Data()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
         {

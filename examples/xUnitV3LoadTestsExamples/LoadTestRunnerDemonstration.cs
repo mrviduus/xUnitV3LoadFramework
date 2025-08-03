@@ -7,7 +7,7 @@ namespace xUnitV3LoadFramework.Examples;
 
 /// <summary>
 /// Demonstrates the enhanced LoadTestRunner with fluent API capabilities.
-/// Shows both traditional LoadFact attribute usage and the new fluent API approach.
+/// Shows both traditional Load attribute usage and the new fluent API approach.
 /// </summary>
 public class LoadTestRunnerDemonstration : IDisposable
 {
@@ -24,9 +24,9 @@ public class LoadTestRunnerDemonstration : IDisposable
     }
 
     /// <summary>
-    /// Traditional approach using LoadFact attribute with LoadTestRunner.ExecuteAsync
+    /// Traditional approach using Load attribute with LoadTestRunner.ExecuteAsync
     /// </summary>
-    [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+    [Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
     public async Task Traditional_LoadTest_With_LoadTestRunner()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -46,7 +46,7 @@ public class LoadTestRunnerDemonstration : IDisposable
     /// <summary>
     /// Simplified approach using LoadTestRunner.RunAsync
     /// </summary>
-    [LoadFact(order: 2, concurrency: 3, duration: 2000, interval: 300)]
+    [Load(order: 2, concurrency: 3, duration: 2000, interval: 300)]
     public async Task Simplified_LoadTest_With_RunAsync()
     {
         var result = await LoadTestRunner.RunAsync(async () =>

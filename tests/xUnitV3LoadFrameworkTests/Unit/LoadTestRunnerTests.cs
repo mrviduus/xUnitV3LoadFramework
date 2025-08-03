@@ -10,13 +10,13 @@ namespace xUnitV3LoadFramework.Tests.Unit;
 /// </summary>
 public class LoadTestRunnerTests
 {
-    [LoadFact(order: 1, concurrency: 2, duration: 1000, interval: 200)]
-    public async Task LoadTestRunner_Should_Execute_With_LoadFact_Attribute()
+    [Load(order: 1, concurrency: 2, duration: 1000, interval: 200)]
+    public async Task LoadTestRunner_Should_Execute_With_Load_Attribute()
     {
         // Arrange
         bool testActionCalled = false;
         
-        // Act - This will work because it's called from a method with LoadFact attribute
+        // Act - This will work because it's called from a method with Load attribute
         var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
             testActionCalled = true;

@@ -4,16 +4,16 @@ using Xunit;
 namespace xUnitV3LoadFramework.Tests.Unit;
 
 /// <summary>
-/// Core unit tests for LoadFactAttribute.
+/// Core unit tests for LoadAttribute.
 /// Tests the attribute's basic constructor and properties.
 /// </summary>
-public class LoadFactAttributeTests
+public class LoadAttributeTests
 {
     [Fact]
-    public void LoadFactAttribute_Should_Initialize_With_Valid_Parameters()
+    public void LoadAttribute_Should_Initialize_With_Valid_Parameters()
     {
         // Arrange & Act
-        var attribute = new LoadFactAttribute(
+        var attribute = new LoadAttribute(
             order: 1,
             concurrency: 5,
             duration: 3000,
@@ -27,10 +27,10 @@ public class LoadFactAttributeTests
     }
 
     [Fact]
-    public void LoadFactAttribute_Should_Inherit_From_FactAttribute()
+    public void LoadAttribute_Should_Inherit_From_FactAttribute()
     {
         // Arrange
-        var attribute = new LoadFactAttribute(1, 2, 1000, 100);
+        var attribute = new LoadAttribute(1, 2, 1000, 100);
 
         // Act & Assert
         Assert.IsAssignableFrom<Xunit.FactAttribute>(attribute);
@@ -40,10 +40,10 @@ public class LoadFactAttributeTests
     [InlineData(1, 1, 1, 1)]
     [InlineData(100, 50, 60000, 5000)]
     [InlineData(5, 10, 2500, 250)]
-    public void LoadFactAttribute_Should_Store_All_Parameters_Correctly(int order, int concurrency, int duration, int interval)
+    public void LoadAttribute_Should_Store_All_Parameters_Correctly(int order, int concurrency, int duration, int interval)
     {
         // Arrange & Act
-        var attribute = new LoadFactAttribute(order, concurrency, duration, interval);
+        var attribute = new LoadAttribute(order, concurrency, duration, interval);
 
         // Assert
         Assert.Equal(order, attribute.Order);

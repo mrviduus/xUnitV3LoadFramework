@@ -6,7 +6,7 @@ using Xunit;
 namespace xUnitV3LoadFramework.Tests.Integration;
 
 /// <summary>
-/// Core mixed testing scenarios - demonstrates LoadFact, Fact, and Theory working together.
+/// Core mixed testing scenarios - demonstrates Load, Fact, and Theory working together.
 /// </summary>
 public class MixedTestingScenarios : xUnitV3LoadTests.TestSetup
 {
@@ -26,8 +26,8 @@ public class MixedTestingScenarios : xUnitV3LoadTests.TestSetup
     /// <summary>
     /// Load test for mixed testing demonstration.
     /// </summary>
-    [LoadFact(order: 1, concurrency: 2, duration: 1500, interval: 300)]
-    public async Task LoadFact_Should_Execute_With_Other_Tests()
+    [Load(order: 1, concurrency: 2, duration: 1500, interval: 300)]
+    public async Task Load_Should_Execute_With_Other_Tests()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
         {

@@ -10,7 +10,7 @@ namespace xUnitV3LoadFramework.Attributes
     /// The load testing logic is handled separately from standard xUnit execution.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class LoadFactAttribute : FactAttribute
+    public class LoadAttribute : FactAttribute
     {
         /// <summary>
         /// Gets the execution order for this load test.
@@ -33,7 +33,7 @@ namespace xUnitV3LoadFramework.Attributes
         public int Interval { get; }
 
         /// <summary>
-        /// Initializes a new instance of the LoadFactAttribute class with load test parameters.
+        /// Initializes a new instance of the LoadAttribute class with load test parameters.
         /// </summary>
         /// <param name="order">Execution order for sequencing multiple load tests</param>
         /// <param name="concurrency">Number of concurrent executions to run simultaneously</param>
@@ -41,7 +41,7 @@ namespace xUnitV3LoadFramework.Attributes
         /// <param name="interval">Time interval between batches in milliseconds</param>
         /// <param name="sourceFilePath">Source file path (automatically provided by compiler)</param>
         /// <param name="sourceLineNumber">Source line number (automatically provided by compiler)</param>
-        public LoadFactAttribute(
+        public LoadAttribute(
             int order,
             int concurrency,
             int duration,

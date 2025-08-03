@@ -18,7 +18,7 @@ The framework provides the following main API surfaces:
 
 ## Attributes
 
-### LoadFactAttribute
+### LoadAttribute
 
 A load testing attribute that inherits from xUnit's `FactAttribute`, enabling load tests to be discovered and executed as standard xUnit tests.
 
@@ -26,9 +26,9 @@ A load testing attribute that inherits from xUnit's `FactAttribute`, enabling lo
 namespace xUnitV3LoadFramework.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class LoadFactAttribute : FactAttribute
+    public class LoadAttribute : FactAttribute
     {
-        public LoadFactAttribute(
+        public LoadAttribute(
             int order = 0, 
             int concurrency = 1, 
             int duration = 1000, 
@@ -61,7 +61,7 @@ namespace xUnitV3LoadFramework.Attributes
 
 **Example**:
 ```csharp
-[LoadFact(order: 1, concurrency: 100, duration: 60000, interval: 5000)]
+[Load(order: 1, concurrency: 100, duration: 60000, interval: 5000)]
 public async Task My_Load_Test()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -73,7 +73,7 @@ public async Task My_Load_Test()
     Assert.True(result.Success > 0);
 }
 
-[LoadFact(order: 2, concurrency: 50, duration: 30000, interval: 1000, Skip = "Under maintenance")]
+[Load(order: 2, concurrency: 50, duration: 30000, interval: 1000, Skip = "Under maintenance")]
 public async Task Skipped_Load_Test()
 {
     // This test will be skipped by xUnit
@@ -109,24 +109,24 @@ namespace xUnitV3LoadFramework.Extensions
             [CallerFilePath] string filePath = "",
             [CallerLineNumber] int lineNumber = 0);
 
-        // Execute with LoadFactAttribute configuration
+        // Execute with LoadAttribute configuration
         public static Task<LoadTestResult> ExecuteLoadTestAsync<T>(
             Func<Task<T>> testAction,
-            LoadFactAttribute loadAttribute);
+            LoadAttribute loadAttribute);
     }
 }
 ```
 
 **Methods**:
-- `ExecuteLoadTestAsync<T>(Func<Task<T>>)` - Automatically detects LoadFact attribute configuration
+- `ExecuteLoadTestAsync<T>(Func<Task<T>>)` - Automatically detects Load attribute configuration
 - `ExecuteLoadTestAsync<T>(Func<Task<T>>, int, TimeSpan, TimeSpan)` - Uses explicit configuration parameters
-- `ExecuteLoadTestAsync<T>(Func<Task<T>>, LoadFactAttribute)` - Uses provided attribute configuration
+- `ExecuteLoadTestAsync<T>(Func<Task<T>>, LoadAttribute)` - Uses provided attribute configuration
 
 **Return Type**: `LoadTestResult` containing execution statistics
 
 **Example**:
 ```csharp
-[LoadFact(concurrency: 10, duration: 5000)]
+[Load(concurrency: 10, duration: 5000)]
 public async Task Should_Handle_Concurrent_Requests()
 {
     // Automatic configuration from attribute
@@ -141,7 +141,7 @@ public async Task Should_Handle_Concurrent_Requests()
 }
 
 // Custom configuration override
-[LoadFact(concurrency: 5, duration: 2000)]
+[Load(concurrency: 5, duration: 2000)]
 public async Task Should_Handle_Custom_Configuration()
 {
     var result = await LoadTestRunner.ExecuteAsync(
@@ -204,7 +204,7 @@ namespace YourTests
     // Simple class - no special inheritance needed
     public class SimpleLoadTests
     {
-        [LoadFact(concurrency: 5, duration: 2000)]
+        [Load(concurrency: 5, duration: 2000)]
         public async Task Should_Handle_Basic_Load()
         {
             var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -249,7 +249,7 @@ namespace YourTests
 - **Constructor** - Setup executed once before test class instantiation
 - **IDisposable.Dispose()** - Cleanup executed once after all tests in class complete
 - **[Fact] methods** - Standard xUnit functional tests
-- **[LoadFact] methods** - Load tests executed with LoadTestHelper and specified concurrency/duration
+- **[Load] methods** - Load tests executed with LoadTestHelper and specified concurrency/duration
 
 ---
 

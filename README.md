@@ -33,7 +33,7 @@ using xUnitV3LoadFramework.Extensions;
 
 public class APILoadTests : TestSetup
 {
-    [LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+    [Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
     public async Task LoadTest_UserAPI()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -99,12 +99,12 @@ Resource Utilization:
 - **[API Reference](docs/api-reference/)** - Detailed API documentation
 - **[Architecture](docs/architecture/)** - Framework internals and design
 
-## LoadFact Attribute
+## Load Attribute
 
 The heart of the framework - transform any method into a load test:
 
 ```csharp
-[LoadFact(order: 1, concurrency: 10, duration: 5000, interval: 100)]
+[Load(order: 1, concurrency: 10, duration: 5000, interval: 100)]
 ```
 
 ### Parameters Explained
@@ -120,7 +120,7 @@ The heart of the framework - transform any method into a load test:
 
 ### HTTP API Load Testing
 ```csharp
-[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+[Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task LoadTest_CreateUser()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -137,7 +137,7 @@ public async Task LoadTest_CreateUser()
 
 ### Database Load Testing
 ```csharp
-[LoadFact(order: 1, concurrency: 3, duration: 5000, interval: 300)]
+[Load(order: 1, concurrency: 3, duration: 5000, interval: 300)]
 public async Task LoadTest_DatabaseQueries()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -164,7 +164,7 @@ public class MixedTests : TestSetup
     }
     
     // Load test
-    [LoadFact(order: 1, concurrency: 4, duration: 2000, interval: 250)]
+    [Load(order: 1, concurrency: 4, duration: 2000, interval: 250)]
     public async Task LoadTest_CalculatorPerformance()
     {
         var result = await LoadTestRunner.ExecuteAsync(() =>
@@ -190,9 +190,9 @@ public class MixedTests : TestSetup
 
 ## � Enhanced LoadTestRunner API
 
-### Traditional Approach with LoadFact Attribute
+### Traditional Approach with Load Attribute
 ```csharp
-[LoadFact(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+[Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
 public async Task Should_Handle_HTTP_Load()
 {
     var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -208,7 +208,7 @@ public async Task Should_Handle_HTTP_Load()
 
 ### Simplified API (No Return Value Needed)
 ```csharp
-[LoadFact(order: 2, concurrency: 3, duration: 2000, interval: 300)]
+[Load(order: 2, concurrency: 3, duration: 2000, interval: 300)]
 public async Task Should_Handle_Simple_Load()
 {
     var result = await LoadTestRunner.RunAsync(async () =>
@@ -280,7 +280,7 @@ Built on **Akka.NET** for high-performance, concurrent execution:
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  LoadFact       │───▶│  LoadTestRunner  │───▶│  LoadRunner     │
+│  Load       │───▶│  LoadTestRunner  │───▶│  LoadRunner     │
 │  Attribute      │    │                  │    │                 │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                                          │
