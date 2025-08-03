@@ -87,22 +87,17 @@ Resource Utilization:
 
 ##  Documentation
 
-### Quick Navigation
+### Technical Documentation
 
-| What you want to do | Documentation |
-|---------------------|---------------|
-| **Get started quickly** | [Quick Start Guide](docs/user-guides/getting-started.md) |
-| **Learn LoadFact parameters** | [LoadFact Attribute Guide](docs/user-guides/loadfact-attribute-guide.md) |
-| **See real examples** | [Usage Examples](docs/examples/basic-examples.md) |
-| **Understand the architecture** | [Architecture Overview](docs/architecture/actor-system-overview.md) |
-| **Troubleshoot issues** | [Troubleshooting Guide](docs/advanced/troubleshooting.md) |
+| Component | Documentation |
+|-----------|---------------|
+| **API Reference** | [LoadTestRunner API](docs/api-reference/loadtest-runner.md) |
+| **Architecture** | [Actor System Overview](docs/architecture/actor-system-overview.md) |
+| **Framework Design** | [Hybrid Load Worker](docs/architecture/hybrid-load-worker.md) |
 
 ###  Complete Documentation
-- **[Documentation Hub](docs/README.md)** - Complete documentation index
-- **[User Guides](docs/user-guides/)** - Step-by-step guides and best practices
 - **[API Reference](docs/api-reference/)** - Detailed API documentation
 - **[Architecture](docs/architecture/)** - Framework internals and design
-- **[Examples](docs/examples/)** - Real-world usage examples
 
 ## LoadFact Attribute
 

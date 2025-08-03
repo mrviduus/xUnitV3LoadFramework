@@ -412,7 +412,5 @@ public async Task LoadTest_Dynamic(string level, int concurrency, int duration)
 
 ## 🔗 Related Documentation
 
-- [LoadFact Attribute Guide](../user-guides/loadfact-attribute-guide.md)
-- [Load Attribute Configuration](../user-guides/load-attribute-configuration.md)
-- [Performance Optimization](../user-guides/performance-optimization.md)
-- [Writing Effective Tests](../user-guides/writing-effective-tests.md)
+- [Actor System Overview](../architecture/actor-system-overview.md)
+- [Hybrid Load Worker](../architecture/hybrid-load-worker.md)

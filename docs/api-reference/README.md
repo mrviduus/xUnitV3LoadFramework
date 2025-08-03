@@ -671,4 +671,4 @@ public async Task Should_Handle_Errors_Gracefully()
 }
 ```
 
-This comprehensive API reference covers all public interfaces provided by the xUnitV3LoadFramework. For more detailed examples and usage patterns, see the [User Guides](../user-guides/) and [Examples](../examples/) sections.
+This comprehensive API reference covers all public interfaces provided by the xUnitV3LoadFramework. For architectural details, see the [Architecture](../architecture/) section.
