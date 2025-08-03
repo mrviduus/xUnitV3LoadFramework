@@ -34,12 +34,6 @@
   <ItemGroup>
     <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="" />
     <!-- <None Include="build/**/*.props" Pack="true" PackagePath="build" /> -->
-    <Compile Remove="ObjectModel\**" />
-    <Compile Remove="Runners\**" />
-    <EmbeddedResource Remove="ObjectModel\**" />
-    <EmbeddedResource Remove="Runners\**" />
-    <None Remove="ObjectModel\**" />
-    <None Remove="Runners\**" />
     <None Update="favicon_64x64.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

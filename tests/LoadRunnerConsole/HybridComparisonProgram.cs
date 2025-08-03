@@ -4,14 +4,6 @@ using xUnitV3LoadFramework.LoadRunnerCore.Runner;
 
 partial class Program
 {
-    static async Task Main(string[] args)
-    {
-        Console.WriteLine("Testing Hybrid LoadWorkerActor Implementation");
-        Console.WriteLine("==============================================");
-
-        await TestTaskBasedVsHybrid();
-    }
-
     static async Task TestTaskBasedVsHybrid()
     {
         var executionPlan = new LoadExecutionPlan
