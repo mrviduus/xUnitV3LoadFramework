@@ -13,14 +13,14 @@ public class LoadTestClassRunner :
         [.. ctxt.TestCases.OrderBy(tc => tc.Order)];
 
     public async ValueTask<RunSummary> Run(
-        Specification specification,
+        object testClassInstance,
         LoadTestClass testClass,
         IReadOnlyCollection<LoadTestCase> testCases,
         IMessageBus messageBus,
         ExceptionAggregator aggregator,
         CancellationTokenSource cancellationTokenSource)
     {
-        await using var ctxt = new LoadTestClassRunnerContext(specification, testClass, testCases, messageBus, aggregator, cancellationTokenSource);
+        await using var ctxt = new LoadTestClassRunnerContext(testClassInstance, testClass, testCases, messageBus, aggregator, cancellationTokenSource);
         await ctxt.InitializeAsync();
 
         return await Run(ctxt);
@@ -34,12 +34,12 @@ public class LoadTestClassRunner :
     {
         ArgumentNullException.ThrowIfNull(testMethod);
 
-        return LoadTestMethodRunner.Instance.Run(ctxt.Specification, testMethod, testCases, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
+        return LoadTestMethodRunner.Instance.Run(ctxt.TestClassInstance, testMethod, testCases, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
     }
 }
 
 public class LoadTestClassRunnerContext(
-    Specification specification,
+    object testClassInstance,
     LoadTestClass testClass,
     IReadOnlyCollection<LoadTestCase> testCases,
     IMessageBus messageBus,
@@ -47,5 +47,5 @@ public class LoadTestClassRunnerContext(
     CancellationTokenSource cancellationTokenSource) :
         TestClassRunnerContext<LoadTestClass, LoadTestCase>(testClass, testCases, ExplicitOption.Off, messageBus, aggregator, cancellationTokenSource)
 {
-    public Specification Specification { get; } = specification;
+    public object TestClassInstance { get; } = testClassInstance;
 }

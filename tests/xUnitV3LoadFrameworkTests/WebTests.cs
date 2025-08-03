@@ -1,25 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
 
 namespace xUnitV3LoadTests;
 
-public class WebTests : Specification
+public class WebTests : IDisposable
 {
 	private HttpClient? _httpClient;
 
-	protected override void EstablishContext()
+	public WebTests()
 	{
-		// Create the TestSetup and initialize HttpClient in EstablishContext
+		// Create the TestSetup and initialize HttpClient in constructor
 		var setup = new TestSetup();
 		setup.InitializeAsync().GetAwaiter().GetResult();
 		
 		_httpClient = setup.Host.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
 	}
 
-	protected override void DestroyContext()
+	public void Dispose()
 	{
 		_httpClient?.Dispose();
+		GC.SuppressFinalize(this);
 	}
 
 	[Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]

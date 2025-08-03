@@ -20,11 +20,18 @@ Create a new test file `MyFirstLoadTest.cs`:
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
+using Xunit;
 
-[UseLoadFramework]
-public class MyFirstLoadTest : Specification
+public class MyFirstLoadTest
 {
+    [Fact]
+    public void Should_Pass_Basic_Test()
+    {
+        // Standard xUnit test
+        Assert.True(true);
+        Console.WriteLine("Standard test completed");
+    }
+
     [Load(order: 1, concurrency: 10, duration: 5000, interval: 1000)] // 10 concurrent users for 5 seconds
     public void Should_Handle_Basic_Load()
     {

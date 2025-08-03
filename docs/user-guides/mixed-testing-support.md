@@ -29,13 +29,26 @@ global using xUnitV3LoadFramework.Attributes;
 
 ```csharp
 // This class contains both standard xUnit tests and load tests
-public class MyMixedTests : Specification
+public class MyMixedTests : IDisposable
 {
+    private readonly string _testData;
+    
+    public MyMixedTests()
+    {
+        _testData = "Initialized";
+    }
+    
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+
     [Fact]
     public void ShouldExecuteAsStandardTest()
     {
         // Standard xUnit test - runs normally
         Assert.True(true);
+        Assert.NotNull(_testData);
     }
 
     [Theory]
@@ -79,12 +92,25 @@ public class MyStandardTests
 }
 
 // Load test class  
-public class MyLoadTests : Specification
+public class MyLoadTests : IDisposable
 {
+    private string? _testData;
+    
+    public MyLoadTests()
+    {
+        _testData = "Load test initialized";
+    }
+    
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+
     [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
     public void ShouldHandleHighLoad()
     {
         // Load test - runs with actor-based framework
+        Assert.NotNull(_testData);
         System.Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
     }
 }
@@ -121,21 +147,25 @@ namespace MyTestProject
     }
 
     // Load tests - run with load testing framework using actors and concurrency
-    public class LoadFrameworkTests : Specification
+    public class LoadFrameworkTests : IDisposable
     {
-        protected override void EstablishContext() 
+        private string? _loadTestData;
+        
+        public LoadFrameworkTests()
         {
-            Console.WriteLine("EstablishContext: Load test setup completed");
+            _loadTestData = "Load test data initialized";
+            Console.WriteLine("Constructor: Load test setup completed");
         }
-
-        protected override void Because() 
+        
+        public void Dispose()
         {
-            Console.WriteLine("Because: Load test action executed");
+            Console.WriteLine("Dispose: Load test cleanup completed");
         }
 
         [Load(order: 1, concurrency: 5, duration: 2000, interval: 500)]
         public void ShouldExecuteWithLoadFramework()
         {
+            Assert.NotNull(_loadTestData);
             Console.WriteLine($"Load test executed at {DateTime.Now:HH:mm:ss.fff}");
         }
 
@@ -173,8 +203,8 @@ The framework automatically analyzes each test method:
 
 ### Class Requirements
 
-- **No special requirements**: Any test class can contain both standard tests and load tests
-- **Load Test Classes**: If inheriting from `Specification`, you get access to lifecycle hooks (EstablishContext, Because, DestroyContext)
+- **No special inheritance requirements**: Any test class can contain both standard tests and load tests
+- **Standard xUnit patterns**: Use constructor and IDisposable for setup/cleanup
 - **Mixed Classes**: Can contain both `[Fact]`/`[Theory]` methods and `[Load]` methods
 
 ## Error Handling
@@ -186,12 +216,14 @@ The framework properly handles:
 
 ## Migration Guide
 
-### From Previous UseLoadFramework Approach
-If you currently use `[UseLoadFramework]` attribute:
+### From Previous Specification Approach
+If you currently inherit from `Specification` class:
 
-1. Remove all `[UseLoadFramework]` attributes from test classes
-2. Your existing `[Load]` methods will continue to work as load tests
-3. You can now add standard `[Fact]` and `[Theory]` methods to the same classes
+1. Remove inheritance from `Specification` base class
+2. Convert `EstablishContext()` to constructor setup
+3. Convert `DestroyContext()` to `IDisposable.Dispose()` cleanup
+4. Remove `Because()` method - logic goes directly in test methods
+5. Your existing `[Load]` methods will continue to work as load tests
 
 ### From Standard xUnit Only
 If you have existing standard xUnit tests and want to add load testing:

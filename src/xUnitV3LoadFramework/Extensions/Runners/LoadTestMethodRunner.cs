@@ -10,14 +10,14 @@ public class LoadTestMethodRunner :
 	public static LoadTestMethodRunner Instance { get; } = new();
 
 	public async ValueTask<RunSummary> Run(
-		Specification specification,
+		object testClassInstance,
 		LoadTestMethod testMethod,
 		IReadOnlyCollection<LoadTestCase> testCases,
 		IMessageBus messageBus,
 		ExceptionAggregator aggregator,
 		CancellationTokenSource cancellationTokenSource)
 	{
-		await using var ctxt = new LoadTestMethodRunnerContext(specification, testMethod, testCases, messageBus, aggregator, cancellationTokenSource);
+		await using var ctxt = new LoadTestMethodRunnerContext(testClassInstance, testMethod, testCases, messageBus, aggregator, cancellationTokenSource);
 		await ctxt.InitializeAsync();
 
 		return await Run(ctxt);
@@ -26,11 +26,11 @@ public class LoadTestMethodRunner :
 	protected override ValueTask<RunSummary> RunTestCase(
 		LoadTestMethodRunnerContext ctxt,
 		LoadTestCase testCase) =>
-		   LoadTestCaseRunner.Instance.Run(ctxt.Specification, testCase, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
+		   LoadTestCaseRunner.Instance.Run(ctxt.TestClassInstance, testCase, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
 }
 
 public class LoadTestMethodRunnerContext(
-	Specification specification,
+	object testClassInstance,
 	LoadTestMethod testMethod,
 	IReadOnlyCollection<LoadTestCase> testCases,
 	IMessageBus messageBus,
@@ -38,5 +38,5 @@ public class LoadTestMethodRunnerContext(
 	CancellationTokenSource cancellationTokenSource) :
 		TestMethodRunnerContext<LoadTestMethod, LoadTestCase>(testMethod, testCases, ExplicitOption.Off, messageBus, aggregator, cancellationTokenSource)
 {
-	public Specification Specification { get; } = specification;
+	public object TestClassInstance { get; } = testClassInstance;
 }

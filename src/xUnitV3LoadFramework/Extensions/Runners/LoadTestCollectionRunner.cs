@@ -62,7 +62,7 @@ public class LoadTestCollectionRunner :
     {
         object? testClassInstance = null;
 
-        // Create instance of the standard test class (doesn't need to inherit from Specification)
+        // Create instance of the standard test class (doesn't need to inherit from anything specific)
         try
         {
             testClassInstance = Activator.CreateInstance(testClass.Class);
@@ -100,25 +100,14 @@ public class LoadTestCollectionRunner :
             return await FailTestClass(ctxt, testClass, testCases, ex);
         }
 
-        if (testClassInstance is not Specification specification)
-            return await FailTestClass(ctxt, testClass, testCases, new TestPipelineException($"Test class {testClass.Class.FullName} cannot be static, and must derive from Specification."));
+        if (testClassInstance == null)
+            return await FailTestClass(ctxt, testClass, testCases, new TestPipelineException($"Test class {testClass.Class.FullName} cannot be static, and failed to create instance."));
 
-        try
-        {
-            specification.OnStart();
-        }
-        catch (Exception ex)
-        {
-            return await FailTestClass(ctxt, testClass, testCases, ex);
-        }
+        var result = await LoadTestClassRunner.Instance.Run(testClassInstance, testClass, testCases, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
 
-        var result = await LoadTestClassRunner.Instance.Run(specification, testClass, testCases, ctxt.MessageBus, ctxt.Aggregator.Clone(), ctxt.CancellationTokenSource);
-
-        ctxt.Aggregator.Run(specification.OnFinish);
-
-        if (specification is IAsyncDisposable asyncDisposable)
+        if (testClassInstance is IAsyncDisposable asyncDisposable)
             await asyncDisposable.DisposeAsync();
-        else if (specification is IDisposable disposable)
+        else if (testClassInstance is IDisposable disposable)
             disposable.Dispose();
 
         return result;

@@ -26,10 +26,10 @@ public class LoadTestRunner :
 	protected override ValueTask<TimeSpan> InvokeTest(
 		LoadTestRunnerContext ctxt,
 		object? testClassInstance) =>
-		base.InvokeTest(ctxt, ctxt.Specification);
+		base.InvokeTest(ctxt, ctxt.TestClassInstance);
 
 	public async ValueTask<RunSummary> Run(
-		Specification specification,
+		object testClassInstance,
 		LoadTest test,
 		IMessageBus messageBus,
 		string? skipReason,
@@ -37,7 +37,7 @@ public class LoadTestRunner :
 		CancellationTokenSource cancellationTokenSource)
 	{
 
-		await using var ctxt = new LoadTestRunnerContext(specification, test, messageBus, skipReason, aggregator, cancellationTokenSource);
+		await using var ctxt = new LoadTestRunnerContext(testClassInstance, test, messageBus, skipReason, aggregator, cancellationTokenSource);
 		if (!string.IsNullOrEmpty(skipReason))
 		{
 			await OnTestSkipped(ctxt, skipReason, 0m, "", null );
@@ -139,7 +139,7 @@ public class LoadTestRunner :
 }
 
 public class LoadTestRunnerContext(
-	Specification specification,
+	object testClassInstance,
 	LoadTest test,
 	IMessageBus messageBus,
 	string? skipReason,
@@ -147,5 +147,5 @@ public class LoadTestRunnerContext(
 	CancellationTokenSource cancellationTokenSource) :
 	TestRunnerContext<LoadTest>(test, messageBus, skipReason, ExplicitOption.Off, aggregator, cancellationTokenSource, test.TestCase.TestMethod.Method, [])
 {
-	public Specification Specification { get; } = specification;
+	public object TestClassInstance { get; } = testClassInstance;
 }

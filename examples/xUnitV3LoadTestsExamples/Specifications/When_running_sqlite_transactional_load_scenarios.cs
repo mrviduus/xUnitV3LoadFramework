@@ -1,18 +1,18 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
 using xUnitV3LoadTests.Attributes;
 using xUnitV3LoadTests.Data;
 using xUnitV3LoadTests.Entities;
 
 namespace xUnitV3LoadTests.Specifications;
-public class When_running_sqlite_transactional_load_scenarios : Specification
+
+public class When_running_sqlite_transactional_load_scenarios : IDisposable
 {
 	private DbContextOptions<MyDbContext> _options = null!;
 	private SqliteConnection _connection = null!;
 
-	protected override void EstablishContext()
+	public When_running_sqlite_transactional_load_scenarios()
 	{
 		Console.WriteLine(">> Establishing SQLite transactional context");
 
@@ -27,12 +27,11 @@ public class When_running_sqlite_transactional_load_scenarios : Specification
 		// Initialize schema
 		using var context = new MyDbContext(_options);
 		context.Database.EnsureCreated();
+		
+		Console.WriteLine(">> Beginning transactional scenario");
 	}
 
-	protected override void Because() =>
-		Console.WriteLine(">> Beginning transactional scenario");
-
-	protected override void DestroyContext()
+	public void Dispose()
 	{
 		Console.WriteLine(">> Destroying transactional context");
 		_connection?.Dispose();

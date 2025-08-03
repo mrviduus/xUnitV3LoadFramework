@@ -66,58 +66,56 @@ public void Skipped_Load_Test()
 
 ## 🏗️ Base Classes
 
-### Specification
+### Standard xUnit Patterns
 
-Base class providing test lifecycle management and utilities.
+The framework supports standard xUnit patterns for test organization and lifecycle management.
 
 ```csharp
-namespace xUnitV3LoadFramework.Extensions
+using xUnitV3LoadFramework.Attributes;
+using Xunit;
+
+namespace YourTests
 {
-    public abstract class Specification
+    public class ApiLoadTests : IDisposable
     {
-        protected virtual void EstablishContext() { }
-        protected virtual void Because() { }
-        protected virtual void DestroyContext() { }
+        private readonly HttpClient _httpClient;
         
-        protected void Throw(string message);
-        protected void Throw(string message, Exception innerException);
+        public ApiLoadTests()
+        {
+            // Constructor - setup executed once per test class
+            _httpClient = new HttpClient();
+        }
+        
+        public void Dispose()
+        {
+            // Cleanup executed once per test class
+            _httpClient?.Dispose();
+        }
+        
+        [Fact]
+        public async Task Should_Connect_Successfully()
+        {
+            // Standard xUnit functional test
+            var response = await _httpClient.GetAsync("https://api.example.com/health");
+            Assert.True(response.IsSuccessStatusCode);
+        }
+        
+        [Load(concurrency: 50, duration: 30000, order: 1, interval: 1000)]
+        public async Task Should_Handle_Load() 
+        { 
+            // Load test - executed concurrently
+            var response = await _httpClient.GetAsync("https://api.example.com/data");
+            Assert.True(response.IsSuccessStatusCode);
+        }
     }
 }
 ```
 
-**Lifecycle Methods**:
-- `EstablishContext()` - Setup executed once before load test begins
-- `Because()` - Action executed for each load test iteration
-- `DestroyContext()` - Cleanup executed once after load test completes
-
-**Utility Methods**:
-- `Throw(string message)` - Throws exception with specified message
-- `Throw(string message, Exception innerException)` - Throws exception with message and inner exception
-
-**Example**:
-```csharp
-public class ApiLoadTests : Specification
-{
-    private HttpClient _httpClient;
-    
-    protected override void EstablishContext()
-    {
-        _httpClient = new HttpClient();
-    }
-    
-    protected override void Because()
-    {
-        var response = await _httpClient.GetAsync("https://api.example.com/data");
-        Assert.True(response.IsSuccessStatusCode);
-    }
-    
-    [Load(concurrency: 50, duration: 30000)]
-    public async Task Should_Handle_Load() 
-    { 
-        // Because() is called automatically for each iteration
-    }
-}
-```
+**Lifecycle Patterns**:
+- **Constructor** - Setup executed once before test class instantiation
+- **IDisposable.Dispose()** - Cleanup executed once after all tests in class complete
+- **[Fact] methods** - Standard xUnit functional tests
+- **[Load] methods** - Load tests executed with specified concurrency and duration
 
 ---
 
@@ -438,29 +436,38 @@ public async Task Should_Handle_Load()
 }
 ```
 
-### Specification-based Test
+### Mixed Testing Approach
 
 ```csharp
-public class ApiLoadTests : Specification
+public class ApiLoadTests : IDisposable
 {
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
     
-    protected override void EstablishContext()
+    public ApiLoadTests()
     {
         _httpClient = new HttpClient();
     }
     
-    protected override void Because()
+    public void Dispose()
     {
-        var response = _httpClient.GetAsync("https://api.example.com/users").Result;
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception($"API returned {response.StatusCode}");
-        }
+        _httpClient?.Dispose();
+    }
+    
+    [Fact]
+    public async Task Should_Connect_To_API()
+    {
+        // Standard functional test
+        var response = await _httpClient.GetAsync("https://api.example.com/health");
+        Assert.True(response.IsSuccessStatusCode);
     }
     
     [Load(order: 1, concurrency: 100, duration: 60000, interval: 5000)]
-    public void Should_Handle_User_List_Load() { }
+    public async Task Should_Handle_User_List_Load() 
+    {
+        // Load test - executed concurrently
+        var response = await _httpClient.GetAsync("https://api.example.com/users");
+        Assert.True(response.IsSuccessStatusCode);
+    }
 }
 ```
 

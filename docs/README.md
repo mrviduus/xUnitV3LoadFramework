@@ -86,14 +86,34 @@ A high-performance load testing framework built on xUnit v3 and Akka.NET, featur
 ## 💡 Quick Example
 
 ```csharp
-public class ApiLoadTests : Specification
+public class ApiLoadTests : IDisposable
 {
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task<bool> When_testing_api_endpoint()
+    private readonly HttpClient _client;
+
+    public ApiLoadTests()
     {
-        using var client = new HttpClient();
-        var response = await client.GetAsync("https://api.example.com/health");
-        return response.IsSuccessStatusCode;
+        _client = new HttpClient();
+    }
+
+    public void Dispose()
+    {
+        _client?.Dispose();
+    }
+
+    [Fact]
+    public async Task Should_Connect_To_API()
+    {
+        // Standard functional test
+        var response = await _client.GetAsync("https://api.example.com/health");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
+    public async Task Should_Handle_API_Load()
+    {
+        // Load test - executed concurrently
+        var response = await _client.GetAsync("https://api.example.com/health");
+        Assert.True(response.IsSuccessStatusCode);
     }
 }
 ```

@@ -79,36 +79,50 @@ dotnet test
 
 ### Basic Load Test Example
 
-Here's a clear example demonstrating how to define and execute load tests using the `Specification` base class and the `[Load]` attribute:
+Here's a clear example demonstrating how to define and execute load tests using standard xUnit patterns with the `[Load]` attribute:
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
-using System;
+using Xunit;
 
 namespace xUnitLoadDemo;
 
-public class ExampleLoadSpecification : Specification
+public class ExampleLoadTests : IDisposable
 {
-    protected override void EstablishContext()
+    private readonly string _testData;
+
+    public ExampleLoadTests()
     {
+        // Constructor for setup - runs once per test class
+        _testData = "Test data initialized";
         Console.WriteLine(">> Setup phase");
     }
 
-    protected override void Because()
+    public void Dispose()
     {
-        Console.WriteLine(">> Action phase");
+        // Cleanup - runs once per test class
+        Console.WriteLine(">> Cleanup phase");
+    }
+
+    [Fact]
+    public void Should_Initialize_Test_Data()
+    {
+        // Standard xUnit test
+        Assert.NotNull(_testData);
+        Console.WriteLine(">> Standard xUnit test completed");
     }
 
     [Load(order: 1, concurrency: 2, duration: 5000, interval: 500)]
-    public void should_run_load_scenario_1()
+    public void Should_Run_Load_Scenario_1()
     {
+        Assert.NotNull(_testData);
         Console.WriteLine(">> Running Load 1");
     }
 
     [Load(order: 2, concurrency: 3, duration: 7000, interval: 300)]
-    public void should_run_load_scenario_2()
+    public void Should_Run_Load_Scenario_2()
     {
+        Assert.NotNull(_testData);
         Console.WriteLine(">> Running Load 2");
     }
 }
@@ -118,32 +132,38 @@ public class ExampleLoadSpecification : Specification
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
+using Xunit;
 
-public class ApiLoadTests : Specification
+public class ApiLoadTests : IDisposable
 {
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
 
-    protected override void EstablishContext()
+    public ApiLoadTests()
     {
+        // Standard xUnit constructor pattern
         _httpClient = new HttpClient();
     }
 
-    protected override void Because()
+    public void Dispose()
     {
-        // Common setup for all load tests
+        // Standard xUnit cleanup pattern
+        _httpClient?.Dispose();
     }
 
-    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
-    public async Task When_testing_api_endpoint()
+    [Fact]
+    public async Task Should_Connect_To_API_Successfully()
     {
+        // Standard functional test
         var response = await _httpClient.GetAsync("https://api.example.com/health");
         Assert.True(response.IsSuccessStatusCode);
     }
 
-    protected override void DestroyContext()
+    [Load(order: 1, concurrency: 100, duration: 30000, interval: 1000)]
+    public async Task Should_Handle_API_Load()
     {
-        _httpClient?.Dispose();
+        // Load test - executed concurrently
+        var response = await _httpClient.GetAsync("https://api.example.com/health");
+        Assert.True(response.IsSuccessStatusCode);
     }
 }
 ```
