@@ -55,7 +55,7 @@ public class MixedTestsExample : IDisposable
 	public async Task Should_Handle_Various_Endpoints_In_Functional_Test(string url)
 	{
 		// Arrange & Act
-		var response = await _httpClient.GetAsync(url);
+		var response = await _httpClient.GetAsync(url, TestContext.Current.CancellationToken);
 
 		// Assert
 		Assert.True(response.IsSuccessStatusCode, $"Failed to get response from {url}");
