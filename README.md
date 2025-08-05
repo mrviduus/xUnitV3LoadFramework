@@ -35,7 +35,7 @@ public class MyTests
 {
     private readonly HttpClient _httpClient = new HttpClient();
 
-    [Load(order: 1, concurrency: 5, duration: 3000, interval: 500)] // 5 people testing for 3 seconds
+    [Load(concurrency: 5, duration: 3000, interval: 500)] // 5 people testing for 3 seconds
     public async Task Test_My_Website()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -93,7 +93,6 @@ public class MyFluentTests
 
 **Use Method 1 (Load attribute)** when:
 - You want the framework to automatically discover and run your load tests
-- You need tests to run in a specific order
 - You prefer attribute-based configuration
 
 **Use Method 2 (Fluent API)** when:

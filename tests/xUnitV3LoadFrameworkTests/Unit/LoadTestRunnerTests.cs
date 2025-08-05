@@ -10,7 +10,7 @@ namespace xUnitV3LoadFramework.Tests.Unit;
 /// </summary>
 public class LoadTestRunnerTests
 {
-    [Load(order: 1, concurrency: 2, duration: 1000, interval: 200)]
+    [Load(concurrency: 2, duration: 1000, interval: 200)]
     public async Task LoadTestRunner_Should_Execute_With_Load_Attribute()
     {
         // Arrange

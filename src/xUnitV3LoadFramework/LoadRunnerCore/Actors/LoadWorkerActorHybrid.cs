@@ -80,7 +80,28 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 
             // Define asynchronous message handler for StartLoadMessage to begin hybrid execution
             // When received, this triggers the main hybrid load test execution workflow
-            ReceiveAsync<StartLoadMessage>(async _ => await RunWorkAsync());
+            ReceiveAsync<StartLoadMessage>(async message =>
+            {
+                try
+                {
+                    await RunWorkAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Log error and send failure result
+                    _logger.Error(ex, "LoadWorkerActorHybrid failed during execution");
+                    Sender.Tell(new LoadResult 
+                    { 
+                        ScenarioName = _executionPlan.Name,
+                        Success = 0, 
+                        Failure = 1, 
+                        Total = 1, 
+                        Time = 0,
+                        RequestsPerSecond = 0,
+                        AverageLatency = 0
+                    });
+                }
+            });
         }
 
         /// <summary>

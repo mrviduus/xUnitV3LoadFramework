@@ -23,7 +23,7 @@ public class MyLoadTests
 {
     private readonly HttpClient httpClient = new HttpClient();
 
-    [Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+    [Load(concurrency: 5, duration: 3000, interval: 200)]
     public async Task LoadTest_API_Endpoint()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>

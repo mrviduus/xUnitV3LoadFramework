@@ -14,7 +14,7 @@ public class LoadIntegrationTests : xUnitV3LoadTests.TestSetup
     /// <summary>
     /// Tests basic Load functionality with HTTP client requests.
     /// </summary>
-    [Load(order: 1, concurrency: 2, duration: 2000, interval: 500)]
+    [Load(concurrency: 2, duration: 2000, interval: 500)]
     public async Task Load_Should_Execute_HTTP_Requests_Successfully()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -34,7 +34,7 @@ public class LoadIntegrationTests : xUnitV3LoadTests.TestSetup
     /// <summary>
     /// Tests Load with JSON API processing.
     /// </summary>
-    [Load(order: 2, concurrency: 2, duration: 1500, interval: 400)]
+    [Load(concurrency: 2, duration: 1500, interval: 400)]
     public async Task Load_Should_Process_JSON_Data()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
