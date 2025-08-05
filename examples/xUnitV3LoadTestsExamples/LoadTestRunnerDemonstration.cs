@@ -26,7 +26,7 @@ public class LoadTestRunnerDemonstration : IDisposable
     /// <summary>
     /// Traditional approach using Load attribute with LoadTestRunner.ExecuteAsync
     /// </summary>
-    [Load(order: 1, concurrency: 5, duration: 3000, interval: 200)]
+    [Load(concurrency: 5, duration: 3000, interval: 200)]
     public async Task Traditional_LoadTest_With_LoadTestRunner()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -46,7 +46,7 @@ public class LoadTestRunnerDemonstration : IDisposable
     /// <summary>
     /// Simplified approach using LoadTestRunner.RunAsync
     /// </summary>
-    [Load(order: 2, concurrency: 3, duration: 2000, interval: 300)]
+    [Load(concurrency: 3, duration: 2000, interval: 300)]
     public async Task Simplified_LoadTest_With_RunAsync()
     {
         var result = await LoadTestRunner.RunAsync(async () =>

@@ -26,7 +26,7 @@ public class MixedTestingScenarios : xUnitV3LoadTests.TestSetup
     /// <summary>
     /// Load test for mixed testing demonstration.
     /// </summary>
-    [Load(order: 1, concurrency: 2, duration: 1500, interval: 300)]
+    [Load(concurrency: 2, duration: 1500, interval: 300)]
     public async Task Load_Should_Execute_With_Other_Tests()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>

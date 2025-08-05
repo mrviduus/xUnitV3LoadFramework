@@ -54,7 +54,6 @@ namespace xUnitV3LoadFramework.Extensions
             
             // Log results
             Console.WriteLine($"Load test '{executionPlan.Name}' completed:");
-            Console.WriteLine($"  Order: {loadAttribute.Order}");
             Console.WriteLine($"  Total executions: {result.Total}");
             Console.WriteLine($"  Successful executions: {result.Success}");
             Console.WriteLine($"  Failed executions: {result.Failure}");

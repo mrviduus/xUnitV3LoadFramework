@@ -15,7 +15,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     /// High-concurrency test with 10 concurrent requests over 5 seconds.
     /// Validates framework performance under moderate concurrent load.
     /// </summary>
-    [Load(order: 1, concurrency: 10, duration: 5000, interval: 100)]
+    [Load(concurrency: 10, duration: 5000, interval: 100)]
     public async Task HighConcurrency_Should_Handle_10_Concurrent_Requests()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -39,7 +39,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     /// Stress test with very short intervals to test rapid execution.
     /// Validates framework behavior under rapid-fire request scenarios.
     /// </summary>
-    [Load(order: 2, concurrency: 5, duration: 3000, interval: 50)]
+    [Load(concurrency: 5, duration: 3000, interval: 50)]
     public async Task StressTest_Should_Handle_Rapid_Fire_Requests()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -62,7 +62,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     /// Endurance test with longer duration to validate sustained performance.
     /// Tests framework stability over extended execution periods.
     /// </summary>
-    [Load(order: 3, concurrency: 3, duration: 8000, interval: 200)]
+    [Load(concurrency: 3, duration: 8000, interval: 200)]
     public async Task EnduranceTest_Should_Maintain_Performance_Over_Time()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
@@ -86,7 +86,7 @@ public class HighLoadPerformanceTests : xUnitV3LoadTests.TestSetup
     /// Memory pressure test to validate resource management.
     /// Ensures the framework handles memory efficiently under load.
     /// </summary>
-    [Load(order: 4, concurrency: 8, duration: 4000, interval: 150)]
+    [Load(concurrency: 8, duration: 4000, interval: 150)]
     public async Task MemoryPressureTest_Should_Manage_Resources_Efficiently()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
