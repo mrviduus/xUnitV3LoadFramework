@@ -52,29 +52,31 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
             // All test results, latency measurements, and status updates go through this actor
             _resultCollector = resultCollector;
 
-            // Define asynchronous message handler for StartLoadMessage
-            // When received, this triggers the main load test execution workflow
-            ReceiveAsync<StartLoadMessage>(async message =>
+            // Define message handler for StartLoadMessage
+            // Uses PipeTo pattern to properly handle async operations in actors
+            Receive<StartLoadMessage>(message =>
             {
-                try
-                {
-                    await RunWorkAsync();
-                }
-                catch (Exception ex)
-                {
-                    // Log error and send failure result
-                    _logger.Error(ex, "LoadWorkerActor failed during execution");
-                    Sender.Tell(new LoadResult 
-                    { 
-                        ScenarioName = _executionPlan.Name,
-                        Success = 0, 
-                        Failure = 1, 
-                        Total = 1, 
-                        Time = 0,
-                        RequestsPerSecond = 0,
-                        AverageLatency = 0
-                    });
-                }
+                // Use PipeTo to handle async operation and maintain proper sender reference
+                RunWorkAsync()
+                    .ContinueWith(task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            _logger.Error(task.Exception, "LoadWorkerActor failed during execution");
+                            return new LoadResult 
+                            { 
+                                ScenarioName = _executionPlan.Name,
+                                Success = 0, 
+                                Failure = 1, 
+                                Total = 1, 
+                                Time = 0,
+                                RequestsPerSecond = 0,
+                                AverageLatency = 0
+                            };
+                        }
+                        return task.Result;
+                    })
+                    .PipeTo(Sender);
             });
         }
 
@@ -83,7 +85,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
         /// Manages timing, batch processing, task coordination, and result collection.
         /// Implements precise interval control and comprehensive error handling.
         /// </summary>
-        private async Task RunWorkAsync()
+        private async Task<LoadResult> RunWorkAsync()
         {
             // Extract actor name from the actor path for consistent logging and identification
             // This provides a unique identifier for tracking this specific worker instance
@@ -256,16 +258,16 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                 // Log successful completion of the load test execution phase
                 // Indicates that the worker has finished its primary responsibility
                 _logger.Info("LoadWorkerActor '{0}' has completed load testing.", workerName);
-
-                // Request the final aggregated results from the result collector actor
-                // This triggers result calculation and returns comprehensive performance metrics
-                var finalResult = await _resultCollector.Ask<LoadResult>(
-                    new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
-
-                // Send the final consolidated results back to the test runner
-                // This completes the actor communication chain and provides results to the caller
-                Sender.Tell(finalResult);
             }
+
+            // Request the final aggregated results from the result collector actor
+            // This triggers result calculation and returns comprehensive performance metrics
+            var finalResult = await _resultCollector.Ask<LoadResult>(
+                new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
+
+            // Return the final consolidated results
+            // This completes the actor communication chain and provides results to the caller
+            return finalResult;
         }
 
         /// <summary>

@@ -101,10 +101,14 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Runner
 			
 			try
 			{
-				await worker.Ask<LoadResult>(
+				var result = await worker.Ask<LoadResult>(
 					new StartLoadMessage(),
 					workerTimeout
 				);
+
+				// Return the result directly from the worker
+				// No need to ask the result collector separately since the worker already aggregates results
+				return result;
 			}
 			catch (TimeoutException ex)
 			{
@@ -133,8 +137,9 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Runner
 			catch (TimeoutException ex)
 			{
 				throw new TimeoutException(
-					$"Result collector timed out after {resultTimeout.TotalSeconds} seconds. " +
-					$"This may indicate issues with result aggregation or actor communication.", ex);
+					$"Load test worker timed out after {workerTimeout.TotalSeconds} seconds. " +
+					$"Test duration was {executionPlan.Settings.Duration.TotalSeconds} seconds. " +
+					$"Consider increasing test timeout or reducing test complexity.", ex);
 			}
 		}
 	}

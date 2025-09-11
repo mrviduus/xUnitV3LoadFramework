@@ -78,29 +78,31 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
             // Fixed size prevents dynamic resizing overhead during test execution
             _workerTasks = new List<Task>(_workerCount);
 
-            // Define asynchronous message handler for StartLoadMessage to begin hybrid execution
-            // When received, this triggers the main hybrid load test execution workflow
-            ReceiveAsync<StartLoadMessage>(async message =>
+            // Define message handler for StartLoadMessage using PipeTo pattern
+            // Uses PipeTo pattern to properly handle async operations in actors
+            Receive<StartLoadMessage>(message =>
             {
-                try
-                {
-                    await RunWorkAsync();
-                }
-                catch (Exception ex)
-                {
-                    // Log error and send failure result
-                    _logger.Error(ex, "LoadWorkerActorHybrid failed during execution");
-                    Sender.Tell(new LoadResult 
-                    { 
-                        ScenarioName = _executionPlan.Name,
-                        Success = 0, 
-                        Failure = 1, 
-                        Total = 1, 
-                        Time = 0,
-                        RequestsPerSecond = 0,
-                        AverageLatency = 0
-                    });
-                }
+                // Use PipeTo to handle async operation and maintain proper sender reference
+                RunWorkAsync()
+                    .ContinueWith(task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            _logger.Error(task.Exception, "LoadWorkerActorHybrid failed during execution");
+                            return new LoadResult 
+                            { 
+                                ScenarioName = _executionPlan.Name,
+                                Success = 0, 
+                                Failure = 1, 
+                                Total = 1, 
+                                Time = 0,
+                                RequestsPerSecond = 0,
+                                AverageLatency = 0
+                            };
+                        }
+                        return task.Result;
+                    })
+                    .PipeTo(Sender);
             });
         }
 
@@ -147,7 +149,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
         /// Manages worker pool creation, work scheduling, timing control, and result collection.
         /// Implements high-performance producer-consumer pattern with channels for optimal throughput.
         /// </summary>
-        private async Task RunWorkAsync()
+        private async Task<LoadResult> RunWorkAsync()
         {
             // Extract actor name from the actor path for consistent logging and identification
             // This provides a unique identifier for tracking this specific hybrid worker instance
@@ -221,21 +223,21 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                 // Ensure the channel writer is completed even if exceptions occurred
                 // This prevents workers from waiting indefinitely for new work items
                 _workChannel.Writer.TryComplete();
-
-                // Request the final aggregated results from the result collector actor
-                // This triggers result calculation and returns comprehensive performance metrics
-                var finalResult = await _resultCollector.Ask<LoadResult>(
-                    new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
-                
-                // Log comprehensive completion summary with key performance indicators
-                // Provides immediate visibility into test results and resource utilization
-                _logger.Info("LoadWorkerActorHybrid '{0}' completed. Total: {1}, Success: {2}, Failed: {3}, In-flight: {4}", 
-                    workerName, finalResult.Total, finalResult.Success, finalResult.Failure, finalResult.RequestsInFlight);
-                
-                // Send the final consolidated results back to the test runner
-                // This completes the actor communication chain and provides results to the caller
-                Sender.Tell(finalResult);
             }
+
+            // Request the final aggregated results from the result collector actor
+            // This triggers result calculation and returns comprehensive performance metrics
+            var finalResult = await _resultCollector.Ask<LoadResult>(
+                new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
+            
+            // Log comprehensive completion summary with key performance indicators
+            // Provides immediate visibility into test results and resource utilization
+            _logger.Info("LoadWorkerActorHybrid '{0}' completed. Total: {1}, Success: {2}, Failed: {3}, In-flight: {4}", 
+                workerName, finalResult.Total, finalResult.Success, finalResult.Failure, finalResult.RequestsInFlight);
+            
+            // Return the final consolidated results
+            // This completes the actor communication chain and provides results to the caller
+            return finalResult;
         }
 
         /// <summary>
