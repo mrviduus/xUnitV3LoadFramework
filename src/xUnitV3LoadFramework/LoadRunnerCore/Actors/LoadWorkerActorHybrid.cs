@@ -293,10 +293,27 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                 // Used to determine if we've exceeded the configured test duration
                 var elapsedTime = DateTime.UtcNow - startTime;
                 
-                // Check if we've exceeded the configured test duration
-                // This provides a secondary safety check beyond the cancellation token
-                if (elapsedTime >= _executionPlan.Settings.Duration)
+                // Calculate the theoretical time when this batch should have started
+                // This is used for timing accuracy and detecting schedule drift
+                var expectedBatchStartTime = TimeSpan.FromMilliseconds(batchNumber * _executionPlan.Settings.Interval.TotalMilliseconds);
+                
+                // Apply termination mode logic to determine when to stop creating new batches
+                var shouldTerminate = _executionPlan.Settings.TerminationMode switch
+                {
+                    TerminationMode.Duration => elapsedTime >= _executionPlan.Settings.Duration,
+                    TerminationMode.CompleteCurrentInterval => 
+                        expectedBatchStartTime >= _executionPlan.Settings.Duration,
+                    TerminationMode.StrictDuration => elapsedTime >= _executionPlan.Settings.Duration,
+                    _ => elapsedTime >= _executionPlan.Settings.Duration
+                };
+
+                if (shouldTerminate)
+                {
+                    _logger.Debug("LoadWorkerActorHybrid terminating: mode={0}, elapsed={1:F2}ms, duration={2:F2}ms, batch={3}", 
+                        _executionPlan.Settings.TerminationMode, elapsedTime.TotalMilliseconds, 
+                        _executionPlan.Settings.Duration.TotalMilliseconds, batchNumber + 1);
                     break;
+                }
 
                 // Generate and schedule the configured number of work items for this batch
                 // Each work item represents one execution of the test action

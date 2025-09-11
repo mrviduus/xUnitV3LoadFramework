@@ -117,30 +117,6 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Runner
 					$"Test duration was {executionPlan.Settings.Duration.TotalSeconds} seconds. " +
 					$"Consider increasing test timeout or reducing test complexity.", ex);
 			}
-
-			// Request final aggregated results from the result collector actor
-			// This includes all performance metrics, latency percentiles, and error rates
-			// Separate request ensures all data has been processed and aggregated
-			var resultTimeout = TimeSpan.FromSeconds(Math.Max(15, executionPlan.Settings.Duration.TotalSeconds + 10));
-			
-			try
-			{
-				var finalResult = await resultCollector.Ask<LoadResult>(
-					new GetLoadResultMessage(),
-					resultTimeout
-				);
-
-				// Return the comprehensive load test results for analysis and reporting
-				// Results include timing data, throughput metrics, error rates, and resource utilization
-				return finalResult;
-			}
-			catch (TimeoutException ex)
-			{
-				throw new TimeoutException(
-					$"Load test worker timed out after {workerTimeout.TotalSeconds} seconds. " +
-					$"Test duration was {executionPlan.Settings.Duration.TotalSeconds} seconds. " +
-					$"Consider increasing test timeout or reducing test complexity.", ex);
-			}
 		}
 	}
 }
