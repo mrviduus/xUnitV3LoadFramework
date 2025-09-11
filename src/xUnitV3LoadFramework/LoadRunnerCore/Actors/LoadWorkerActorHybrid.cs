@@ -199,8 +199,33 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                 _workChannel.Writer.TryComplete();
 
                 // Wait for all worker tasks to complete processing their remaining work items
-                // This ensures all scheduled work is finished before finalizing results
-                await Task.WhenAll(_workerTasks);
+                // Use configurable graceful stop timeout instead of indefinite wait
+                var incompleteWorkers = _workerTasks.Where(t => !t.IsCompleted).ToList();
+                if (incompleteWorkers.Any())
+                {
+                    var gracePeriod = _executionPlan.Settings.EffectiveGracefulStopTimeout;
+                    _logger.Info("LoadWorkerActorHybrid '{0}' waiting {1:F1}s for {2} workers to complete.", 
+                        workerName, gracePeriod.TotalSeconds, incompleteWorkers.Count);
+                    
+                    var allWorkers = Task.WhenAll(incompleteWorkers);
+                    var timeoutTask = Task.Delay(gracePeriod);
+                    var completed = await Task.WhenAny(allWorkers, timeoutTask);
+                    
+                    if (completed == allWorkers)
+                    {
+                        _logger.Info("LoadWorkerActorHybrid '{0}' - all workers completed successfully.", workerName);
+                    }
+                    else
+                    {
+                        var stillRunning = _workerTasks.Count(t => !t.IsCompleted);
+                        _logger.Warning("LoadWorkerActorHybrid '{0}' - {1} workers still running after grace period.", 
+                            workerName, stillRunning);
+                    }
+                }
+                else
+                {
+                    _logger.Info("LoadWorkerActorHybrid '{0}' - all workers already completed.", workerName);
+                }
                 
                 // Wait for the scheduler task to complete its work item generation
                 // This ensures all scheduling operations are finished
