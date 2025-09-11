@@ -184,7 +184,7 @@ namespace xUnitV3LoadFrameworkTests.Unit
         }
 
         [Fact]
-        public async Task Should_Validate_GracefulStopTimeout_Bounds()
+        public void Should_Validate_GracefulStopTimeout_Bounds()
         {
             // Test that bounds validation works as expected
             var settings = new LoadSettings
