@@ -36,5 +36,47 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Models
         /// Common values range from 100ms for high-frequency tests to 5000ms for periodic load.
         /// </summary>
         public TimeSpan Interval { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the maximum time to wait for in-flight requests after test duration expires.
+        /// Default behavior maintains backward compatibility.
+        /// Industry standard: 10-30% of test duration with reasonable bounds.
+        /// Null value triggers automatic calculation based on test duration.
+        /// </summary>
+        public TimeSpan? GracefulStopTimeout { get; set; }
+        
+        /// <summary>
+        /// Gets or sets how the test determines when to stop creating new batches.
+        /// Default maintains current behavior for backward compatibility.
+        /// Industry standard is CompleteCurrentInterval for predictable request counts.
+        /// </summary>
+        public TerminationMode TerminationMode { get; set; } = TerminationMode.Duration;
+        
+        /// <summary>
+        /// Gets the effective graceful stop timeout, applying defaults if not specified.
+        /// Implements industry standard calculations when null.
+        /// Uses 30% of test duration, bounded between 5 seconds and 60 seconds.
+        /// </summary>
+        public TimeSpan EffectiveGracefulStopTimeout => 
+            GracefulStopTimeout ?? CalculateDefaultGracefulStopTimeout();
+        
+        /// <summary>
+        /// Calculates industry-standard graceful stop timeout based on test duration.
+        /// Uses 30% of test duration, bounded between 5 seconds and 60 seconds.
+        /// Provides reasonable defaults for various test scenarios.
+        /// </summary>
+        private TimeSpan CalculateDefaultGracefulStopTimeout()
+        {
+            var thirtyPercentOfDuration = TimeSpan.FromMilliseconds(Duration.TotalMilliseconds * 0.3);
+            var minTimeout = TimeSpan.FromSeconds(5);
+            var maxTimeout = TimeSpan.FromSeconds(60);
+            
+            if (thirtyPercentOfDuration < minTimeout)
+                return minTimeout;
+            if (thirtyPercentOfDuration > maxTimeout)
+                return maxTimeout;
+                
+            return thirtyPercentOfDuration;
+        }
     }
 }

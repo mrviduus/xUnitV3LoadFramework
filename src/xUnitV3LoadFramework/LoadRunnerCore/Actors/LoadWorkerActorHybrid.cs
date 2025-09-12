@@ -78,29 +78,31 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
             // Fixed size prevents dynamic resizing overhead during test execution
             _workerTasks = new List<Task>(_workerCount);
 
-            // Define asynchronous message handler for StartLoadMessage to begin hybrid execution
-            // When received, this triggers the main hybrid load test execution workflow
-            ReceiveAsync<StartLoadMessage>(async message =>
+            // Define message handler for StartLoadMessage using PipeTo pattern
+            // Uses PipeTo pattern to properly handle async operations in actors
+            Receive<StartLoadMessage>(message =>
             {
-                try
-                {
-                    await RunWorkAsync();
-                }
-                catch (Exception ex)
-                {
-                    // Log error and send failure result
-                    _logger.Error(ex, "LoadWorkerActorHybrid failed during execution");
-                    Sender.Tell(new LoadResult 
-                    { 
-                        ScenarioName = _executionPlan.Name,
-                        Success = 0, 
-                        Failure = 1, 
-                        Total = 1, 
-                        Time = 0,
-                        RequestsPerSecond = 0,
-                        AverageLatency = 0
-                    });
-                }
+                // Use PipeTo to handle async operation and maintain proper sender reference
+                RunWorkAsync()
+                    .ContinueWith(task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            _logger.Error(task.Exception, "LoadWorkerActorHybrid failed during execution");
+                            return new LoadResult 
+                            { 
+                                ScenarioName = _executionPlan.Name,
+                                Success = 0, 
+                                Failure = 1, 
+                                Total = 1, 
+                                Time = 0,
+                                RequestsPerSecond = 0,
+                                AverageLatency = 0
+                            };
+                        }
+                        return task.Result;
+                    })
+                    .PipeTo(Sender);
             });
         }
 
@@ -147,7 +149,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
         /// Manages worker pool creation, work scheduling, timing control, and result collection.
         /// Implements high-performance producer-consumer pattern with channels for optimal throughput.
         /// </summary>
-        private async Task RunWorkAsync()
+        private async Task<LoadResult> RunWorkAsync()
         {
             // Extract actor name from the actor path for consistent logging and identification
             // This provides a unique identifier for tracking this specific hybrid worker instance
@@ -197,8 +199,33 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                 _workChannel.Writer.TryComplete();
 
                 // Wait for all worker tasks to complete processing their remaining work items
-                // This ensures all scheduled work is finished before finalizing results
-                await Task.WhenAll(_workerTasks);
+                // Use configurable graceful stop timeout instead of indefinite wait
+                var incompleteWorkers = _workerTasks.Where(t => !t.IsCompleted).ToList();
+                if (incompleteWorkers.Any())
+                {
+                    var gracePeriod = _executionPlan.Settings.EffectiveGracefulStopTimeout;
+                    _logger.Info("LoadWorkerActorHybrid '{0}' waiting {1:F1}s for {2} workers to complete.", 
+                        workerName, gracePeriod.TotalSeconds, incompleteWorkers.Count);
+                    
+                    var allWorkers = Task.WhenAll(incompleteWorkers);
+                    var timeoutTask = Task.Delay(gracePeriod);
+                    var completed = await Task.WhenAny(allWorkers, timeoutTask);
+                    
+                    if (completed == allWorkers)
+                    {
+                        _logger.Info("LoadWorkerActorHybrid '{0}' - all workers completed successfully.", workerName);
+                    }
+                    else
+                    {
+                        var stillRunning = _workerTasks.Count(t => !t.IsCompleted);
+                        _logger.Warning("LoadWorkerActorHybrid '{0}' - {1} workers still running after grace period.", 
+                            workerName, stillRunning);
+                    }
+                }
+                else
+                {
+                    _logger.Info("LoadWorkerActorHybrid '{0}' - all workers already completed.", workerName);
+                }
                 
                 // Wait for the scheduler task to complete its work item generation
                 // This ensures all scheduling operations are finished
@@ -221,21 +248,23 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                 // Ensure the channel writer is completed even if exceptions occurred
                 // This prevents workers from waiting indefinitely for new work items
                 _workChannel.Writer.TryComplete();
-
-                // Request the final aggregated results from the result collector actor
-                // This triggers result calculation and returns comprehensive performance metrics
-                var finalResult = await _resultCollector.Ask<LoadResult>(
-                    new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
-                
-                // Log comprehensive completion summary with key performance indicators
-                // Provides immediate visibility into test results and resource utilization
-                _logger.Info("LoadWorkerActorHybrid '{0}' completed. Total: {1}, Success: {2}, Failed: {3}, In-flight: {4}", 
-                    workerName, finalResult.Total, finalResult.Success, finalResult.Failure, finalResult.RequestsInFlight);
-                
-                // Send the final consolidated results back to the test runner
-                // This completes the actor communication chain and provides results to the caller
-                Sender.Tell(finalResult);
             }
+
+            // Request the final aggregated results from the result collector actor
+            // This triggers result calculation and returns comprehensive performance metrics
+            // Use adaptive timeout based on test duration for CI environments
+            var resultTimeout = TimeSpan.FromSeconds(Math.Max(30, _executionPlan.Settings.Duration.TotalSeconds / 2));
+            var finalResult = await _resultCollector.Ask<LoadResult>(
+                new GetLoadResultMessage(), resultTimeout);
+            
+            // Log comprehensive completion summary with key performance indicators
+            // Provides immediate visibility into test results and resource utilization
+            _logger.Info("LoadWorkerActorHybrid '{0}' completed. Total: {1}, Success: {2}, Failed: {3}, In-flight: {4}", 
+                workerName, finalResult.Total, finalResult.Success, finalResult.Failure, finalResult.RequestsInFlight);
+            
+            // Return the final consolidated results
+            // This completes the actor communication chain and provides results to the caller
+            return finalResult;
         }
 
         /// <summary>
@@ -266,10 +295,27 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                 // Used to determine if we've exceeded the configured test duration
                 var elapsedTime = DateTime.UtcNow - startTime;
                 
-                // Check if we've exceeded the configured test duration
-                // This provides a secondary safety check beyond the cancellation token
-                if (elapsedTime >= _executionPlan.Settings.Duration)
+                // Calculate the theoretical time when this batch should have started
+                // This is used for timing accuracy and detecting schedule drift
+                var expectedBatchStartTime = TimeSpan.FromMilliseconds(batchNumber * _executionPlan.Settings.Interval.TotalMilliseconds);
+                
+                // Apply termination mode logic to determine when to stop creating new batches
+                var shouldTerminate = _executionPlan.Settings.TerminationMode switch
+                {
+                    TerminationMode.Duration => elapsedTime >= _executionPlan.Settings.Duration,
+                    TerminationMode.CompleteCurrentInterval => 
+                        expectedBatchStartTime >= _executionPlan.Settings.Duration,
+                    TerminationMode.StrictDuration => elapsedTime >= _executionPlan.Settings.Duration,
+                    _ => elapsedTime >= _executionPlan.Settings.Duration
+                };
+
+                if (shouldTerminate)
+                {
+                    _logger.Debug("LoadWorkerActorHybrid terminating: mode={0}, elapsed={1:F2}ms, duration={2:F2}ms, batch={3}", 
+                        _executionPlan.Settings.TerminationMode, elapsedTime.TotalMilliseconds, 
+                        _executionPlan.Settings.Duration.TotalMilliseconds, batchNumber + 1);
                     break;
+                }
 
                 // Generate and schedule the configured number of work items for this batch
                 // Each work item represents one execution of the test action

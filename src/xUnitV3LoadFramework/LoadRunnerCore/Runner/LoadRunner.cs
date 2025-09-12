@@ -96,15 +96,19 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Runner
 
 			// Send start message to worker and wait for completion with adaptive timeout
 			// The timeout uses a more generous buffer to account for system load and actor overhead
-			// Minimum timeout of 30 seconds ensures enough time for actor initialization and cleanup
-			var workerTimeout = TimeSpan.FromSeconds(Math.Max(30, executionPlan.Settings.Duration.TotalSeconds + 20));
+			// Increased buffer from 20 to 60 seconds and minimum from 30 to 60 seconds for CI resilience
+			var workerTimeout = TimeSpan.FromSeconds(Math.Max(60, executionPlan.Settings.Duration.TotalSeconds + 60));
 			
 			try
 			{
-				await worker.Ask<LoadResult>(
+				var result = await worker.Ask<LoadResult>(
 					new StartLoadMessage(),
 					workerTimeout
 				);
+
+				// Return the result directly from the worker
+				// No need to ask the result collector separately since the worker already aggregates results
+				return result;
 			}
 			catch (TimeoutException ex)
 			{
@@ -112,29 +116,6 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Runner
 					$"Load test worker timed out after {workerTimeout.TotalSeconds} seconds. " +
 					$"Test duration was {executionPlan.Settings.Duration.TotalSeconds} seconds. " +
 					$"Consider increasing test timeout or reducing test complexity.", ex);
-			}
-
-			// Request final aggregated results from the result collector actor
-			// This includes all performance metrics, latency percentiles, and error rates
-			// Separate request ensures all data has been processed and aggregated
-			var resultTimeout = TimeSpan.FromSeconds(Math.Max(15, executionPlan.Settings.Duration.TotalSeconds + 10));
-			
-			try
-			{
-				var finalResult = await resultCollector.Ask<LoadResult>(
-					new GetLoadResultMessage(),
-					resultTimeout
-				);
-
-				// Return the comprehensive load test results for analysis and reporting
-				// Results include timing data, throughput metrics, error rates, and resource utilization
-				return finalResult;
-			}
-			catch (TimeoutException ex)
-			{
-				throw new TimeoutException(
-					$"Result collector timed out after {resultTimeout.TotalSeconds} seconds. " +
-					$"This may indicate issues with result aggregation or actor communication.", ex);
 			}
 		}
 	}

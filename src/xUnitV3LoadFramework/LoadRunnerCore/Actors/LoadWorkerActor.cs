@@ -52,29 +52,31 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
             // All test results, latency measurements, and status updates go through this actor
             _resultCollector = resultCollector;
 
-            // Define asynchronous message handler for StartLoadMessage
-            // When received, this triggers the main load test execution workflow
-            ReceiveAsync<StartLoadMessage>(async message =>
+            // Define message handler for StartLoadMessage
+            // Uses PipeTo pattern to properly handle async operations in actors
+            Receive<StartLoadMessage>(message =>
             {
-                try
-                {
-                    await RunWorkAsync();
-                }
-                catch (Exception ex)
-                {
-                    // Log error and send failure result
-                    _logger.Error(ex, "LoadWorkerActor failed during execution");
-                    Sender.Tell(new LoadResult 
-                    { 
-                        ScenarioName = _executionPlan.Name,
-                        Success = 0, 
-                        Failure = 1, 
-                        Total = 1, 
-                        Time = 0,
-                        RequestsPerSecond = 0,
-                        AverageLatency = 0
-                    });
-                }
+                // Use PipeTo to handle async operation and maintain proper sender reference
+                RunWorkAsync()
+                    .ContinueWith(task =>
+                    {
+                        if (task.IsFaulted)
+                        {
+                            _logger.Error(task.Exception, "LoadWorkerActor failed during execution");
+                            return new LoadResult 
+                            { 
+                                ScenarioName = _executionPlan.Name,
+                                Success = 0, 
+                                Failure = 1, 
+                                Total = 1, 
+                                Time = 0,
+                                RequestsPerSecond = 0,
+                                AverageLatency = 0
+                            };
+                        }
+                        return task.Result;
+                    })
+                    .PipeTo(Sender);
             });
         }
 
@@ -83,7 +85,7 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
         /// Manages timing, batch processing, task coordination, and result collection.
         /// Implements precise interval control and comprehensive error handling.
         /// </summary>
-        private async Task RunWorkAsync()
+        private async Task<LoadResult> RunWorkAsync()
         {
             // Extract actor name from the actor path for consistent logging and identification
             // This provides a unique identifier for tracking this specific worker instance
@@ -137,11 +139,21 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
                     // This is used for timing accuracy and detecting schedule drift
                     var expectedBatchStartTime = TimeSpan.FromMilliseconds(batchNumber * _executionPlan.Settings.Interval.TotalMilliseconds);
                     
-                    // Check if we've exceeded the configured test duration
-                    // This provides a secondary safety check beyond the cancellation token
-                    if (elapsedTime >= _executionPlan.Settings.Duration)
+                    // Apply termination mode logic to determine when to stop creating new batches
+                    var shouldTerminate = _executionPlan.Settings.TerminationMode switch
                     {
-                        // Exit the loop cleanly when test duration is reached
+                        TerminationMode.Duration => elapsedTime >= _executionPlan.Settings.Duration,
+                        TerminationMode.CompleteCurrentInterval => 
+                            expectedBatchStartTime >= _executionPlan.Settings.Duration,
+                        TerminationMode.StrictDuration => elapsedTime >= _executionPlan.Settings.Duration,
+                        _ => elapsedTime >= _executionPlan.Settings.Duration
+                    };
+
+                    if (shouldTerminate)
+                    {
+                        _logger.Debug("LoadWorkerActor '{0}' terminating: mode={1}, elapsed={2:F2}ms, duration={3:F2}ms, batch={4}", 
+                            workerName, _executionPlan.Settings.TerminationMode, elapsedTime.TotalMilliseconds, 
+                            _executionPlan.Settings.Duration.TotalMilliseconds, batchNumber + 1);
                         break;
                     }
 
@@ -220,52 +232,59 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
             }
             finally
             {
-                // Log the current state before beginning cleanup operations
-                // Provides visibility into how many tasks are still pending completion
-                _logger.Info("LoadWorkerActor '{0}' finished spawning tasks. Waiting for {1} tasks to complete.", 
-                    workerName, runningTasks.Count(t => !t.IsCompleted));
+                var incompleteTasks = runningTasks.Where(t => !t.IsCompleted).ToList();
+                _logger.Info("LoadWorkerActor '{0}' finished spawning tasks. Waiting for {1} in-flight requests to complete.", 
+                    workerName, incompleteTasks.Count);
 
-                // Wait for all outstanding tasks to complete with a reasonable timeout
-                // This ensures we capture all results before finalizing the test
-                try
+                if (incompleteTasks.Any())
                 {
-                    // Calculate timeout that allows enough time for tasks to complete
-                    // Uses the longer of 30 seconds or the test duration to accommodate various scenarios
-                    var completionTimeout = TimeSpan.FromSeconds(Math.Max(30, _executionPlan.Settings.Duration.TotalSeconds));
-                    
-                    // Create a composite task that completes when all running tasks finish
-                    // This allows us to wait for everything with a single timeout
-                    var allTasks = Task.WhenAll(runningTasks.Where(t => !t.IsCompleted));
-                    
-                    // Wait for either all tasks to complete or timeout to expire
-                    // This prevents indefinite hanging while allowing reasonable completion time
-                    if (await Task.WhenAny(allTasks, Task.Delay(completionTimeout)) != allTasks)
+                    try
                     {
-                        // Log warning if some tasks didn't complete within the timeout
-                        // This indicates potential issues with the test action or system performance
-                        _logger.Warning("LoadWorkerActor '{0}' timed out waiting for tasks to complete.", workerName);
+                        // Use configurable grace period instead of hardcoded timeout
+                        var gracePeriod = _executionPlan.Settings.EffectiveGracefulStopTimeout;
+                        
+                        _logger.Info("LoadWorkerActor '{0}' allowing {1:F1}s grace period for in-flight requests (mode: {2}).", 
+                            workerName, gracePeriod.TotalSeconds, _executionPlan.Settings.TerminationMode);
+
+                        var allTasks = Task.WhenAll(incompleteTasks);
+                        var timeoutTask = Task.Delay(gracePeriod);
+                        var completed = await Task.WhenAny(allTasks, timeoutTask);
+                        
+                        if (completed == allTasks)
+                        {
+                            _logger.Info("LoadWorkerActor '{0}' - all {1} in-flight requests completed successfully.", 
+                                workerName, incompleteTasks.Count);
+                        }
+                        else
+                        {
+                            var stillRunning = incompleteTasks.Count(t => !t.IsCompleted);
+                            _logger.Warning("LoadWorkerActor '{0}' - {1} of {2} requests still in-flight after {3:F1}s grace period.", 
+                                workerName, stillRunning, incompleteTasks.Count, gracePeriod.TotalSeconds);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Warning("LoadWorkerActor '{0}' error during graceful stop: {1}", workerName, ex.Message);
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    // Log any errors during task completion wait without failing the entire test
-                    // This ensures we still get partial results even if cleanup encounters issues
-                    _logger.Warning("LoadWorkerActor '{0}' error while waiting for tasks: {1}", workerName, ex.Message);
+                    _logger.Info("LoadWorkerActor '{0}' - no in-flight requests to wait for.", workerName);
                 }
-
-                // Log successful completion of the load test execution phase
-                // Indicates that the worker has finished its primary responsibility
-                _logger.Info("LoadWorkerActor '{0}' has completed load testing.", workerName);
-
-                // Request the final aggregated results from the result collector actor
-                // This triggers result calculation and returns comprehensive performance metrics
-                var finalResult = await _resultCollector.Ask<LoadResult>(
-                    new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
-
-                // Send the final consolidated results back to the test runner
-                // This completes the actor communication chain and provides results to the caller
-                Sender.Tell(finalResult);
+                
+                _logger.Info("LoadWorkerActor '{0}' completed load testing phase.", workerName);
             }
+
+            // Request the final aggregated results from the result collector actor
+            // This triggers result calculation and returns comprehensive performance metrics
+            // Use adaptive timeout based on test duration for CI environments
+            var resultTimeout = TimeSpan.FromSeconds(Math.Max(30, _executionPlan.Settings.Duration.TotalSeconds / 2));
+            var finalResult = await _resultCollector.Ask<LoadResult>(
+                new GetLoadResultMessage(), resultTimeout);
+
+            // Return the final consolidated results
+            // This completes the actor communication chain and provides results to the caller
+            return finalResult;
         }
 
         /// <summary>
