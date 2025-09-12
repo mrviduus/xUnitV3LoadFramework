@@ -252,8 +252,10 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Actors
 
             // Request the final aggregated results from the result collector actor
             // This triggers result calculation and returns comprehensive performance metrics
+            // Use adaptive timeout based on test duration for CI environments
+            var resultTimeout = TimeSpan.FromSeconds(Math.Max(30, _executionPlan.Settings.Duration.TotalSeconds / 2));
             var finalResult = await _resultCollector.Ask<LoadResult>(
-                new GetLoadResultMessage(), TimeSpan.FromSeconds(5));
+                new GetLoadResultMessage(), resultTimeout);
             
             // Log comprehensive completion summary with key performance indicators
             // Provides immediate visibility into test results and resource utilization

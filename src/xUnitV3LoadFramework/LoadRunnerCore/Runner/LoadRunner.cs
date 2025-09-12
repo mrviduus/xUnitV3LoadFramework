@@ -96,8 +96,8 @@ namespace xUnitV3LoadFramework.LoadRunnerCore.Runner
 
 			// Send start message to worker and wait for completion with adaptive timeout
 			// The timeout uses a more generous buffer to account for system load and actor overhead
-			// Minimum timeout of 30 seconds ensures enough time for actor initialization and cleanup
-			var workerTimeout = TimeSpan.FromSeconds(Math.Max(30, executionPlan.Settings.Duration.TotalSeconds + 20));
+			// Increased buffer from 20 to 60 seconds and minimum from 30 to 60 seconds for CI resilience
+			var workerTimeout = TimeSpan.FromSeconds(Math.Max(60, executionPlan.Settings.Duration.TotalSeconds + 60));
 			
 			try
 			{
