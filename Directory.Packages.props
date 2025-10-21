@@ -12,7 +12,7 @@
     <PackageVersion Include="Akka" Version="1.5.54" />
     <!-- xUnit v3 Core Dependencies -->
     <PackageVersion Include="xunit.v3" Version="3.0.0" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.1.0" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.0.0" />
     <PackageVersion Include="xunit.extensibility.execution" Version="2.9.0" />
     <!-- xUnit Runners and Tools -->
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.3">

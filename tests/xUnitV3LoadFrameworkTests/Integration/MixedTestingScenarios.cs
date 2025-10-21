@@ -31,12 +31,18 @@ public class MixedTestingScenarios : xUnitV3LoadTests.TestSetup
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
-            var httpClient = GetService<IHttpClientFactory>().CreateClient();
-            var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
-            response.EnsureSuccessStatusCode();
-            return true;
+            // Simulate async operation similar to HTTP request
+            await Task.Delay(Random.Shared.Next(30, 100), TestContext.Current.CancellationToken);
+
+            // Simulate successful operation with occasional failures
+            if (Random.Shared.Next(100) < 95) // 95% success rate
+            {
+                return true;
+            }
+
+            throw new InvalidOperationException("Simulated operation failure");
         });
-        
+
         Assert.True(result.Success > 0, "Mixed load test should succeed");
         Assert.True(result.Total > 0, "Should execute at least once");
     }

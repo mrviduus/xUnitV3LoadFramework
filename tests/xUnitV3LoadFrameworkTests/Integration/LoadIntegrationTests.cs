@@ -12,19 +12,27 @@ namespace xUnitV3LoadFramework.Tests.Integration;
 public class LoadIntegrationTests : xUnitV3LoadTests.TestSetup
 {
     /// <summary>
-    /// Tests basic Load functionality with HTTP client requests.
+    /// Tests basic Load functionality with simulated async operations.
     /// </summary>
     [Load(concurrency: 2, duration: 2000, interval: 500)]
-    public async Task Load_Should_Execute_HTTP_Requests_Successfully()
+    public async Task Load_Should_Execute_Async_Operations_Successfully()
     {
         var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
-            var httpClient = GetService<IHttpClientFactory>().CreateClient();
-            var response = await httpClient.GetAsync("https://httpbin.org/status/200", TestContext.Current.CancellationToken);
-            response.EnsureSuccessStatusCode();
-            return true;
+            // Simulate async operation with variable latency (similar to HTTP request)
+            var latency = Random.Shared.Next(50, 150);
+            await Task.Delay(latency);
+
+            // Simulate success rate similar to real HTTP calls
+            if (Random.Shared.Next(100) < 98) // 98% success rate
+            {
+                return true;
+            }
+
+            // Simulate occasional failures
+            throw new InvalidOperationException("Simulated operation failure");
         });
-        
+
         // Assert core functionality
         Assert.True(result.Success > 0, "Load test should have successful executions");
         Assert.True(result.Total > 0, "Load test should have executed at least once");
@@ -32,23 +40,41 @@ public class LoadIntegrationTests : xUnitV3LoadTests.TestSetup
     }
 
     /// <summary>
-    /// Tests Load with JSON API processing.
+    /// Tests Load with data processing simulation.
     /// </summary>
     [Load(concurrency: 2, duration: 1500, interval: 400)]
-    public async Task Load_Should_Process_JSON_Data()
+    public async Task Load_Should_Process_Data_Successfully()
     {
+        var processedCount = 0;
+
         var result = await LoadTestRunner.ExecuteAsync(async () =>
         {
-            var httpClient = GetService<IHttpClientFactory>().CreateClient();
-            var response = await httpClient.GetAsync("https://jsonplaceholder.typicode.com/posts/1", TestContext.Current.CancellationToken);
-            response.EnsureSuccessStatusCode();
-            
-            var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("userId", content, StringComparison.OrdinalIgnoreCase);
-            return true;
+            // Simulate data processing with async operations
+            await Task.Delay(Random.Shared.Next(20, 80));
+
+            // Simulate data generation and validation
+            var data = new
+            {
+                userId = Random.Shared.Next(1, 10),
+                id = Guid.NewGuid(),
+                title = $"Title_{Random.Shared.Next(1000)}",
+                body = $"Body content {DateTime.UtcNow.Ticks}"
+            };
+
+            // Simulate data validation
+            await Task.Delay(10);
+
+            if (data.userId > 0 && !string.IsNullOrEmpty(data.title))
+            {
+                Interlocked.Increment(ref processedCount);
+                return true;
+            }
+
+            return false;
         });
-        
-        Assert.True(result.Success > 0, "JSON processing should succeed");
+
+        Assert.True(result.Success > 0, "Data processing should succeed");
         Assert.True(result.AverageLatency > 0, "Should record latency metrics");
+        Assert.True(processedCount > 0, "Should have processed data items");
     }
 }
