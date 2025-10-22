@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Akka" />
+    <PackageReference Include="LoadSurge" />
     <PackageReference Include="xunit.v3.extensibility.core" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" />
   </ItemGroup>
@@ -44,7 +45,6 @@
 
   <ItemGroup>
     <Folder Include="Extensions\" />
-    <Folder Include="LoadRunnerCore\" />
   </ItemGroup>
 
   <Target Name="CopyAkkaToOutput" AfterTargets="Build">

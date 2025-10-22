@@ -1,9 +1,9 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using LoadSurge.Models;
+using LoadSurge.Runner;
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.LoadRunnerCore.Models;
-using xUnitV3LoadFramework.LoadRunnerCore.Runner;
 
 namespace xUnitV3LoadFramework.Extensions
 {
