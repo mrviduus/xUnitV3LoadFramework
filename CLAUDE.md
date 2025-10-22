@@ -22,6 +22,9 @@ dotnet test tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj
 # Run single test by name
 dotnet test --filter "FullyQualifiedName~LoadTestRunnerTests"
 
+# Run examples (see examples/xUnitV3LoadTestsExamples/)
+dotnet test examples/xUnitV3LoadTestsExamples/xUnitV3LoadTestsExamples.csproj
+
 # Create NuGet package
 dotnet pack src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj -c Release
 ```
@@ -129,13 +132,21 @@ var result = await LoadRunner.Run(plan);
 - Target Framework: .NET 8.0
 - C# Version: 12
 - Package Management: Central package versioning via Directory.Packages.props
-- Warnings as Errors: Enabled in Release builds
-- Key Dependencies: xUnit v3.1.0, Akka.NET 1.5.54
+- Warnings as Errors: Disabled globally, enabled in Release builds for production code
+- Key Dependencies: xUnit v3.0.0, Akka.NET 1.5.54, Microsoft.Extensions 9.0.0
+
+### OpenTelemetry Integration
+
+The framework supports OpenTelemetry diagnostics for observability:
+- Package: xUnit.OTel 1.0.0.18
+- Usage: Add `services.AddOTelDiagnostics()` in test projects
+- Provides detailed tracing and metrics during load test execution
 
 ## Testing Guidelines
 
 - **No Mocking Frameworks**: Tests use real implementations without mocking libraries (no Moq, NSubstitute, etc.)
 - **Assertions**: Use only standard xUnit v3 Assert methods (Assert.True, Assert.Equal, Assert.NotNull, etc.)
 - **Integration Testing**: Tests verify actual actor behavior and message passing without mocks
+- **Examples**: Comprehensive examples available in `examples/xUnitV3LoadTestsExamples/` directory
 
 The framework emphasizes production readiness with comprehensive error handling, detailed logging, and industry-standard load testing patterns.
