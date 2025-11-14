@@ -31,7 +31,8 @@
       "Bash(else echo \"API key is NOT set locally - it''s only in GitHub Secrets\")",
       "Bash(fi)",
       "Bash(convert:*)",
-      "Bash(dotnet nuget push:*)"
+      "Bash(dotnet nuget push:*)",
+      "Bash(dotnet list:*)"
     ],
     "deny": [],
     "ask": []
