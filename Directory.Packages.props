@@ -8,13 +8,11 @@
   </PropertyGroup>
   <!-- Package Version Management -->
   <ItemGroup Label="Core Framework Dependencies">
-    <!-- Akka.NET Actor Framework -->
-    <PackageVersion Include="Akka" Version="1.5.54" />
-    <!-- xUnit v3 Core Dependencies -->
+    <!-- Load Testing Core (includes Akka.NET) -->
     <PackageVersion Include="LoadSurge" Version="1.0.0.28" />
+    <!-- xUnit v3 Core Dependencies -->
     <PackageVersion Include="xunit.v3" Version="3.0.0" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="3.0.0" />
-    <PackageVersion Include="xunit.extensibility.execution" Version="2.9.0" />
     <!-- xUnit Runners and Tools -->
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.3">
       <PrivateAssets>all</PrivateAssets>
@@ -24,46 +22,18 @@
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <!-- OpenTelemetry Integration -->
+    <!-- OpenTelemetry Integration for xUnit -->
     <PackageVersion Include="xUnit.OTel" Version="1.0.0.18" />
-    <!-- OpenTelemetry Dependencies (required by xUnit.OTel) -->
-    <PackageVersion Include="OpenTelemetry" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Api" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.PersistentStorage.FileSystem" Version="1.0.1" />
-    <!-- Code Coverage -->
-    <PackageVersion Include="coverlet.collector" Version="6.0.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageVersion>
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
-    <!-- Dependency Injection and Configuration -->
+    <!-- Dependency Injection (used in tests) -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.0.0" />
-    <!-- Hosting and HTTP -->
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
+    <!-- HTTP Client Factory (used in tests) -->
     <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.0" />
-    <!-- Logging -->
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup Label="Development and Build Tools">
     <!-- Reproducible Builds for Deterministic Output -->
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.25">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageVersion>
-    <!-- Code Analysis and Quality -->
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageVersion>
