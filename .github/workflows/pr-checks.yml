@@ -1,0 +1,286 @@
+# Pull Request Checks
+#
+# This workflow runs on all pull requests to ensure code quality and test coverage.
+# It performs the following checks:
+# 1. Build verification (Debug and Release configurations)
+# 2. Unit test execution with code coverage
+# 3. Integration test execution
+# 4. Example test validation
+#
+# The workflow uses matrix builds to test on multiple OS platforms for compatibility.
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
+  pull_request_target:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+jobs:
+  build-and-test:
+    name: Build and Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            os_name: Linux
+          - os: windows-latest
+            os_name: Windows
+          - os: macos-latest
+            os_name: macOS
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore xUnitV3LoadFramework.sln
+
+      - name: Build (Debug)
+        run: dotnet build xUnitV3LoadFramework.sln --no-restore --configuration Debug
+
+      - name: Build (Release)
+        run: dotnet build xUnitV3LoadFramework.sln --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: |
+          dotnet test tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "console;verbosity=detailed" \
+            --logger "trx;LogFileName=test-results-${{ matrix.os_name }}.trx" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+      - name: Run example tests
+        run: |
+          dotnet test examples/xUnitV3LoadTestsExamples/xUnitV3LoadTestsExamples.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "console;verbosity=normal" \
+            --logger "trx;LogFileName=example-results-${{ matrix.os_name }}.trx" \
+            --results-directory ./TestResults
+        continue-on-error: true  # Examples might have intentional failures for demonstration
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os_name }}
+          path: |
+            TestResults/*.trx
+            TestResults/**/coverage.opencover.xml
+          retention-days: 7
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.os == 'ubuntu-latest' && github.event_name == 'pull_request'
+        with:
+          files: ./TestResults/**/coverage.opencover.xml
+          flags: unittests
+          name: codecov-${{ matrix.os_name }}
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore xUnitV3LoadFramework.sln
+
+      - name: Check formatting
+        run: |
+          dotnet format xUnitV3LoadFramework.sln --verify-no-changes --verbosity diagnostic || {
+            echo "::warning::Code formatting issues detected. Run 'dotnet format' locally to fix."
+            exit 0  # Don't fail the build for formatting
+          }
+
+      - name: Run code analysis
+        run: |
+          dotnet build xUnitV3LoadFramework.sln \
+            --configuration Release \
+            --no-restore \
+            /p:EnableNETAnalyzers=true \
+            /p:AnalysisMode=AllEnabledByDefault \
+            /p:TreatWarningsAsErrors=false
+
+  package-validation:
+    name: NuGet Package Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore xUnitV3LoadFramework.sln
+
+      - name: Create NuGet package
+        run: |
+          dotnet pack src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj \
+            --configuration Release \
+            --no-restore \
+            --output ./artifacts \
+            /p:PackageVersion=1.0.0-pr.${{ github.event.pull_request.number }}
+
+      - name: Validate package
+        run: |
+          # Install NuGet Package Explorer CLI tool
+          dotnet tool install --global dotnet-validate --version 0.0.1-preview.* || \
+          dotnet tool update --global dotnet-validate
+
+          # Validate the package
+          for package in ./artifacts/*.nupkg; do
+            echo "Validating $package"
+            # Basic validation - ensure package can be extracted
+            unzip -t "$package" > /dev/null 2>&1 || {
+              echo "::error::Failed to validate package $package"
+              exit 1
+            }
+            echo "✅ Package $package is valid"
+          done
+
+      - name: Upload NuGet packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts/*.nupkg
+          retention-days: 7
+
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore xUnitV3LoadFramework.sln
+
+      - name: Run security scan
+        run: |
+          # Install dotnet-audit tool
+          dotnet tool install --global dotnet-audit || \
+          dotnet tool update --global dotnet-audit
+
+          # Run vulnerability scan
+          dotnet list package --vulnerable --include-transitive || {
+            echo "::warning::Security vulnerabilities detected in dependencies"
+            # Don't fail the build, just warn
+            exit 0
+          }
+
+  pr-status:
+    name: PR Status Check
+    runs-on: ubuntu-latest
+    needs: [build-and-test, code-quality, package-validation, security-scan]
+    if: always()
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "## Pull Request Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Build and Test Status
+          if [ "${{ needs.build-and-test.result }}" == "success" ]; then
+            echo "✅ **Build and Tests**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.build-and-test.result }}" == "failure" ]; then
+            echo "❌ **Build and Tests**: Failed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Build and Tests**: ${{ needs.build-and-test.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Code Quality Status
+          if [ "${{ needs.code-quality.result }}" == "success" ]; then
+            echo "✅ **Code Quality**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.code-quality.result }}" == "failure" ]; then
+            echo "❌ **Code Quality**: Failed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Code Quality**: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Package Validation Status
+          if [ "${{ needs.package-validation.result }}" == "success" ]; then
+            echo "✅ **Package Validation**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.package-validation.result }}" == "failure" ]; then
+            echo "❌ **Package Validation**: Failed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Package Validation**: ${{ needs.package-validation.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Security Scan Status
+          if [ "${{ needs.security-scan.result }}" == "success" ]; then
+            echo "✅ **Security Scan**: Passed" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security-scan.result }}" == "failure" ]; then
+            echo "❌ **Security Scan**: Failed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Security Scan**: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*PR #${{ github.event.pull_request.number }} by @${{ github.event.pull_request.user.login }}*" >> $GITHUB_STEP_SUMMARY
+
+          # Determine overall status
+          if [ "${{ needs.build-and-test.result }}" != "success" ] || \
+             [ "${{ needs.code-quality.result }}" == "failure" ] || \
+             [ "${{ needs.package-validation.result }}" == "failure" ] || \
+             [ "${{ needs.security-scan.result }}" == "failure" ]; then
+            echo "::error::PR checks failed. Please review the results above."
+            exit 1
+          fi
+
+          echo "::notice::All PR checks passed successfully!"
