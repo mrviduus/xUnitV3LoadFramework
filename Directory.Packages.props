@@ -18,7 +18,7 @@
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <!-- OpenTelemetry Integration for xUnit -->
-    <PackageVersion Include="xUnitOTel" Version="1.0.0.25" />
+    <PackageVersion Include="xUnitOTel" Version="1.0.0.26" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->
