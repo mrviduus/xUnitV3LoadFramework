@@ -33,10 +33,5 @@
     
    <ItemGroup>
        <SourceRoot Include="$(MSBuildThisFileDirectory)/" />
-
-       <PackageReference Include="DotNet.ReproducibleBuilds">
-           <PrivateAssets>all</PrivateAssets>
-           <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-       </PackageReference>
- </ItemGroup>
+   </ItemGroup>
 </Project>
