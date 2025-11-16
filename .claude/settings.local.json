@@ -32,7 +32,10 @@
       "Bash(fi)",
       "Bash(convert:*)",
       "Bash(dotnet nuget push:*)",
-      "Bash(dotnet list:*)"
+      "Bash(dotnet list:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(gh pr list:*)"
     ],
     "deny": [],
     "ask": []
