@@ -1,4 +1,4 @@
-﻿using xUnit.OTel.Attributes;
+﻿using xUnitOTel.Attributes;
 using xUnitV3LoadTests;
 
 [assembly: Trace]

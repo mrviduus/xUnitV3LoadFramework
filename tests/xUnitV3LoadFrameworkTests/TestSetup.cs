@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using xUnit.OTel.Diagnostics;
+using xUnitOTel.Diagnostics;
 
 // Trace everything!
 

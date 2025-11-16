@@ -18,13 +18,15 @@
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <!-- OpenTelemetry Integration for xUnit -->
-    <PackageVersion Include="xUnit.OTel" Version="1.0.0.18" />
+    <PackageVersion Include="xUnitOTel" Version="1.0.0.25" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <!-- HTTP Client Factory (used in tests) -->
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <!-- Hosting (used in tests) -->
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup Label="Development and Build Tools">
     <!-- Source Link for GitHub Actions -->
