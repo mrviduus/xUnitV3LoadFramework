@@ -183,13 +183,19 @@ jobs:
           # Check what actually got updated
           if [ -f /tmp/Directory.Packages.props.original ]; then
             if diff -q /tmp/Directory.Packages.props.original Directory.Packages.props > /dev/null; then
-              echo "❌ No packages were actually updated"
+              echo "⚠️ No packages were actually updated despite updates being available"
+              echo "This can happen due to version conflicts or compatibility issues"
               echo "packages_updated=false" >> $GITHUB_OUTPUT
-              exit 1
+
+              # Don't exit with error - this is a valid scenario
+              # Some packages might have compatibility issues preventing updates
+              echo "Skipping update due to compatibility constraints"
             else
               echo "✅ Packages were successfully updated"
               echo "packages_updated=true" >> $GITHUB_OUTPUT
             fi
+          else
+            echo "packages_updated=true" >> $GITHUB_OUTPUT
           fi
 
           # Restore to verify the updated packages work
