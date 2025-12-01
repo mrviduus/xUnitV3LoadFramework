@@ -9,7 +9,7 @@
   <!-- Package Version Management -->
   <ItemGroup Label="Core Framework Dependencies">
     <!-- Load Testing Core (includes Akka.NET) -->
-    <PackageVersion Include="LoadSurge" Version="1.0.0.43" />
+    <PackageVersion Include="LoadSurge" Version="1.0.0.44" />
     <!-- xUnit v3 Core Dependencies -->
     <PackageVersion Include="xunit.v3" Version="3.2.1" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.1" />
@@ -18,7 +18,7 @@
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <!-- OpenTelemetry Integration for xUnit -->
-    <PackageVersion Include="xUnitOTel" Version="1.0.0.26" />
+    <PackageVersion Include="xUnitOTel" Version="1.0.0.27" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->
