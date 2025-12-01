@@ -11,8 +11,8 @@
     <!-- Load Testing Core (includes Akka.NET) -->
     <PackageVersion Include="LoadSurge" Version="1.0.0.43" />
     <!-- xUnit v3 Core Dependencies -->
-    <PackageVersion Include="xunit.v3" Version="3.2.0" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.0" />
+    <PackageVersion Include="xunit.v3" Version="3.2.1" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.1" />
   </ItemGroup>
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
