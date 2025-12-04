@@ -81,7 +81,7 @@ public class MyBlockTests
             });
 
         Assert.True(result.Success > 0, "Someone should get cookies!");
-        Console.WriteLine($"🎉 Party results: {result.Success} happy kids out of {result.TotalRequests}!");
+        Console.WriteLine($"🎉 Party results: {result.Success} happy kids out of {result.Total}!");
         Console.WriteLine($"⚡ Speed: {result.RequestsPerSecond:F1} cookies per second!");
     }
 }
@@ -90,11 +90,11 @@ public class MyBlockTests
 ### 3. See the party results! 🎊
 ```
 🎉 Party Results:
-   Total kids: 50
-   Got cookies: 48 🍪
-   No cookies: 2 😢
-   Cookie speed: 16 cookies per second
-   Party time: 3.2 seconds
+   Total: 50
+   Success: 48 🍪
+   Failure: 2 😢
+   RequestsPerSecond: 16
+   Time: 3.2 seconds
 ```
 
 ## 🤔 Which way should I play?
@@ -138,7 +138,7 @@ public class MixedFunTests
                 response.EnsureSuccessStatusCode();
             });
 
-        Assert.True(result.Success > result.TotalRequests * 0.9, "90% of kids should get cookies!");
+        Assert.True(result.Success > result.Total * 0.9, "90% of kids should get cookies!");
         Console.WriteLine($"🍪 Cookie party: {result.Success} happy kids!");
     }
 }
@@ -187,7 +187,7 @@ public async Task Test_Cookie_Store_Simple()
     // Check if kids got their cookies
     Assert.True(result.Success > 0, "At least some kids should get cookies!");
     Assert.True(result.AverageLatency < 2000, "Getting cookies shouldn't take too long!");
-    Console.WriteLine($"🍪 {result.TotalRequests} kids asked for cookies, {result.Success} got them!");
+    Console.WriteLine($"🍪 {result.Total} kids asked for cookies, {result.Success} got them!");
 }
 ```
 
@@ -221,7 +221,7 @@ public async Task Test_Database_Connection_Pool()
             return count != null;
         });
 
-    Assert.True(result.Failed < result.Success * 0.05, "Failure rate should be under 5%");
+    Assert.True(result.Failure < result.Success * 0.05, "Failure rate should be under 5%");
     Console.WriteLine($"Database test: {result.Success} successful connections");
 }
 ```
@@ -235,8 +235,8 @@ Think of these like different ways to end a birthday party:
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using xUnitV3LoadFramework.LoadRunnerCore.Models;
-using xUnitV3LoadFramework.LoadRunnerCore.Runner;
+using LoadSurge.Models;
+using LoadSurge.Runner;
 
 [Fact]
 public async Task Test_Quick_Stop_Party()
@@ -262,7 +262,7 @@ public async Task Test_Quick_Stop_Party()
     var result = await LoadRunner.Run(plan);
     
     Assert.True(result.Success > 0);
-    Console.WriteLine($"⚡ Quick stop: {result.TotalRequests} kids played");
+    Console.WriteLine($"⚡ Quick stop: {result.Total} kids played");
 }
 ```
 
@@ -292,8 +292,8 @@ public async Task Test_Nice_Stop_Party()
     var result = await LoadRunner.Run(plan);
     
     // More kids get to finish their games!
-    Assert.InRange(result.TotalRequests, 25, 35); // About 6 intervals × 5 kids
-    Console.WriteLine($"😊 Nice stop: {result.TotalRequests} kids finished their games");
+    Assert.InRange(result.Total, 25, 35); // About 6 intervals × 5 kids
+    Console.WriteLine($"😊 Nice stop: {result.Total} kids finished their games");
 }
 ```
 
@@ -361,8 +361,8 @@ public async Task Test_Patient_Waiting()
     var result = await LoadRunner.Run(plan);
     
     // Even slow kids should finish their games
-    Assert.True(result.Success > result.Failed, "More kids should finish than give up");
-    Console.WriteLine($"⏳ Patient waiting: {result.Success} kids finished, {result.Failed} were too slow");
+    Assert.True(result.Success > result.Failure, "More kids should finish than give up");
+    Console.WriteLine($"⏳ Patient waiting: {result.Success} kids finished, {result.Failure} were too slow");
 }
 ```
 
@@ -437,13 +437,13 @@ public async Task Test_Ice_Cream_Shop_Rush()
         });
 
     // Check if the ice cream shop handled the rush well
-    Assert.True(result.Success > result.TotalRequests * 0.9, "90% of kids should get ice cream!");
+    Assert.True(result.Success > result.Total * 0.9, "90% of kids should get ice cream!");
     Assert.True(result.AverageLatency < 1000, "Getting ice cream shouldn't take too long!");
     
     Console.WriteLine($"🍦 Ice Cream Shop Results:");
-    Console.WriteLine($"   Total kids: {result.TotalRequests}");
+    Console.WriteLine($"   Total kids: {result.Total}");
     Console.WriteLine($"   Got ice cream: {result.Success} 😋");
-    Console.WriteLine($"   No ice cream: {result.Failed} 😢");
+    Console.WriteLine($"   No ice cream: {result.Failure} 😢");
     Console.WriteLine($"   Average wait time: {result.AverageLatency:F0} milliseconds");
     Console.WriteLine($"   Ice creams per second: {result.RequestsPerSecond:F1}");
 }
@@ -456,8 +456,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using xUnitV3LoadFramework.LoadRunnerCore.Models;
-using xUnitV3LoadFramework.LoadRunnerCore.Runner;
+using LoadSurge.Models;
+using LoadSurge.Runner;
 
 [Fact]
 public async Task Test_Playground_Safety()
@@ -504,7 +504,7 @@ public async Task Test_Playground_Safety()
     
     Console.WriteLine($"🛝 Playground Safety Test:");
     Console.WriteLine($"   Kids who played: {result.Success} 😊");
-    Console.WriteLine($"   Kids who couldn't play: {result.Failed} 😞");
+    Console.WriteLine($"   Kids who couldn't play: {result.Failure} 😞");
     Console.WriteLine($"   Playground broken? {playgroundBroken}");
     
     // Make sure playground can handle lots of kids
@@ -571,7 +571,7 @@ private async Task<bool> PlayGame()
 
 #### Pick the Best Party Ending 🎭
 ```csharp
-using xUnitV3LoadFramework.LoadRunnerCore.Models;
+using LoadSurge.Models;
 
 // For counting how many kids played - use Nice Stop (recommended)
 var niceParty = new LoadSettings
@@ -615,13 +615,13 @@ It's like having a special notebook that writes down everything that happens dur
 
 After your party test, you get a report card! Here's what each number tells you:
 
-- **TotalRequests** 📊: How many kids came to your party
+- **Total** 📊: How many kids came to your party
 - **Success** ✅: How many kids had fun
-- **Failed** ❌: How many kids were sad or couldn't play
+- **Failure** ❌: How many kids were sad or couldn't play
 - **AverageLatency** ⏱️: How long it took on average to get cookies/toys/fun stuff
 - **MinLatency/MaxLatency** 🏃‍♀️🐌: The fastest and slowest kid to get their stuff
 - **RequestsPerSecond** ⚡: How many kids per second got what they wanted
-- **ExecutionTime** 🕐: How long the whole party lasted
+- **Time** 🕐: How long the whole party lasted
 
 ## 🎮 What You Need to Play
 

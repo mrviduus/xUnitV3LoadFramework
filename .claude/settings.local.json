@@ -35,7 +35,9 @@
       "Bash(dotnet list:*)",
       "Bash(git pull:*)",
       "Bash(git stash:*)",
-      "Bash(gh pr list:*)"
+      "Bash(gh pr list:*)",
+      "Bash(ls:*)",
+      "Bash(monodis:*)"
     ],
     "deny": [],
     "ask": []
