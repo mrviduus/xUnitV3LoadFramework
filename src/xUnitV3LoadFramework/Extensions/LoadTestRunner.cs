@@ -241,6 +241,13 @@ namespace xUnitV3LoadFramework.Extensions
         ILoadTestBuilder WithName(string name);
 
         /// <summary>
+        /// Sets the maximum number of iterations. When reached, the test stops regardless of duration.
+        /// </summary>
+        /// <param name="maxIterations">Maximum number of iterations (action executions)</param>
+        /// <returns>The builder instance for method chaining</returns>
+        ILoadTestBuilder WithMaxIterations(int maxIterations);
+
+        /// <summary>
         /// Executes the load test with the configured parameters.
         /// </summary>
         /// <param name="action">The action to execute under load</param>
@@ -264,6 +271,7 @@ namespace xUnitV3LoadFramework.Extensions
         private TimeSpan _duration = TimeSpan.FromSeconds(1);
         private TimeSpan _interval = TimeSpan.FromMilliseconds(100);
         private string _name = "FluentLoadTest";
+        private int? _maxIterations = null;
 
         public ILoadTestBuilder WithConcurrency(int concurrency)
         {
@@ -301,6 +309,12 @@ namespace xUnitV3LoadFramework.Extensions
             return this;
         }
 
+        public ILoadTestBuilder WithMaxIterations(int maxIterations)
+        {
+            _maxIterations = maxIterations;
+            return this;
+        }
+
         public async Task<LoadResult> RunAsync(Func<Task> action)
         {
             return await RunAsync(async () =>
@@ -327,7 +341,8 @@ namespace xUnitV3LoadFramework.Extensions
                 {
                     Concurrency = _concurrency,
                     Duration = _duration,
-                    Interval = _interval
+                    Interval = _interval,
+                    MaxIterations = _maxIterations
                 }
             };
 
