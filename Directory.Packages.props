@@ -22,11 +22,11 @@
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
     <!-- HTTP Client Factory (used in tests) -->
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.1" />
     <!-- Hosting (used in tests) -->
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
   </ItemGroup>
   <ItemGroup Label="Development and Build Tools">
     <!-- Source Link for GitHub Actions -->
