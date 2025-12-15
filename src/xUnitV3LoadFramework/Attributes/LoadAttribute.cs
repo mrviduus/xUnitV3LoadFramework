@@ -1,15 +1,18 @@
 using System;
 using System.Runtime.CompilerServices;
 using Xunit;
+using Xunit.v3;
+using xUnitV3LoadFramework.Discovery;
 
 namespace xUnitV3LoadFramework.Attributes
 {
     /// <summary>
     /// Attribute that marks a test method for load testing execution with specified parameters.
-    /// Inherits from FactAttribute to integrate with xUnit v3 test discovery and execution.
-    /// The load testing logic is handled separately from standard xUnit execution.
+    /// The test method body becomes the action that is executed concurrently under load.
+    /// Results are reported through xUnit's test output mechanism.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    [XunitTestCaseDiscoverer(typeof(LoadTestCaseDiscoverer))]
     public class LoadAttribute : FactAttribute
     {
         /// <summary>

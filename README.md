@@ -28,13 +28,23 @@ xUnit v3-native load-style test runner for executing actions concurrently over a
 dotnet add package xUnitV3LoadFramework
 ```
 
+## Why xUnit v3 Native?
+
+This framework is a true xUnit v3 extension:
+- Runs in `dotnet test` — no extra tooling needed
+- Produces test failures visible in IDE and CI
+- Supports filtering with `--filter`
+- Respects xUnit cancellation
+- Test method body becomes the action — no manual runner call needed
+
 ## Quickstart
 
-### Attribute-Based
+### Native Attribute (Recommended)
+
+The test method body runs automatically under load — no manual `ExecuteAsync()` call needed:
 
 ```csharp
 using xUnitV3LoadFramework.Attributes;
-using xUnitV3LoadFramework.Extensions;
 
 public class ApiLoadTests
 {
@@ -43,17 +53,14 @@ public class ApiLoadTests
     [Load(concurrency: 5, duration: 3000, interval: 500)]
     public async Task Api_Should_Handle_Concurrent_Requests()
     {
-        var result = await LoadTestRunner.ExecuteAsync(async () =>
-        {
-            var response = await _httpClient.GetAsync("https://api.example.com/health");
-            return response.IsSuccessStatusCode;
-        });
-
-        Assert.True(result.Success > 0);
-        Assert.True(result.RequestsPerSecond > 1);
+        // This entire method body runs N times under load
+        var response = await _httpClient.GetAsync("https://api.example.com/health");
+        response.EnsureSuccessStatusCode();
     }
 }
 ```
+
+Test passes if all iterations complete without exception. Test fails if any iteration throws.
 
 ### Fluent API
 

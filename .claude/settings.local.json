@@ -37,7 +37,10 @@
       "Bash(git stash:*)",
       "Bash(gh pr list:*)",
       "Bash(ls:*)",
-      "Bash(monodis:*)"
+      "Bash(monodis:*)",
+      "Bash(git checkout:*)",
+      "Bash(xargs cat:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

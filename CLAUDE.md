@@ -67,6 +67,7 @@ public async Task MyLoadTest()
 var result = await LoadTestRunner.Create()
     .WithConcurrency(10)
     .WithDuration(TimeSpan.FromSeconds(5))
+    .WithMaxIterations(1000) // optional: stop after N iterations
     .RunAsync(async () => { /* test */ });
 ```
 
