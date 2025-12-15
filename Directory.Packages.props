@@ -18,7 +18,7 @@
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <!-- OpenTelemetry Integration for xUnit -->
-    <PackageVersion Include="xUnitOTel" Version="1.0.0.27" />
+    <PackageVersion Include="xUnitOTel" Version="1.0.0.28" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->
@@ -37,6 +37,6 @@
   </ItemGroup>
   <ItemGroup Label="NetStandard Compatibility">
     <!-- IAsyncDisposable support for netstandard2.0 -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.1" />
   </ItemGroup>
 </Project>
