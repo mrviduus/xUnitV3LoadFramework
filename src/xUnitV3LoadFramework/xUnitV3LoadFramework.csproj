@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>xUnitV3LoadFramework</PackageId>
     <Authors>Vasyl Vdovychenko</Authors>
@@ -23,6 +23,7 @@
     <PackageReference Include="LoadSurge" />
     <PackageReference Include="xunit.v3.extensibility.core" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
   </ItemGroup>
 
   <PropertyGroup>

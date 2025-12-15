@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using LoadSurge.Models;
 using LoadSurge.Runner;
 using Xunit.Sdk;
@@ -86,7 +91,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             var skipSummary = XunitRunnerHelper.SkipTestCases(
                 messageBus,
                 cancellationTokenSource,
-                [this],
+                new IXunitTestCase[] { this },
                 SkipReason,
                 sendTestCollectionMessages: false,
                 sendTestClassMessages: false,
@@ -183,7 +188,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             TestMethodMetadataToken = TestMethod.Method.MetadataToken,
             TestMethodName = TestMethod.Method.Name,
             TestMethodArity = TestMethod.Method.IsGenericMethodDefinition ? TestMethod.Method.GetGenericArguments().Length : 0,
-            TestMethodParameterTypesVSTest = [.. TestMethod.Method.GetParameters().Select(p => p.ParameterType.FullName ?? p.ParameterType.Name)],
+            TestMethodParameterTypesVSTest = TestMethod.Method.GetParameters().Select(p => p.ParameterType.FullName ?? p.ParameterType.Name).ToArray(),
             TestMethodReturnTypeVSTest = TestMethod.Method.ReturnType.FullName ?? TestMethod.Method.ReturnType.Name
         });
 
@@ -218,12 +223,12 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
                 ExecutionTime = executionTime,
                 FinishTime = finishTime,
                 Output = outputString,
-                Warnings = [],
+                Warnings = Array.Empty<string>(),
                 Cause = FailureCause.Exception,
-                ExceptionParentIndices = [-1],
-                ExceptionTypes = [testException.GetType().FullName ?? testException.GetType().Name],
-                Messages = [testException.Message],
-                StackTraces = [testException.StackTrace ?? ""]
+                ExceptionParentIndices = new int[] { -1 },
+                ExceptionTypes = new string[] { testException.GetType().FullName ?? testException.GetType().Name },
+                Messages = new string[] { testException.Message },
+                StackTraces = new string?[] { testException.StackTrace ?? "" }
             });
         }
         else if (loadResult != null && loadResult.Failure > 0)
@@ -242,12 +247,12 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
                 ExecutionTime = executionTime,
                 FinishTime = finishTime,
                 Output = outputString,
-                Warnings = [],
+                Warnings = Array.Empty<string>(),
                 Cause = FailureCause.Assertion,
-                ExceptionParentIndices = [-1],
-                ExceptionTypes = ["Xunit.Sdk.XunitException"],
-                Messages = [failureMessage],
-                StackTraces = [""]
+                ExceptionParentIndices = new int[] { -1 },
+                ExceptionTypes = new string[] { "Xunit.Sdk.XunitException" },
+                Messages = new string[] { failureMessage },
+                StackTraces = new string?[] { "" }
             });
         }
         else
@@ -263,7 +268,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
                 ExecutionTime = executionTime,
                 FinishTime = finishTime,
                 Output = outputString,
-                Warnings = []
+                Warnings = Array.Empty<string>()
             });
         }
 
@@ -279,7 +284,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             ExecutionTime = executionTime,
             FinishTime = finishTime,
             Output = outputString,
-            Warnings = [],
+            Warnings = Array.Empty<string>(),
             Attachments = new Dictionary<string, TestAttachment>()
         });
 
@@ -320,7 +325,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             testIndex: 0,
             traits: traitsDict,
             timeout: Timeout,
-            testMethodArguments: []);
+            testMethodArguments: Array.Empty<object?>());
     }
 
     private object CreateTestClassInstance(object?[] constructorArguments)
