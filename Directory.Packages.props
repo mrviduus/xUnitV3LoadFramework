@@ -9,7 +9,7 @@
   <!-- Package Version Management -->
   <ItemGroup Label="Core Framework Dependencies">
     <!-- Load Testing Core (includes Akka.NET) -->
-    <PackageVersion Include="LoadSurge" Version="1.0.0.45" />
+    <PackageVersion Include="LoadSurge" Version="1.0.0.49" />
     <!-- xUnit v3 Core Dependencies -->
     <PackageVersion Include="xunit.v3" Version="3.2.1" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.1" />
@@ -34,5 +34,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageVersion>
+  </ItemGroup>
+  <ItemGroup Label="NetStandard Compatibility">
+    <!-- IAsyncDisposable support for netstandard2.0 -->
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.1" />
   </ItemGroup>
 </Project>

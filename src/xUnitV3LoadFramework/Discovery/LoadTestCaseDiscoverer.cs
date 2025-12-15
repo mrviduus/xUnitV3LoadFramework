@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit.Sdk;
 using Xunit.v3;
 using xUnitV3LoadFramework.Attributes;
@@ -34,7 +36,7 @@ public class LoadTestCaseDiscoverer : IXunitTestCaseDiscoverer
             loadAttribute.Explicit,
             loadAttribute.Timeout);
 
-        IReadOnlyCollection<IXunitTestCase> result = [testCase];
+        IReadOnlyCollection<IXunitTestCase> result = new IXunitTestCase[] { testCase };
         return new ValueTask<IReadOnlyCollection<IXunitTestCase>>(result);
     }
 }
