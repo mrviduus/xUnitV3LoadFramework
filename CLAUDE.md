@@ -125,10 +125,11 @@ var result = await LoadRunner.Run(plan);
 
 ## Development Notes
 
-- Target: .NET 8.0, C# 12
+- Target: netstandard2.0 (library), .NET 10 (tests)
 - Package Management: Central versioning via Directory.Packages.props
 - Key Dependencies: xUnit v3.2.1, LoadSurge (includes Akka.NET)
 - Warnings as Errors: Only in Release builds
+- **CHANGELOG**: Update `CHANGELOG.md` when making notable changes
 
 ## Testing Guidelines
 
