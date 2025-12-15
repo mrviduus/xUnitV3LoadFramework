@@ -6,7 +6,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>xUnitV3LoadTests</RootNamespace>
 	  <LangVersion>12</LangVersion>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
 	  <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
 	  <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <!-- Disable xUnit analyzers for examples project during transition -->
