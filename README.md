@@ -4,7 +4,6 @@ xUnit v3-native load-style test runner for executing actions concurrently over a
 
 [![NuGet](https://img.shields.io/nuget/v/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
 [![Downloads](https://img.shields.io/nuget/dt/xUnitV3LoadFramework.svg)](https://www.nuget.org/packages/xUnitV3LoadFramework)
-[![.NET 8](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/download/dotnet/8.0)
 [![xUnit v3](https://img.shields.io/badge/xUnit-v3.0-blue)](https://xunit.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -20,7 +19,6 @@ xUnit v3-native load-style test runner for executing actions concurrently over a
 - Distributed load generation across machines
 - Protocol-specific clients (HTTP/2, gRPC, WebSocket)
 - Full observability platform with dashboards
-- Replacing dedicated load testing tools (k6, Locust, NBomber)
 
 ## Install
 
@@ -304,11 +302,10 @@ Use this framework when:
 - Your tests are integration-style (HTTP calls, database queries)
 - You want xUnit v3 native attributes and test discovery
 
-Use a dedicated tool (k6, Locust, NBomber) when:
+Use a dedicated tool when:
 - You need distributed load from multiple machines
 - You need protocol-specific features (HTTP/2 multiplexing, WebSocket)
 - You need real-time dashboards and detailed analytics
-- You're testing at scale (thousands of concurrent users)
 
 ## Fun Explanation (optional)
 
@@ -321,7 +318,7 @@ The framework tells you how many kids had fun (success), how many fell off the s
 
 ## Requirements
 
-- .NET 8.0+
+- .NET 8.0+ or .NET Framework 4.7.2+ (netstandard2.0)
 - xUnit v3
 
 ## Contributing
