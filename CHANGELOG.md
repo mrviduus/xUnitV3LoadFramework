@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-12-15
+
+### ✨ Added
+- **Native xUnit v3 Execution** - `[Load]` attribute now uses native `ISelfExecutingXunitTestCase` for seamless integration
+- **netstandard2.0 Support** - Library now targets netstandard2.0 for broader .NET compatibility (.NET Framework 4.7.2+, .NET 6/8/9/10+)
+
+### 🛠️ Changed
+- Updated LoadSurge dependency to 1.0.0.49 (netstandard2.0)
+- Test projects upgraded to .NET 10
+- Removed explicit C# 12 collection expressions for netstandard2.0 compatibility
+
+### 📚 Documentation
+- Cleaned up README - removed competitor mentions
+- Updated requirements to reflect netstandard2.0 support
+
+---
+
 ## [2.0.0] - 2025-08-03
 
 ### 🚀 Major Release - Production Ready
