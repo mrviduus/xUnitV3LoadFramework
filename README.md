@@ -60,7 +60,13 @@ public class ApiLoadTests
 }
 ```
 
-Test passes if all iterations complete without exception. Test fails if any iteration throws.
+Test passes if all iterations complete without exception. Test fails if any iteration throws or returns `false`.
+
+**Supported return types:**
+- `async Task` — success if no exception
+- `void` — success if no exception
+- `Task<bool>` / `ValueTask<bool>` — success if returns `true`
+- `bool` — success if returns `true`
 
 ### Fluent API
 
@@ -90,8 +96,50 @@ public class ApiLoadTests
 }
 ```
 
+### Mixed Testing — All Attributes Work Together
+
+`[Load]`, `[Fact]`, and `[Theory]` can coexist in the same test class:
+
+```csharp
+public class ApiTests
+{
+    private static readonly HttpClient _httpClient = new();
+
+    [Fact]
+    public void Should_Have_Valid_BaseUrl()
+    {
+        Assert.NotNull(_httpClient.BaseAddress);
+    }
+
+    [Theory]
+    [InlineData("/health")]
+    [InlineData("/ready")]
+    public async Task Endpoint_Should_Exist(string path)
+    {
+        var response = await _httpClient.GetAsync(path);
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    [Load(concurrency: 5, duration: 3000, interval: 500)]
+    public async Task Api_Should_Handle_Load()
+    {
+        var response = await _httpClient.GetAsync("/health");
+        response.EnsureSuccessStatusCode();
+    }
+}
+```
+
 ### Sample Output
 
+**Native `[Load]` test output:**
+```
+Load Test Results:
+  Total: 30, Success: 28, Failure: 2
+  RPS: 9.8, Avg: 102ms, P95: 150ms, P99: 180ms
+  Result: FAILED (93.3% success rate)
+```
+
+**Fluent API test output:**
 ```
 Load test 'HealthCheck_Load' completed:
   Total executions: 50
@@ -209,6 +257,31 @@ Assert.True(result.AverageLatency < 200, $"Avg latency {result.AverageLatency}ms
 - `AverageLatency`, `MinLatency`, `MaxLatency` — in milliseconds
 - `MedianLatency`, `Percentile95Latency`, `Percentile99Latency` — percentiles in ms
 - `PeakMemoryUsage` — bytes
+
+## How Failures Work
+
+The framework runs **all iterations to completion** before determining pass/fail:
+
+1. All iterations execute regardless of individual failures
+2. Exceptions are caught and counted as failures (not thrown)
+3. At the end, a report shows Total/Success/Failure counts
+4. Test is marked **FAILED** if `Failure > 0`
+
+This means you always get complete metrics, even when some iterations fail.
+
+**Native `[Load]` tests**: Pass/fail is automatic based on iteration results.
+
+**Fluent API tests**: You control pass/fail with assertions:
+```csharp
+var result = await LoadTestRunner.Create()
+    .WithConcurrency(10)
+    .WithDuration(TimeSpan.FromSeconds(5))
+    .RunAsync(async () => { /* ... */ });
+
+// Allow up to 5% failure rate
+var successRate = (double)result.Success / result.Total;
+Assert.True(successRate >= 0.95, $"Success rate {successRate:P} below 95%");
+```
 
 ## Safety & Gotchas
 
