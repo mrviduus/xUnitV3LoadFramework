@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
     <!-- OpenTelemetry Integration for xUnit -->
     <PackageVersion Include="xUnitOTel" Version="1.0.0.42" />
   </ItemGroup>
