@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
     <!-- OpenTelemetry Integration for xUnit -->
     <PackageVersion Include="xUnitOTel" Version="1.0.0.45" />
   </ItemGroup>
@@ -30,13 +30,13 @@
   </ItemGroup>
   <ItemGroup Label="Development and Build Tools">
     <!-- Source Link for GitHub Actions -->
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.203">
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageVersion>
   </ItemGroup>
   <ItemGroup Label="NetStandard Compatibility">
     <!-- IAsyncDisposable support for netstandard2.0 -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.8" />
   </ItemGroup>
 </Project>
