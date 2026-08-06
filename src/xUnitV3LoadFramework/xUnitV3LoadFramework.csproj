@@ -15,7 +15,6 @@
     <Version>2.0.0</Version>
     <PackageTags>xunit;load-testing;performance;akka;dotnet;testing;framework;xunit-v3</PackageTags>
     <PackageReleaseNotes>Version 2.0.0: Full xUnit v3 compatibility, fluent API, enhanced performance metrics, and production-ready features. See CHANGELOG.md for complete details.</PackageReleaseNotes>
-    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
     <LangVersion>12</LangVersion>
   </PropertyGroup>
 
@@ -47,19 +46,8 @@
     <Folder Include="Extensions\" />
   </ItemGroup>
 
-  <Target Name="CopyAkkaToOutput" AfterTargets="Build">
-    <ItemGroup>
-      <AkkaAssemblies Include="$(NuGetPackageRoot)akka\*\lib\netstandard2.0\Akka.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(AkkaAssemblies)" DestinationFolder="$(OutputPath)" />
-  </Target>
-
-  <Target DependsOnTargets="ResolveReferences;CopyAkkaToOutput" Name="CopyProjectReferencesToPackage">
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
-      <BuildOutputInPackage Include="$(OutputPath)Akka.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(BuildOutputInPackage)" DestinationFolder="$(PackageOutputPath)/lib/$(TargetFramework)" />
-  </Target>
+  <!-- The Akka.dll bundling targets were removed: LoadSurge 3.x dropped Akka.NET, so the
+       glob matched nothing and pack failed with MSB3030. There are no ProjectReferences
+       to bundle either, which is all the removed targets did. -->
 
 </Project>
