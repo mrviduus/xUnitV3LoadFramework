@@ -343,21 +343,39 @@ jobs:
           ---
           🤖 This PR was automatically created by GitHub Actions. Tests will run automatically."
 
+          # A broken pre-flight build must never produce a mergeable PR
+          DRAFT_FLAG=""
+          if [ "${{ steps.update.outputs.build_failed }}" == "true" ]; then
+            DRAFT_FLAG="--draft"
+          fi
+
           # Check if PR already exists for today
           EXISTING_PR=$(gh pr list --head "${{ env.branch }}" --json number --jq '.[0].number' || echo "")
 
           if [ -n "$EXISTING_PR" ]; then
             echo "PR already exists (#$EXISTING_PR), updating it..."
             gh pr edit "$EXISTING_PR" --body "$PR_BODY"
+            if [ -n "$DRAFT_FLAG" ]; then
+              gh pr ready "$EXISTING_PR" --undo
+            fi
           else
             gh pr create \
               --title "🔄 Update NuGet Packages ($(date +%Y-%m-%d))" \
               --body "$PR_BODY" \
               --base main \
-              --head "${{ env.branch }}"
+              --head "${{ env.branch }}" \
+              $DRAFT_FLAG
           fi
 
       - name: No updates needed
         if: steps.check-outdated.outputs.updates_available == 'false'
         run: |
           echo "✅ All packages are up to date!"
+
+      - name: Fail the run if the pre-flight build broke
+        # The build check above only annotated the PR body; without this the job stayed
+        # green and a non-compiling bump could be merged (see LoadSurge PR #27).
+        if: steps.update.outputs.build_failed == 'true'
+        run: |
+          echo "::error::Pre-flight build failed with the updated packages. The PR was opened as a draft."
+          exit 1
