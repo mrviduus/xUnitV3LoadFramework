@@ -17,6 +17,10 @@
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <!-- MTP report extensions: dotnet test on the .NET 10 SDK runs Microsoft.Testing.Platform,
+         where the report-trx and coverage options replace VSTest's logger and collect options. -->
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.3.3" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.9.0" />
     <!-- OpenTelemetry Integration for xUnit -->
     <PackageVersion Include="xUnitOTel" Version="1.0.0.60" />
   </ItemGroup>

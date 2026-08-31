@@ -52,12 +52,13 @@ jobs:
     - name: Run unit tests
       run: |
         dotnet test \
+          --solution xUnitV3LoadFramework.sln \
           --configuration ${{ matrix.configuration }} \
           --no-build \
-          --verbosity normal \
-          --logger trx \
-          --logger "console;verbosity=detailed" \
-          --collect:"XPlat Code Coverage" \
+          --output Detailed \
+          --report-trx \
+          --coverage \
+          --coverage-output-format cobertura \
           --results-directory TestResults
     
     - name: Upload test results
@@ -71,7 +72,7 @@ jobs:
       uses: codecov/codecov-action@v4
       if: matrix.configuration == 'Release'
       with:
-        files: TestResults/*/coverage.cobertura.xml
+        files: TestResults/*.cobertura.xml
         fail_ci_if_error: false
         verbose: true
 

@@ -71,22 +71,25 @@ jobs:
 
       - name: Run unit tests
         run: |
-          dotnet test tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj \
+          dotnet test \
+            --project tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj \
             --no-build \
             --configuration Release \
-            --logger "console;verbosity=detailed" \
-            --logger "trx;LogFileName=test-results-${{ matrix.os_name }}.trx" \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+            --output Detailed \
+            --report-trx \
+            --report-trx-filename test-results-${{ matrix.os_name }}.trx \
+            --coverage \
+            --coverage-output-format cobertura \
+            --results-directory ./TestResults
 
       - name: Run example tests
         run: |
-          dotnet test examples/xUnitV3LoadTestsExamples/xUnitV3LoadTestsExamples.csproj \
+          dotnet test \
+            --project examples/xUnitV3LoadTestsExamples/xUnitV3LoadTestsExamples.csproj \
             --no-build \
             --configuration Release \
-            --logger "console;verbosity=normal" \
-            --logger "trx;LogFileName=example-results-${{ matrix.os_name }}.trx" \
+            --report-trx \
+            --report-trx-filename example-results-${{ matrix.os_name }}.trx \
             --results-directory ./TestResults
         continue-on-error: true  # Examples might have intentional failures for demonstration
 
@@ -97,7 +100,7 @@ jobs:
           name: test-results-${{ matrix.os_name }}
           path: |
             TestResults/*.trx
-            TestResults/**/coverage.opencover.xml
+            TestResults/*.cobertura.xml
           retention-days: 7
 
       - name: Upload coverage to Codecov

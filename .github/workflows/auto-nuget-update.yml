@@ -38,9 +38,7 @@ env:
   # Minor/patch only. Majors are reported, never applied.
   OUTDATED_OPTS: '--version-lock Major'
   # Verification run after the bump. Empty string = build-only gate.
-  # dotnet test cannot drive Microsoft.Testing.Platform on the .NET 10 SDK, so the test
-  # project is run directly instead.
-  TEST_CMD: 'dotnet run --project tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj -c Release --no-build'
+  TEST_CMD: 'dotnet test --solution xUnitV3LoadFramework.sln --configuration Release --no-build'
 
 jobs:
   update:
