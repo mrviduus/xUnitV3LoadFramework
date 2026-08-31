@@ -11,14 +11,14 @@
     <!-- Load Testing Core (includes Akka.NET) -->
     <PackageVersion Include="LoadSurge" Version="3.1.0" />
     <!-- xUnit v3 Core Dependencies -->
-    <PackageVersion Include="xunit.v3" Version="3.2.2" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3" Version="4.0.0" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <!-- OpenTelemetry Integration for xUnit -->
-    <PackageVersion Include="xUnitOTel" Version="1.0.0.57" />
+    <PackageVersion Include="xUnitOTel" Version="1.0.0.60" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->

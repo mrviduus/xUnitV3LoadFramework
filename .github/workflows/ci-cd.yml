@@ -101,7 +101,7 @@ jobs:
         if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
           VERSION="${GITHUB_REF#refs/tags/v}"
         else
-          VERSION="2.0.0.${{ github.run_number }}"
+          VERSION="3.0.0.${{ github.run_number }}"
         fi
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "Version set to: $VERSION"

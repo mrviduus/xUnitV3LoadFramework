@@ -36,10 +36,8 @@ env:
   # What dotnet-outdated is pointed at ('.' = discover from repo root, CPM-aware)
   TARGETS: '.'
   # Minor/patch only. Majors are reported, never applied.
-  OUTDATED_OPTS: '--version-lock Major --exclude xUnitOTel'
+  OUTDATED_OPTS: '--version-lock Major'
   # Verification run after the bump. Empty string = build-only gate.
-  # xUnitOTel >= 1.0.0.58 pulls xunit.v3.extensibility.core 4.0.0 and clashes with the
-  # centrally pinned xunit.v3 3.2.2 (NU1109). Excluded until xunit.v3 4.x is adopted.
   # dotnet test cannot drive Microsoft.Testing.Platform on the .NET 10 SDK, so the test
   # project is run directly instead.
   TEST_CMD: 'dotnet run --project tests/xUnitV3LoadFrameworkTests/xUnitV3LoadFrameworkTests.csproj -c Release --no-build'

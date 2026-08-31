@@ -12,9 +12,9 @@
     <IncludeLoadTestFramework Condition="'$(IncludeLoadTestFramework)' == ''">true</IncludeLoadTestFramework>
     <IsPackable>true</IsPackable>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
     <PackageTags>xunit;load-testing;performance;akka;dotnet;testing;framework;xunit-v3</PackageTags>
-    <PackageReleaseNotes>Version 2.0.0: Full xUnit v3 compatibility, fluent API, enhanced performance metrics, and production-ready features. See CHANGELOG.md for complete details.</PackageReleaseNotes>
+    <PackageReleaseNotes>Version 3.0.0: builds against xunit.v3 4.x. Breaking change - consumers on xunit.v3 3.x must stay on 2.x. See CHANGELOG.md for complete details.</PackageReleaseNotes>
     <LangVersion>12</LangVersion>
   </PropertyGroup>
 

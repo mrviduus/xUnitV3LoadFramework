@@ -80,8 +80,14 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
         IMessageBus messageBus,
         object?[] constructorArguments,
         ExceptionAggregator aggregator,
-        CancellationTokenSource cancellationTokenSource)
+        CancellationTokenSource cancellationTokenSource,
+        ParallelMode parallelMode,
+        ExecutionScheduler scheduler,
+        FixtureMappingManager methodFixtureMappings)
     {
+        // parallelMode, scheduler and methodFixtureMappings are part of the xunit.v3 4.x
+        // pipeline contract but are unused here: LoadRunner owns concurrency for load tests.
+
         var summary = new RunSummary { Total = 1 };
 
         // Check for skip
@@ -92,7 +98,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
                 messageBus,
                 cancellationTokenSource,
                 new IXunitTestCase[] { this },
-                SkipReason,
+                SkipReason!,
                 sendTestCollectionMessages: false,
                 sendTestClassMessages: false,
                 sendTestMethodMessages: false,
@@ -176,6 +182,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             TestCollectionUniqueID = TestMethod.TestClass.TestCollection.UniqueID,
             TestMethodUniqueID = TestMethod.UniqueID,
             TestCaseDisplayName = TestCaseDisplayName,
+            StartTime = startTime,
             SkipReason = SkipReason,
             SourceFilePath = SourceFilePath,
             SourceLineNumber = SourceLineNumber,
@@ -202,6 +209,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             TestMethodUniqueID = TestMethod.UniqueID,
             TestUniqueID = test.UniqueID,
             TestDisplayName = TestCaseDisplayName,
+            TestLabel = null,
             Explicit = Explicit,
             StartTime = startTime,
             Timeout = Timeout,
@@ -297,6 +305,7 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             TestCollectionUniqueID = TestMethod.TestClass.TestCollection.UniqueID,
             TestMethodUniqueID = TestMethod.UniqueID,
             ExecutionTime = executionTime,
+            FinishTime = finishTime,
             TestsFailed = summary.Failed,
             TestsNotRun = 0,
             TestsSkipped = summary.Skipped,
@@ -325,7 +334,9 @@ public class LoadTestCase : XunitTestCase, ISelfExecutingXunitTestCase
             testIndex: 0,
             traits: traitsDict,
             timeout: Timeout,
-            testMethodArguments: Array.Empty<object?>());
+            testMethodArguments: Array.Empty<object?>(),
+            testLabel: null,
+            disableParallelization: false);
     }
 
     private object CreateTestClassInstance(object?[] constructorArguments)

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-08-31
+
+### 🛠️ Changed
+- **BREAKING** - built against `xunit.v3` 4.0.0. Consumers still on xunit.v3 3.x must stay on 2.x.
+- `LoadTestCase.Run` now takes the `parallelMode`, `scheduler` and `methodFixtureMappings`
+  parameters added to `ISelfExecutingXunitTestCase` in xunit.v3 4.0.0. They are unused:
+  LoadRunner owns concurrency for load tests.
+- `TestCaseStarting.StartTime`, `TestStarting.TestLabel` and `TestCaseFinished.FinishTime`
+  are now required and are populated.
+- Switched to the non-obsolete `XunitTest` constructor (`testLabel`, `disableParallelization`).
+- xUnitOTel updated to 1.0.0.60, which requires xunit.v3 4.x.
+
 ## [2.1.0] - 2025-12-15
 
 ### ✨ Added
