@@ -22,7 +22,7 @@
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.3.3" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.10.0" />
     <!-- OpenTelemetry Integration for xUnit -->
-    <PackageVersion Include="xUnitOTel" Version="1.0.0.64" />
+    <PackageVersion Include="xUnitOTel" Version="1.0.0.65" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->
