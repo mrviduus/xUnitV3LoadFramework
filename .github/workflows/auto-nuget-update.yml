@@ -1,0 +1,146 @@
+name: Auto NuGet Update
+
+# Bumps NuGet packages and commits straight to main - no pull request.
+#
+# Scope: patch + minor only (`--version-lock Major`). Major updates are never applied
+# automatically, they are just listed in the job summary for a manual decision.
+#
+# Safety: restore + build + test run BEFORE the push. If anything fails the job stops
+# and nothing is pushed, so a broken bump can never land on main.
+#
+# The push uses GITHUB_TOKEN, so it deliberately does NOT re-trigger ci-cd/publish
+# workflows - a dependency bump must not republish the package.
+
+on:
+  schedule:
+    - cron: '0 9 * * 0'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Apply and verify updates, but do not push'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-nuget-update
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  SOLUTION: 'xUnitV3LoadFramework.sln'
+  # What dotnet-outdated is pointed at ('.' = discover from repo root, CPM-aware)
+  TARGETS: '.'
+  # Minor/patch only. Majors are reported, never applied.
+  OUTDATED_OPTS: '--version-lock Major'
+
+jobs:
+  update:
+    name: Update packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install dotnet-outdated
+        run: dotnet tool install --global dotnet-outdated-tool || dotnet tool update --global dotnet-outdated-tool
+
+      - name: Restore
+        run: dotnet restore "$SOLUTION"
+
+      - name: Apply minor/patch updates
+        id: update
+        run: |
+          set -euo pipefail
+          : > outdated.log
+          for target in $TARGETS; do
+            dotnet-outdated "$target" $OUTDATED_OPTS --upgrade 2>&1 | tee -a outdated.log
+          done
+          # strip ANSI colour codes so the log can be parsed and pasted into the summary
+          sed -i 's/\x1b\[[0-9;]*m//g' outdated.log
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo '### No package updates available' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            {
+              echo '### Packages bumped'
+              echo
+              echo '```'
+              grep -E '[0-9] +-> +[0-9]' outdated.log || true
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          dotnet restore "$SOLUTION"
+          dotnet build "$SOLUTION" --no-restore --configuration Release
+
+      - name: Test
+        if: steps.update.outputs.changed == 'true'
+        run: dotnet test "$SOLUTION" --no-build --configuration Release --verbosity normal
+
+      - name: Report verification failure
+        if: failure() && steps.update.outputs.changed == 'true'
+        run: |
+          {
+            echo '### Update rolled back'
+            echo
+            echo 'Build or tests failed with the updated packages. Nothing was pushed to `main`.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit and push to main
+        if: steps.update.outputs.changed == 'true' && inputs.dry_run != true
+        run: |
+          set -euo pipefail
+          BUMPS=$(grep -E '[0-9] +-> +[0-9]' outdated.log | sed -E 's/^[[:space:]]*/- /' | sort -u)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(deps): bump NuGet packages' -m "$BUMPS"
+          git pull --rebase origin main
+          git push origin main
+          echo "Pushed $(git rev-parse --short HEAD) to main." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Skipped push (dry run)
+        if: steps.update.outputs.changed == 'true' && inputs.dry_run == true
+        run: echo 'Dry run - updates verified but not pushed.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report available major updates
+        if: success()
+        run: |
+          set -euo pipefail
+          : > majors.log
+          for target in $TARGETS; do
+            dotnet-outdated "$target" 2>&1 | tee -a majors.log
+          done
+          sed -i 's/\x1b\[[0-9;]*m//g' majors.log
+          MAJORS=$(grep -E '[0-9] +-> +[0-9]' majors.log | sort -u || true)
+          {
+            echo '### Major updates available (not applied)'
+            echo
+            if [ -z "$MAJORS" ]; then
+              echo 'None.'
+            else
+              echo 'These need a human decision - bump them manually.'
+              echo
+              echo '```'
+              echo "$MAJORS"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
