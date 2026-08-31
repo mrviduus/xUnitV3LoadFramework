@@ -71,12 +71,12 @@ jobs:
         id: update
         run: |
           set -euo pipefail
-          : > outdated.log
+          LOG="$RUNNER_TEMP/outdated.log"; : > "$LOG"
           for target in $TARGETS; do
-            dotnet-outdated "$target" $OUTDATED_OPTS --upgrade 2>&1 | tee -a outdated.log
+            dotnet-outdated "$target" $OUTDATED_OPTS --upgrade 2>&1 | tee -a "$LOG"
           done
           # strip ANSI colour codes so the log can be parsed and pasted into the summary
-          sed -i 's/\x1b\[[0-9;]*m//g' outdated.log
+          sed -i 's/\x1b\[[0-9;]*m//g' "$LOG"
           if git diff --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo '### No package updates available' >> "$GITHUB_STEP_SUMMARY"
@@ -86,7 +86,7 @@ jobs:
               echo '### Packages bumped'
               echo
               echo '```'
-              grep -E '[0-9] +-> +[0-9]' outdated.log || true
+              grep -E '[0-9] +-> +[0-9]' "$RUNNER_TEMP/outdated.log" || true
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -114,7 +114,7 @@ jobs:
         if: steps.update.outputs.changed == 'true' && inputs.dry_run != true
         run: |
           set -euo pipefail
-          BUMPS=$(grep -E '[0-9] +-> +[0-9]' outdated.log | sed -E 's/^[[:space:]]*/- /' | sort -u)
+          BUMPS=$(grep -E '[0-9] +-> +[0-9]' "$RUNNER_TEMP/outdated.log" | sed -E 's/^[[:space:]]*/- /' | sort -u)
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
@@ -131,12 +131,12 @@ jobs:
         if: success()
         run: |
           set -euo pipefail
-          : > majors.log
+          LOG="$RUNNER_TEMP/majors.log"; : > "$LOG"
           for target in $TARGETS; do
-            dotnet-outdated "$target" 2>&1 | tee -a majors.log
+            dotnet-outdated "$target" 2>&1 | tee -a "$LOG"
           done
-          sed -i 's/\x1b\[[0-9;]*m//g' majors.log
-          MAJORS=$(grep -E '[0-9] +-> +[0-9]' majors.log | sort -u || true)
+          sed -i 's/\x1b\[[0-9;]*m//g' "$LOG"
+          MAJORS=$(grep -E '[0-9] +-> +[0-9]' "$LOG" | sort -u || true)
           {
             echo '### Major updates available (not applied)'
             echo
