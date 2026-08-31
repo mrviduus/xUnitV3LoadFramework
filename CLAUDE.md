@@ -8,18 +8,22 @@ xUnitV3LoadFramework is a load testing framework for .NET that integrates with x
 
 ## Key Commands
 
+`global.json` opts `dotnet test` into the Microsoft.Testing.Platform runner, so the options
+below are MTP's, not VSTest's (`--solution`/`--project` and `--filter-class` instead of a bare
+path and `--filter`).
+
 ```bash
 # Build
 dotnet build xUnitV3LoadFramework.sln -c Release
 
 # Run all tests
-dotnet test xUnitV3LoadFramework.sln
+dotnet test --solution xUnitV3LoadFramework.sln
 
-# Run single test by name
-dotnet test --filter "FullyQualifiedName~LoadIntegrationTests"
+# Run single test class by name
+dotnet test --filter-class "*LoadIntegrationTests"
 
 # Run examples
-dotnet test examples/xUnitV3LoadTestsExamples/xUnitV3LoadTestsExamples.csproj
+dotnet test --project examples/xUnitV3LoadTestsExamples/xUnitV3LoadTestsExamples.csproj
 
 # Create NuGet package
 dotnet pack src/xUnitV3LoadFramework/xUnitV3LoadFramework.csproj -c Release

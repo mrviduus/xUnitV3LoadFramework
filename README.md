@@ -292,7 +292,7 @@ Assert.True(successRate >= 0.95, $"Success rate {successRate:P} below 95%");
   await httpClient.GetAsync(url, cts.Token);
   ```
 - **Cancellation**: The framework uses `GracefulStopTimeout` to wait for in-flight requests. Long-running actions without cancellation support may delay test completion.
-- **CI filtering**: Use `dotnet test --filter "FullyQualifiedName~LoadTests"` to run only load tests or exclude them from fast CI runs.
+- **CI filtering**: Use `dotnet test --filter-class "*LoadTests"` to run only load tests, or `--filter-not-class` to exclude them from fast CI runs.
 
 ## When to Choose This
 
