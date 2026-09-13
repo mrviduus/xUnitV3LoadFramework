@@ -11,36 +11,36 @@
     <!-- Load Testing Core (includes Akka.NET) -->
     <PackageVersion Include="LoadSurge" Version="3.1.0.87" />
     <!-- xUnit v3 Core Dependencies -->
-    <PackageVersion Include="xunit.v3" Version="4.0.0" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.1" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.1" />
   </ItemGroup>
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
     <!-- MTP report extensions: dotnet test on the .NET 10 SDK runs Microsoft.Testing.Platform,
          where the report-trx and coverage options replace VSTest's logger and collect options. -->
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.4.0" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
     <!-- OpenTelemetry Integration for xUnit -->
     <PackageVersion Include="xUnitOTel" Version="1.0.0.66" />
   </ItemGroup>
   <ItemGroup Label="Microsoft Extensions Dependencies">
     <!-- Dependency Injection (used in tests) -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
     <!-- HTTP Client Factory (used in tests) -->
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.12" />
     <!-- Hosting (used in tests) -->
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup Label="Development and Build Tools">
     <!-- Source Link for GitHub Actions -->
-    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.400">
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.401">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageVersion>
   </ItemGroup>
   <ItemGroup Label="NetStandard Compatibility">
     <!-- IAsyncDisposable support for netstandard2.0 -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.12" />
   </ItemGroup>
 </Project>
