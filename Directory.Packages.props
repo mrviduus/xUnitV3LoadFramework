@@ -11,16 +11,16 @@
     <!-- Load Testing Core (includes Akka.NET) -->
     <PackageVersion Include="LoadSurge" Version="3.1.0.87" />
     <!-- xUnit v3 Core Dependencies -->
-    <PackageVersion Include="xunit.v3" Version="4.0.1" />
-    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.1" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.2" />
   </ItemGroup>
   <ItemGroup Label="Testing Platform Dependencies">
     <!-- Microsoft Testing Platform -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
     <!-- MTP report extensions: dotnet test on the .NET 10 SDK runs Microsoft.Testing.Platform,
          where the report-trx and coverage options replace VSTest's logger and collect options. -->
-    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.4.1" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.5.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.12.0" />
     <!-- OpenTelemetry Integration for xUnit -->
     <PackageVersion Include="xUnitOTel" Version="1.0.0.66" />
   </ItemGroup>
